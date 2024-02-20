@@ -52,8 +52,8 @@ class MSHEAD(nn.Module):
         in_chans=1,
         out_chans=13,
         depths=[2, 2, 6, 2],
-        feat_size=[64, 96, 192, 384],
-        num_heads = [4, 6, 12, 24],
+        feat_size=[48, 96, 192, 384],
+        num_heads = [3, 6, 12, 24],
         drop_path_rate=0,
         layer_scale_init_value=1e-6,
         hidden_size: int = 768,
@@ -108,7 +108,7 @@ class MSHEAD(nn.Module):
 
         self.multiscale_transformer = mit_b0(
             num_classes = out_chans,
-            embed_dim = self.feat_size,
+            embed_dims = self.feat_size,
             depths=self.depths,
             num_heads = self.num_heads,
             drop_path_rate=self.drop_path_rate,
@@ -205,7 +205,7 @@ class MSHEAD(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        self.out = UnetOutBlock(spatial_dims=spatial_dims, in_channels=48, out_channels=self.out_chans)
+        self.out = UnetOutBlock(spatial_dims=spatial_dims, in_channels=self.feat_size[0], out_channels=self.out_chans)
         # self.conv_proj = ProjectionHead(dim_in=hidden_size)
 
 
@@ -218,29 +218,34 @@ class MSHEAD(nn.Module):
     
     def forward(self, x_in):
         outs = self.multiscale_transformer(x_in)
-        print(outs[0].size())
-        print(outs[1].size())
-        print(outs[2].size())
-        print(outs[3].size())
+        # print(f'output from ms transformer: \n')
+        # print(outs[0].size())
+        # print(outs[1].size())
+        # print(outs[2].size())
+        # print(outs[3].size())
         # print(f'encoder-1: {self.encoder1}')
 
         enc1 = self.encoder1(x_in)
-        print(f'enc1 input:{x_in.shape} output:{enc1.size()}')
+        # print(f'enc1 input:{x_in.shape} output:{enc1.size()}')
+
         x2 = outs[0]
         enc2 = self.encoder2(x2)
-        print(f'enc2 input:{x2.shape} output:{enc2.size()}')
+        # print(f'enc2 input:{x2.shape} output:{enc2.size()}')
+
         x3 = outs[1]
-        print(f'encoder-3: {self.encoder3}')
+        # print(f'encoder-3: {self.encoder3}')
         enc3 = self.encoder3(x3)
-        print(f'enc3:input:{x3.shape} output:{enc3.size()}')
+        # print(f'enc3:input:{x3.shape} output:{enc3.size()}')
+
         x4 = outs[2]
-        print(f'encoder-4: {self.encoder4}')
+        # print(f'encoder-4: {self.encoder4}')
         enc4 = self.encoder4(x4)
-        print(f'enc4:input:{x4.shape} output:{enc4.size()}')
+        # print(f'enc4:input:{x4.shape} output:{enc4.size()}')
         # dec4 = self.proj_feat(outs[3], self.hidden_size, self.feat_size)
-        print(f'encoder-5: {self.encoder5}')
+        # print(f'encoder-5: {self.encoder5}')
+
         enc_hidden = self.encoder5(outs[3])
-        print(f'enc_5 input:{outs[3].shape} output:{enc_hidden.size()}')
+        # print(f'enc_5 input:{outs[3].shape} output:{enc_hidden.size()}')
         dec3 = self.decoder5(enc_hidden, enc4)
         dec2 = self.decoder4(dec3, enc3)
         dec1 = self.decoder3(dec2, enc2)
@@ -253,7 +258,7 @@ class MSHEAD(nn.Module):
     
 
 if __name__=="__main__":
-    B = 2
+    B = 1
     C = 1
     D = 96
     H = 96
@@ -264,5 +269,10 @@ if __name__=="__main__":
     outputs = model(x)
     for y in outputs:
         print(f'y shape:{y.shape}')
+
+
+    # Assuming 'model' is your PyTorch model
+    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"Total trainable parameters: {total_params}")
     
     

@@ -154,52 +154,52 @@ class MRATransformer(nn.Module):
         stage = 0
         x_rgb, D, H, W = self.patch_embed1(x_rgb)    # B, N, C = B, Pd*Ph*Pw, C  --> Pd=(D//2), Ph=(H//2), Pw=(W//2)
         # self.logger.info('Stage 1 - Tokenization: {}'.format(x_rgb.shape))
-        print('Stage 1 - Tokenization: {}'.format(x_rgb.shape))
-        print(f'D:{D} H:{H} W:{W}')
+        # print('Stage 1 - Tokenization: {}'.format(x_rgb.shape))
+        # print(f'D:{D} H:{H} W:{W}')
         # exit()
         for j,blk in enumerate(self.block1):
             x_rgb = blk(x_rgb, D, H, W)
         # print('########### Stage 1 - Output: {}'.format(x_rgb.shape))
         x_rgb = self.norm1(x_rgb)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
-        print('########### Stage 1 - Output: {}'.format(x_rgb.shape))
+        # print('########### Stage 1 - Output: {}'.format(x_rgb.shape))
         outs.append(x_rgb)
 
         # stage 2
         stage += 1
         x_rgb, D, H, W = self.patch_embed2(x_rgb)
-        print('Stage 2 - Tokenization: {}'.format(x_rgb.shape))
-        print(f'D:{D} H:{H} W:{W}')
+        # print('Stage 2 - Tokenization: {}'.format(x_rgb.shape))
+        # print(f'D:{D} H:{H} W:{W}')
         for j,blk in enumerate(self.block2):
             x_rgb = blk(x_rgb, D, H, W)
         x_rgb = self.norm2(x_rgb)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
-        print('############# Stage 2 - Output: {}'.format(x_rgb.shape))
+        # print('############# Stage 2 - Output: {}'.format(x_rgb.shape))
         outs.append(x_rgb)
 
         # stage 3
         stage += 1
         x_rgb, D, H, W = self.patch_embed3(x_rgb)
-        print('Stage 3 - Tokenization: {}'.format(x_rgb.shape))
-        print(f'D:{D} H:{H} W:{W}')
+        # print('Stage 3 - Tokenization: {}'.format(x_rgb.shape))
+        # print(f'D:{D} H:{H} W:{W}')
         for j,blk in enumerate(self.block3):
             x_rgb = blk(x_rgb, D, H, W)
         x_rgb = self.norm3(x_rgb)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
-        print('###########Stage 3 - Output: {}'.format(x_rgb.shape))
+        # print('###########Stage 3 - Output: {}'.format(x_rgb.shape))
         outs.append(x_rgb)
 
         # stage 4
         stage += 1
         x_rgb, D, H, W = self.patch_embed4(x_rgb)
-        print('Stage 4 - Tokenization: {}'.format(x_rgb.shape))
-        print(f'D:{D} H:{H} W:{W}')
+        # print('Stage 4 - Tokenization: {}'.format(x_rgb.shape))
+        # print(f'D:{D} H:{H} W:{W}')
         for j,blk in enumerate(self.block4):
             x_rgb = blk(x_rgb, D, H, W)
         x_rgb = self.norm4(x_rgb)   # B, L, C
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
-        print('######## Stage 4 - Output: {}'.format(x_rgb.shape))
-        print(f'D:{D} H:{H} W:{W}')
+        # print('######## Stage 4 - Output: {}'.format(x_rgb.shape))
+        # print(f'D:{D} H:{H} W:{W}')
         outs.append(x_rgb)
         return outs
 
@@ -231,12 +231,11 @@ class mit_b0(MRATransformer):
     def __init__(self, fuse_cfg=None, **kwargs):
         # img_size = (fuse_cfg.IMAGE.image_height, fuse_cfg.IMAGE.image_width)
         img_size = (96, 96, 96) # D, H, W
-        heads = [4,6,12,24]
         num_classes = 5
         super(mit_b0, self).__init__(
-            img_size = img_size, patch_size = 2, num_classes=num_classes, embed_dims=[64, 96, 192, 384], 
-            num_heads=heads, mlp_ratios=[4, 4, 4, 4], qkv_bias=True, 
-            norm_layer=partial(nn.LayerNorm, eps=1e-6), local_region_scales=[4, 3, 2, 1], depths=[2, 2, 6, 2], 
+            img_size = img_size, patch_size = 2, num_classes=num_classes, embed_dims=[48, 96, 192, 384], 
+            num_heads=[3,6,12,24], mlp_ratios=[4, 4, 4, 4], qkv_bias=True, 
+            norm_layer=partial(nn.LayerNorm, eps=1e-6), local_region_scales=[3, 3, 2, 1], depths=[2, 2, 6, 2], 
             drop_rate=0, drop_path_rate=0.1)
 
 
