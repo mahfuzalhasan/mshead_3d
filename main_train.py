@@ -28,8 +28,8 @@ import argparse
 
 parser = argparse.ArgumentParser(description='3D UX-Net hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='', required=True, help='Root folder of all your images and labels')
-parser.add_argument('--output', type=str, default='', required=True, help='Output folder for both tensorboard and the best model')
+parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=True, help='Root folder of all your images and labels')
+parser.add_argument('--output', type=str, default='./results', required=True, help='Output folder for both tensorboard and the best model')
 parser.add_argument('--dataset', type=str, default='flare', required=True, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
