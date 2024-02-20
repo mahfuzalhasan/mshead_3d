@@ -21,8 +21,8 @@ from typing import Union
 import torch.nn.functional as F
 # from lib.utils.tools.logger import Logger as Log
 from lib.models.tools.module_helper import ModuleHelper
-from networks.UXNet_3D.uxnet_encoder import uxnet_conv
-from mra_transformer import mit_b0
+# from networks.UXNet_3D.uxnet_encoder import uxnet_conv
+from networks.msHead_3D.mra_transformer import mra_b0
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -45,10 +45,11 @@ class ProjectionHead(nn.Module):
         return F.normalize(self.proj(x), p=2, dim=1)
 
 
-class MSHEAD(nn.Module):
+class MSHEAD_ATTN(nn.Module):
 
     def __init__(
         self,
+        img_size = (96,96,96),
         in_chans=1,
         out_chans=13,
         depths=[2, 2, 6, 2],
@@ -91,6 +92,7 @@ class MSHEAD(nn.Module):
         #
         # if hidden_size % num_heads != 0:
         #     raise ValueError("hidden_size should be divisible by num_heads.")
+        self.img_size = img_size
         self.hidden_size = hidden_size
         # self.feature_size = feature_size
         self.num_heads = num_heads
@@ -106,7 +108,8 @@ class MSHEAD(nn.Module):
 
         self.spatial_dims = spatial_dims
 
-        self.multiscale_transformer = mit_b0(
+        self.multiscale_transformer = mra_b0(
+            img_size = self.img_size,
             num_classes = out_chans,
             embed_dims = self.feat_size,
             depths=self.depths,
@@ -264,7 +267,7 @@ if __name__=="__main__":
     H = 96
     W = 96
     num_classes = 5
-    model = MSHEAD(in_chans=C, out_chans=num_classes)
+    model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes)
     x = torch.randn(B, C, D, H, W)
     outputs = model(x)
     for y in outputs:

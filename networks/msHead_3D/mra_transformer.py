@@ -227,43 +227,18 @@ class MRATransformer(nn.Module):
         return flops
 
 
-class mit_b0(MRATransformer):
-    def __init__(self, fuse_cfg=None, **kwargs):
-        # img_size = (fuse_cfg.IMAGE.image_height, fuse_cfg.IMAGE.image_width)
-        img_size = (96, 96, 96) # D, H, W
-        num_classes = 5
-        super(mit_b0, self).__init__(
-            img_size = img_size, patch_size = 2, num_classes=num_classes, embed_dims=[48, 96, 192, 384], 
-            num_heads=[3,6,12,24], mlp_ratios=[4, 4, 4, 4], qkv_bias=True, 
+class mra_b0(MRATransformer):
+    def __init__(self, img_size, num_classes, embed_dims, num_heads, drop_path_rate):
+        super(mra_b0, self).__init__(
+            img_size = img_size, patch_size = 2, num_classes=num_classes, embed_dims=embed_dims, 
+            num_heads=num_heads, mlp_ratios=[4, 4, 4, 4], qkv_bias=True, 
             norm_layer=partial(nn.LayerNorm, eps=1e-6), local_region_scales=[3, 3, 2, 1], depths=[2, 2, 6, 2], 
-            drop_rate=0, drop_path_rate=0.1)
-
-
-class mit_b1(MRATransformer):
-    def __init__(self, fuse_cfg=None, **kwargs):
-        img_size = (fuse_cfg.IMAGE.image_height, fuse_cfg.IMAGE.image_width)
-        heads = fuse_cfg.MODEL.heads
-        super(mit_b1, self).__init__(
-            img_size = img_size, patch_size=4, embed_dims=[64, 128, 320, 512], 
-            num_heads=heads, mlp_ratios=[4, 4, 4, 4], qkv_bias=True, 
-            norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=[2, 2, 2, 2],
-            drop_rate=fuse_cfg.MODEL.DROP_RATE, drop_path_rate=0.1)
-
-
-class mit_b2(MRATransformer):
-    def __init__(self, fuse_cfg=None, **kwargs):
-        img_size = (fuse_cfg.IMAGE.image_height, fuse_cfg.IMAGE.image_width)
-        heads = fuse_cfg.MODEL.heads
-        super(mit_b2, self).__init__(
-            img_size=img_size, patch_size=4, embed_dims=[64, 128, 320, 512], 
-            num_heads=heads, mlp_ratios=[4, 4, 4, 4], qkv_bias=True, 
-            norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=[3, 4, 6, 3], 
-            drop_rate=fuse_cfg.MODEL.DROP_RATE, drop_path_rate=0.1)
+            drop_rate=0, drop_path_rate=drop_path_rate)
 
 
 
 if __name__=="__main__":
-    backbone = mit_b0(norm_layer = partial(nn.LayerNorm, eps=1e-6))
+    backbone = mra_b0(norm_layer = partial(nn.LayerNorm, eps=1e-6))
     
     # ########print(backbone)
     B = 2

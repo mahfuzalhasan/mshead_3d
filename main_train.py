@@ -9,6 +9,7 @@ Created on Sat Jul  3 11:06:19 2021
 from monai.utils import set_determinism
 from monai.transforms import AsDiscrete
 from networks.UXNet_3D.network_backbone import UXNET
+from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from monai.networks.nets import UNETR, SwinUNETR
 from networks.nnFormer.nnFormer_seg import nnFormer
 from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
@@ -33,11 +34,11 @@ parser.add_argument('--output', type=str, default='./results', required=True, he
 parser.add_argument('--dataset', type=str, default='flare', required=True, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
-parser.add_argument('--network', type=str, default='3DUXNET', help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
+parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
 parser.add_argument('--pretrained_weights', default='', help='Path of pretrained weights')
-parser.add_argument('--batch_size', type=int, default='1', help='Batch size for subject input')
+parser.add_argument('--batch_size', type=int, default='4', help='Batch size for subject input')
 parser.add_argument('--crop_sample', type=int, default='2', help='Number of cropped sub-volumes for each subject')
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
@@ -97,6 +98,16 @@ if args.network == '3DUXNET':
         layer_scale_init_value=1e-6,
         spatial_dims=3,
     ).to(device)
+elif args.network == 'MSHEAD':
+    model = MSHEAD_ATTN(
+        img_size=(96, 96, 96),
+        in_chans=1,
+        out_chans=out_classes,
+        depths=[2,2,6,2],
+        feat_size=[48,96,192,384],
+        num_heads = [3,6,12,24],
+        use_checkpoint=False,
+    ).to(device)
 elif args.network == 'SwinUNETR':
     model = SwinUNETR(
         img_size=(96, 96, 96),
@@ -140,7 +151,7 @@ if args.optim == 'AdamW':
 elif args.optim == 'Adam':
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 print('Optimizer for training: {}, learning rate: {}'.format(args.optim, args.lr))
-# scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=1000)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=10)
 
 
 root_dir = os.path.join(args.output)
@@ -178,7 +189,7 @@ def validation(epoch_iterator_val):
             )
         dice_metric.reset()
     mean_dice_val = np.mean(dice_vals)
-    writer.add_scalar('Validation Segmentation Loss', mean_dice_val, global_step)
+    writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
     return mean_dice_val
 
 
@@ -210,7 +221,9 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             epoch_iterator_val = tqdm(
                 val_loader, desc="Validate (X / X Steps) (dice=X.X)", dynamic_ncols=True
             )
+            
             dice_val = validation(epoch_iterator_val)
+            print(f'\n ######## valid at:{global_step}, avg dice val:{dice_val} ######### \n')
             epoch_loss /= step
             epoch_loss_values.append(epoch_loss)
             metric_values.append(dice_val)
@@ -225,14 +238,14 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                         dice_val_best, dice_val
                     )
                 )
-                # scheduler.step(dice_val)
+                scheduler.step(dice_val)
             else:
                 print(
                     "Model Was Not Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
                         dice_val_best, dice_val
                     )
                 )
-                # scheduler.step(dice_val)
+                scheduler.step(dice_val)
         writer.add_scalar('Training Segmentation Loss', loss.data, global_step)
         global_step += 1
     return global_step, dice_val_best, global_step_best
