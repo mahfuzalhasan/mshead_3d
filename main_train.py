@@ -88,7 +88,9 @@ val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
 
 
 ## Load Networks
-device = torch.device("cuda:2")
+cuda_device = f"cuda:{args.gpu}"
+device = torch.device(cuda_device)
+
 if args.network == '3DUXNET':
     model = UXNET(
         in_chans=1,
@@ -172,7 +174,7 @@ def validation(epoch_iterator_val):
     dice_vals = list()
     with torch.no_grad():
         for step, batch in enumerate(epoch_iterator_val):
-            val_inputs, val_labels = (batch["image"].cuda(), batch["label"].cuda())
+            val_inputs, val_labels = (batch["image"].to(device), batch["label"].to(device))
             # val_outputs = model(val_inputs)
             val_outputs = sliding_window_inference(val_inputs, (96, 96, 96), 2, model)
             # val_outputs = model_seg(val_inputs, val_feat[0], val_feat[1])
@@ -207,7 +209,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     print(f'######### training started ###############')
     for step, batch in enumerate(epoch_iterator):
         step += 1
-        x, y = (batch["image"].cuda(), batch["label"].cuda())
+        x, y = (batch["image"].to(device), batch["label"].to(device))
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
         logit_map = model(x)
