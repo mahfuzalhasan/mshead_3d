@@ -88,7 +88,7 @@ val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
 
 
 ## Load Networks
-device = torch.device("cuda:0")
+device = torch.device("cuda:2")
 if args.network == '3DUXNET':
     model = UXNET(
         in_chans=1,
