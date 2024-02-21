@@ -28,7 +28,7 @@ from tqdm import tqdm
 from datetime import datetime
 import argparse
 
-print(f'########### Running Flare Segmentation #################\n')
+print(f'########### Running Flare Segmentation ################# \n', flush=True)
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=True, help='Root folder of all your images and labels')
@@ -58,7 +58,7 @@ print(f'################################')
 print(f'args:{args}')
 print('#################################')
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-print('Used GPU: {}'.format(args.gpu))
+print('Used GPU: {}'.format(args.gpu), flush=True)
 
 train_samples, valid_samples, out_classes = data_loader(args)
 
@@ -78,7 +78,7 @@ set_determinism(seed=0)
 train_transforms, val_transforms = data_transforms(args)
 
 ## Train Pytorch Data Loader and Caching
-print('Start caching datasets!')
+print('Start caching datasets!',flush=True)
 train_ds = CacheDataset(
     data=train_files, transform=train_transforms,
     cache_rate=args.cache_rate, num_workers=args.num_workers)
@@ -146,7 +146,7 @@ elif args.network == 'TransBTS':
 print('Chosen Network Architecture: {}'.format(args.network))
 
 if args.pretrain == 'True':
-    print('Pretrained weight is found! Start to load weight from: {}'.format(args.pretrained_weights))
+    print('Pretrained weight is found! Start to load weight from: {}'.format(args.pretrained_weights), flush=True)
     model.load_state_dict(torch.load(args.pretrained_weights))
 
 ## Define Loss function and optimizer
@@ -160,7 +160,7 @@ print('Optimizer for training: {}, learning rate: {}'.format(args.optim, args.lr
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=10)
 
 run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
-print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
+print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$', flush=True)
 
 root_dir = os.path.join(args.output, run_id)
 if os.path.exists(root_dir) == False:
@@ -222,7 +222,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         optimizer.step()
         optimizer.zero_grad()
         if global_step % 200 == 0:
-            print(f'step:{global_step} completed. Loss:{loss.item()}\n')
+            print(f'step:{global_step} completed. Loss:{loss.item()}\n', flush=True)
  
         epoch_iterator.set_description(
             "Training (%d / %d Steps) (loss=%2.5f)" % (global_step, max_iterations, loss)
@@ -235,7 +235,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             )
             
             dice_val = validation(epoch_iterator_val)
-            print(f'######## valid at:{global_step}, avg dice val:{dice_val} ######### \n')
+            print(f'######## valid at:{global_step}, avg dice val:{dice_val} ######### \n', flush=True)
             epoch_loss /= step
             epoch_loss_values.append(epoch_loss)
             metric_values.append(dice_val)
@@ -248,14 +248,14 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                 print(
                     "Model Was Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
                         dice_val_best, dice_val
-                    )
+                    ), flush=True
                 )
                 scheduler.step(dice_val)
             else:
                 print(
                     "Model Was Not Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
                         dice_val_best, dice_val
-                    )
+                    ), flush=True
                 )
                 scheduler.step(dice_val)
         writer.add_scalar('Training Segmentation Loss', loss.data, global_step)
@@ -264,7 +264,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
 
 
 max_iterations = args.max_iter
-print('Maximum Iterations for training: {}'.format(str(args.max_iter)))
+print('Maximum Iterations for training: {}'.format(str(args.max_iter)), flush=True)
 eval_num = args.eval_step
 post_label = AsDiscrete(to_onehot=out_classes)
 post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)

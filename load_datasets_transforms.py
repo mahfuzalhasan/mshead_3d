@@ -37,7 +37,7 @@ def data_loader(args):
     root_dir = args.root
     dataset = args.dataset
 
-    print('Start to load data from directory: {}'.format(root_dir))
+    print('Start to load data from directory: {}'.format(root_dir), flush=True)
 
     if dataset == 'feta':
         out_classes = 8
@@ -62,8 +62,8 @@ def data_loader(args):
         valid_samples['images'] = valid_img
         valid_samples['labels'] = valid_label
 
-        print('Finished loading all training samples from dataset: {}!'.format(dataset))
-        print('Number of classes for segmentation: {}'.format(out_classes))
+        print('Finished loading all training samples from dataset: {}!'.format(dataset), flush=True)
+        print('Number of classes for segmentation: {}'.format(out_classes), flush=True)
 
         return train_samples, valid_samples, out_classes
 
