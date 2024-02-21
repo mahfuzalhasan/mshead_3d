@@ -50,7 +50,7 @@ parser.add_argument('--eval_step', type=int, default=500, help='Per steps to per
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=str, default='5', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=0.1, help='Cache rate to cache your dataset into GPUs')
-parser.add_argument('--num_workers', type=int, default=2, help='Number of workers')
+parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
 
 
 args = parser.parse_args()
