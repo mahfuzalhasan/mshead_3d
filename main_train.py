@@ -25,6 +25,7 @@ from load_datasets_transforms import data_loader, data_transforms
 import os
 import numpy as np
 from tqdm import tqdm
+from datetime import datetime
 import argparse
 
 parser = argparse.ArgumentParser(description='3D UX-Net hyperparameters for medical image segmentation')
@@ -153,8 +154,10 @@ elif args.optim == 'Adam':
 print('Optimizer for training: {}, learning rate: {}'.format(args.optim, args.lr))
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=10)
 
+run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
+print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
 
-root_dir = os.path.join(args.output)
+root_dir = os.path.join(args.output, run_id)
 if os.path.exists(root_dir) == False:
     os.makedirs(root_dir)
     
@@ -201,6 +204,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     epoch_iterator = tqdm(
         train_loader, desc="Training (X / X Steps) (loss=X.X)", dynamic_ncols=True
     )
+    print(f'######### training started ###############')
     for step, batch in enumerate(epoch_iterator):
         step += 1
         x, y = (batch["image"].cuda(), batch["label"].cuda())
@@ -212,6 +216,9 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         epoch_loss += loss.item()
         optimizer.step()
         optimizer.zero_grad()
+        if global_step % 200 == 0:
+            print(f'step:{global_step} completed. Loss:{loss.item()}\n')
+ 
         epoch_iterator.set_description(
             "Training (%d / %d Steps) (loss=%2.5f)" % (global_step, max_iterations, loss)
         )
@@ -223,7 +230,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             )
             
             dice_val = validation(epoch_iterator_val)
-            print(f'\n ######## valid at:{global_step}, avg dice val:{dice_val} ######### \n')
+            print(f'######## valid at:{global_step}, avg dice val:{dice_val} ######### \n')
             epoch_loss /= step
             epoch_loss_values.append(epoch_loss)
             metric_values.append(dice_val)
