@@ -49,7 +49,7 @@ def data_loader(args):
     if args.mode == 'train':
         train_samples = {}
         valid_samples = {}
-
+        print(f'#### loading training and validation set ########## \n')
         ## Input training data
         train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
         train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))

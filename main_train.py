@@ -28,7 +28,8 @@ from tqdm import tqdm
 from datetime import datetime
 import argparse
 
-parser = argparse.ArgumentParser(description='3D UX-Net hyperparameters for medical image segmentation')
+print(f'########### Running Flare Segmentation #################\n')
+parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=True, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='./results', required=True, help='Output folder for both tensorboard and the best model')
@@ -53,7 +54,9 @@ parser.add_argument('--num_workers', type=int, default=2, help='Number of worker
 
 
 args = parser.parse_args()
-
+print(f'################################')
+print(f'args:{args}')
+print('#################################')
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
 
