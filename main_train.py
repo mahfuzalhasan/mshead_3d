@@ -8,11 +8,11 @@ Created on Sat Jul  3 11:06:19 2021
 
 from monai.utils import set_determinism
 from monai.transforms import AsDiscrete
-from networks.UXNet_3D.network_backbone import UXNET
+# from networks.UXNet_3D.network_backbone import UXNET
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from monai.networks.nets import UNETR, SwinUNETR
-from networks.nnFormer.nnFormer_seg import nnFormer
-from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
+# from networks.nnFormer.nnFormer_seg import nnFormer
+# from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from monai.metrics import DiceMetric
 from monai.losses import DiceCELoss
 from monai.inferers import sliding_window_inference
@@ -94,17 +94,8 @@ val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
 cuda_device = f"cuda:{args.gpu}"
 device = torch.device(cuda_device)
 
-if args.network == '3DUXNET':
-    model = UXNET(
-        in_chans=1,
-        out_chans=out_classes,
-        depths=[2, 2, 2, 2],
-        feat_size=[48, 96, 192, 384],
-        drop_path_rate=0,
-        layer_scale_init_value=1e-6,
-        spatial_dims=3,
-    ).to(device)
-elif args.network == 'MSHEAD':
+
+if args.network == 'MSHEAD':
     model = MSHEAD_ATTN(
         img_size=(96, 96, 96),
         in_chans=1,
@@ -122,26 +113,6 @@ elif args.network == 'SwinUNETR':
         feature_size=48,
         use_checkpoint=False,
     ).to(device)
-elif args.network == 'nnFormer':
-    model = nnFormer(input_channels=1, num_classes=out_classes).to(device)
-
-elif args.network == 'UNETR':
-    model = UNETR(
-        in_channels=1,
-        out_channels=out_classes,
-        img_size=(96, 96, 96),
-        feature_size=16,
-        hidden_size=768,
-        mlp_dim=3072,
-        num_heads=12,
-        pos_embed="perceptron",
-        norm_name="instance",
-        res_block=True,
-        dropout_rate=0.0,
-    ).to(device)
-elif args.network == 'TransBTS':
-    _, model = TransBTS(dataset=args.dataset, _conv_repr=True, _pe_type='learned')
-    model = model.to(device)
 
 print('Chosen Network Architecture: {}'.format(args.network))
 
