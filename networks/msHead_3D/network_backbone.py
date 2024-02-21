@@ -62,6 +62,7 @@ class MSHEAD_ATTN(nn.Module):
         conv_block: bool = True,
         res_block: bool = True,
         spatial_dims=3,
+        use_checkpoint = False
     ) -> None:
         """
         Args:
