@@ -91,8 +91,8 @@ val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
 
 
 ## Load Networks
-cuda_device = f"cuda:{args.gpu}"
-device = torch.device(cuda_device)
+device = f'cuda:{args.gpu}'
+print(f'--- device:{device} ---')
 
 
 if args.network == 'MSHEAD':
