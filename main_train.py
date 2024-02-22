@@ -25,7 +25,7 @@ from load_datasets_transforms import data_loader, data_transforms
 import os
 import numpy as np
 from tqdm import tqdm
-from datetime import datetime
+import datetime
 import argparse
 
 print(f'########### Running Flare Segmentation ################# \n', flush=True)
