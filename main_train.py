@@ -178,6 +178,7 @@ def validation(val_loader):
 
 
 def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, save_dir, best=False):
+    s_time = time.time()
     save_file_path = os.path.join(save_dir, 'model_{}.pth'.format(iteration))
     if best:
         save_file_path = os.path.join(save_dir, 'model_best.pth')
@@ -189,6 +190,9 @@ def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, sa
                   'global_step': iteration,
                   'run_id':str(run_id)}
     torch.save(save_state, save_file_path)
+    save_time = time.time() - s_time
+    print(f"model save takes {datetime.timedelta(seconds=int(save_time))}")
+
 
 def train(global_step, train_loader, dice_val_best, global_step_best):
     s_time = time.time()
