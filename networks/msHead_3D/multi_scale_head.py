@@ -138,7 +138,7 @@ class MultiScaleAttention(nn.Module):
         output_size = math.ceil(self.N_G**(1./3.))
         perm_x = x.permute(0, 1, 4, 3, 2).contiguous().reshape(B, l_h*C_h*Nr, r, r, r)
         upsampled_x = F.interpolate(perm_x, size=(output_size, output_size, output_size), mode='trilinear')
-        upsampled_x = upsampled_x.reshape(B, l_h, C_h, Nr, self.N_G).permute(0, 1, 4, 3, 2).contiguous()
+        upsampled_x = upsampled_x.reshape(B, l_h, C_h, Nr, self.N_G).permute(0, 1, 4, 3, 2).contiguous()    
         return upsampled_x
     
     def merge_regions_spatial(self, x, merge_size):

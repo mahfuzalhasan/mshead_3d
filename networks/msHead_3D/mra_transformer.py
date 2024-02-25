@@ -223,7 +223,6 @@ class MRATransformer(nn.Module):
             flops += blk.flops()
         for i, blk in enumerate(self.block4):
             flops += blk.flops()
-        
         return flops
 
 
