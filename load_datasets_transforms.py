@@ -55,8 +55,22 @@ def data_loader(args):
         train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
         train_samples['images'] = train_img
         train_samples['labels'] = train_label
+        print(f'#### train_img_list ###### \n ')
+        print(train_img)
+        print('\n #### train label list #### \n')
+        print(train_label)
 
         ## Input validation data
+        valid_img = train_img[0:69]
+        valid_label = train_label[0:69]
+
+        print(f'$$$$$$$$$ valid_img list $$$$$$$$$$$ \n ')
+        print(valid_img)
+        print('\n $$$$$$$$$ valid_label list $$$$$$$$$ \n')
+        print(valid_label)
+
+        exit()
+
         valid_img = sorted(glob.glob(os.path.join(root_dir, 'imagesVal', '*.nii.gz')))
         valid_label = sorted(glob.glob(os.path.join(root_dir, 'labelsVal', '*.nii.gz')))
         valid_samples['images'] = valid_img
