@@ -80,8 +80,6 @@ def data_loader(args):
         # print(valid_label)
         # print(f'----------- {len(valid_img)}, {len(valid_label)}-----------')
         ######################################################################
-        
-
         print('Finished loading all training samples from dataset: {}!'.format(dataset), flush=True)
         print('Number of classes for segmentation: {}'.format(out_classes), flush=True)
 

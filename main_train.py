@@ -46,7 +46,7 @@ parser.add_argument('--crop_sample', type=int, default='2', help='Number of crop
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
-parser.add_argument('--eval_step', type=int, default=10, help='Per steps to perform validation')
+parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
 
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
@@ -191,7 +191,7 @@ def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, sa
                   'run_id':str(run_id)}
     torch.save(save_state, save_file_path)
     save_time = time.time() - s_time
-    print(f"model save takes {datetime.timedelta(seconds=int(save_time))}")
+    print(f"model saved at iteration:{iteration} and took: {datetime.timedelta(seconds=int(save_time))}")
 
 
 def train(global_step, train_loader, dice_val_best, global_step_best):
@@ -217,12 +217,15 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         optimizer.zero_grad()
         epoch_loss_values.append(loss.item())
 
+        # print after every 100 iteration
         if global_step % 100 == 0:
             print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
-        
-        
-        if global_step % 10 == 0 and global_step!=0:
+
+        # saving model after every 250 iteration
+        if (global_step % (eval_num//2) == 0) and global_step!=0:
             save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
+        
+        # evaluating after every 500 iteration
         if (global_step % eval_num) == 0 and global_step!=0 or global_step == max_iterations-1:
             # epoch_iterator_val = tqdm(
             #     val_loader, desc="Validate (X / X Steps) (dice=X.X)", dynamic_ncols=True
@@ -232,6 +235,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             if dice_val > dice_val_best:
                 dice_val_best = dice_val
                 global_step_best = global_step
+                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir, best=True)
                 print(
                     "Model Was Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
                         dice_val_best, dice_val
@@ -239,12 +243,13 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                 )
                 scheduler.step(dice_val)
                 # save model if we acheive best dice score at the evaluation
-                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir, best=True)
+                
             else:
                 print(
                     "Not Best Model. Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
                 )
                 scheduler.step(dice_val)
+
             # setting model to train mode again
             model.train()
         
