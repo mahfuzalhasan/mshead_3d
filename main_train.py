@@ -48,7 +48,7 @@ parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iterati
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
 
 ## Efficiency hyperparameters
-parser.add_argument('--gpu', type=str, default='0', help='your GPU number')
+parser.add_argument('--gpu', type=str, default='1', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=0.4, help='Cache rate to cache your dataset into GPUs')
 parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
 
