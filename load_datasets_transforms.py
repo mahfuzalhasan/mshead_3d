@@ -67,30 +67,19 @@ def data_loader(args):
         valid_samples['images'] = valid_img
         valid_samples['labels'] = valid_label
 
-        print(f'#### train_img_list ###### \n ')
-        print(train_img)
-        print('\n #### train label list #### \n')
-        print(train_label)
-        print(f'----------- {len(train_img)}, {len(train_label)}-----------')
-        print(f'$$$$$$$$$ valid_img list $$$$$$$$$$$ \n ')
-        print(valid_img)
-        print('\n $$$$$$$$$ valid_label list $$$$$$$$$ \n')
-        print(valid_label)
-        print(f'----------- {len(valid_img)}, {len(valid_label)}-----------')
-
-        exit()
-        
-
-        ## Input validation data
-        
-        
-
-        
-
-        # exit()
-
-        # valid_img = sorted(glob.glob(os.path.join(root_dir, 'imagesVal', '*.nii.gz')))
-        # valid_label = sorted(glob.glob(os.path.join(root_dir, 'labelsVal', '*.nii.gz')))
+        ######################################################################
+        # checking split
+        # print(f'#### train_img_list ###### \n ')
+        # print(train_img)
+        # print('\n #### train label list #### \n')
+        # print(train_label)
+        # print(f'----------- {len(train_img)}, {len(train_label)}-----------')
+        # print(f'$$$$$$$$$ valid_img list $$$$$$$$$$$ \n ')
+        # print(valid_img)
+        # print('\n $$$$$$$$$ valid_label list $$$$$$$$$ \n')
+        # print(valid_label)
+        # print(f'----------- {len(valid_img)}, {len(valid_label)}-----------')
+        ######################################################################
         
 
         print('Finished loading all training samples from dataset: {}!'.format(dataset), flush=True)
