@@ -50,31 +50,48 @@ def data_loader(args):
         train_samples = {}
         valid_samples = {}
         print(f'#### loading training and validation set ########## \n')
+        start_index = 69
+        end_index = 138
         ## Input training data
         train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
         train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
+
+        valid_img = train_img[start_index:end_index]
+        valid_label = train_label[start_index:end_index]
+
+        del train_img[start_index:end_index]
+        del valid_label[start_index:end_index]
+
         train_samples['images'] = train_img
         train_samples['labels'] = train_label
+        valid_samples['images'] = valid_img
+        valid_samples['labels'] = valid_label
+
         print(f'#### train_img_list ###### \n ')
         print(train_img)
         print('\n #### train label list #### \n')
         print(train_label)
-
-        ## Input validation data
-        valid_img = train_img[0:69]
-        valid_label = train_label[0:69]
-
+        print(f'----------- {len(train_img)}, {len(train_label)} samples:{len(train_samples['images'])} {len(train_samples['labels'])}-----------')
         print(f'$$$$$$$$$ valid_img list $$$$$$$$$$$ \n ')
         print(valid_img)
         print('\n $$$$$$$$$ valid_label list $$$$$$$$$ \n')
         print(valid_label)
+        print(f'----------- {len(valid_img)}, {len(valid_label)} samples:{len(valid_samples['images'])} {len(valid_samples['labels'])}-----------')
 
         exit()
+        
 
-        valid_img = sorted(glob.glob(os.path.join(root_dir, 'imagesVal', '*.nii.gz')))
-        valid_label = sorted(glob.glob(os.path.join(root_dir, 'labelsVal', '*.nii.gz')))
-        valid_samples['images'] = valid_img
-        valid_samples['labels'] = valid_label
+        ## Input validation data
+        
+        
+
+        
+
+        # exit()
+
+        # valid_img = sorted(glob.glob(os.path.join(root_dir, 'imagesVal', '*.nii.gz')))
+        # valid_label = sorted(glob.glob(os.path.join(root_dir, 'labelsVal', '*.nii.gz')))
+        
 
         print('Finished loading all training samples from dataset: {}!'.format(dataset), flush=True)
         print('Number of classes for segmentation: {}'.format(out_classes), flush=True)
