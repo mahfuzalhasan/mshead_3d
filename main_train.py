@@ -48,7 +48,7 @@ parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iterati
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
 
 ## Efficiency hyperparameters
-parser.add_argument('--gpu', type=str, default='1', help='your GPU number')
+parser.add_argument('--gpu', type=int, default=1, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=0.4, help='Cache rate to cache your dataset into GPUs')
 parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
 
@@ -57,7 +57,7 @@ args = parser.parse_args()
 print(f'################################')
 print(f'args:{args}')
 print('#################################')
-os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+# os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu), flush=True)
 
 train_samples, valid_samples, out_classes = data_loader(args)
@@ -71,6 +71,7 @@ val_files = [
     {"image": image_name, "label": label_name}
     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
 ]
+print(f'train files:{len(train_files)} val files:{len(val_files)}')
 
 
 set_determinism(seed=0)
