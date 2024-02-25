@@ -27,12 +27,13 @@ import numpy as np
 from tqdm import tqdm
 import datetime
 import argparse
+import time
 
 print(f'########### Running Flare Segmentation ################# \n', flush=True)
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
-parser.add_argument('--output', type=str, default='./results', required=False, help='Output folder for both tensorboard and the best model')
+parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
 parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
@@ -45,7 +46,7 @@ parser.add_argument('--crop_sample', type=int, default='2', help='Number of crop
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
-parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
+parser.add_argument('--eval_step', type=int, default=10, help='Per steps to perform validation')
 
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=1, help='your GPU number')
@@ -147,6 +148,7 @@ def validation(val_loader):
     # model_feat.eval()
     model.eval()
     dice_vals = list()
+    s_time = time.time()
     with torch.no_grad():
         for step, batch in enumerate(val_loader):
             val_inputs, val_labels = (batch["image"].to(device), batch["label"].to(device))
@@ -170,11 +172,13 @@ def validation(val_loader):
         dice_metric.reset()
     mean_dice_val = np.mean(dice_vals)
     writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
+    val_time = time.time() - s_time
+    print(f"val takes {datetime.timedelta(seconds=int(val_time))}")
     return mean_dice_val
 
 
-def save_model(model, optimizer, lr_scheduler, epoch, run_id, dice_score, save_dir, best=False):
-    save_file_path = os.path.join(save_dir, 'model_{}.pth'.format(epoch))
+def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, save_dir, best=False):
+    save_file_path = os.path.join(save_dir, 'model_{}.pth'.format(iteration))
     if best:
         save_file_path = os.path.join(save_dir, 'model_best.pth')
 
@@ -182,14 +186,13 @@ def save_model(model, optimizer, lr_scheduler, epoch, run_id, dice_score, save_d
                   'optimizer': optimizer.state_dict(),
                   'lr_scheduler': lr_scheduler.state_dict(),
                   'dice_score': dice_score,
-                  'global_step': epoch,
+                  'global_step': iteration,
                   'run_id':str(run_id)}
     torch.save(save_state, save_file_path)
 
 def train(global_step, train_loader, dice_val_best, global_step_best):
-    # model_feat.eval()
+    s_time = time.time()
     model.train()
-    # epoch_loss = 0
     step = 0
     epoch_loss_values = []
     # epoch_iterator = tqdm(
@@ -211,40 +214,43 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         epoch_loss_values.append(loss.item())
 
         if global_step % 100 == 0:
-            print(f'step:{global_step} completed. Loss:{np.mean(epoch_loss_values)}')
+            print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
+        
+        
+        if global_step % 10 == 0 and global_step!=0:
+            save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
+        if (global_step % eval_num) == 0 and global_step!=0 or global_step == max_iterations-1:
+            # epoch_iterator_val = tqdm(
+            #     val_loader, desc="Validate (X / X Steps) (dice=X.X)", dynamic_ncols=True
+            # )
+            dice_val = validation(val_loader)
+            metric_values.append(dice_val)
+            if dice_val > dice_val_best:
+                dice_val_best = dice_val
+                global_step_best = global_step
+                print(
+                    "Model Was Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
+                        dice_val_best, dice_val
+                    )
+                )
+                scheduler.step(dice_val)
+                # save model if we acheive best dice score at the evaluation
+                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir, best=True)
+            else:
+                print(
+                    "Not Best Model. Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
+                )
+                scheduler.step(dice_val)
+            # setting model to train mode again
+            model.train()
+        
         # saving loss for every iteration
         writer.add_scalar('Training Loss_Itr', loss.data, global_step)
         global_step += 1
-
-    print(f'global step after 1 epoch:{global_step}')
-    # evaluation after every 3 epoches = 3*num_itr_per_epoch = 3*136 = 398
-    if (global_step % len(train_loader)) == 0 or global_step == max_iterations-1:
-        # epoch_iterator_val = tqdm(
-        #     val_loader, desc="Validate (X / X Steps) (dice=X.X)", dynamic_ncols=True
-        # )
-        
-        dice_val = validation(val_loader)
-        print(f'\n######## valid at:{global_step}, avg dice val:{dice_val} #########')
-        metric_values.append(dice_val)
-        if dice_val > dice_val_best:
-            dice_val_best = dice_val
-            global_step_best = global_step
-            print(
-                "Model Was Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
-                    dice_val_best, dice_val
-                )
-            )
-            scheduler.step(dice_val)
-            # save model if we acheive best dice score at the evaluation
-            save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir, best=True)
-        else:
-            print(
-                "Model Was Not Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
-            )
-            scheduler.step(dice_val)
-            # save model after every 6 epoch = 6*num_itr_per_epoch = 6*136 = 196 iterations.
-            if global_step % (6*len(data_loader)) == 0:
-                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
+    
+    train_time = time.time() - s_time
+    print(f"train takes {datetime.timedelta(seconds=int(train_time))}")
+    
     return global_step, dice_val_best, global_step_best
 
 
@@ -263,6 +269,8 @@ while global_step < max_iterations:
     global_step, dice_val_best, global_step_best = train(
         global_step, train_loader, dice_val_best, global_step_best
     )
+    print(f'completed: {global_step} iterations')
+    print(f'best so far:{dice_val_best} at iteration:{global_step_best}')
 
 
 
