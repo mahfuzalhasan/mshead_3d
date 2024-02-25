@@ -60,7 +60,7 @@ def data_loader(args):
         valid_label = train_label[start_index:end_index]
 
         del train_img[start_index:end_index]
-        del valid_label[start_index:end_index]
+        del train_label[start_index:end_index]
 
         train_samples['images'] = train_img
         train_samples['labels'] = train_label
