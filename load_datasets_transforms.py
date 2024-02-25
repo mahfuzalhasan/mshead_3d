@@ -71,12 +71,12 @@ def data_loader(args):
         print(train_img)
         print('\n #### train label list #### \n')
         print(train_label)
-        print(f'----------- {len(train_img)}, {len(train_label)} samples:{len(train_samples['images'])} {len(train_samples['labels'])}-----------')
+        print(f'----------- {len(train_img)}, {len(train_label)}-----------')
         print(f'$$$$$$$$$ valid_img list $$$$$$$$$$$ \n ')
         print(valid_img)
         print('\n $$$$$$$$$ valid_label list $$$$$$$$$ \n')
         print(valid_label)
-        print(f'----------- {len(valid_img)}, {len(valid_label)} samples:{len(valid_samples['images'])} {len(valid_samples['labels'])}-----------')
+        print(f'----------- {len(valid_img)}, {len(valid_label)}-----------')
 
         exit()
         
