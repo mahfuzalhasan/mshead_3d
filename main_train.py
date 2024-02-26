@@ -47,7 +47,7 @@ parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for 
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
-
+parser.add_argument('--resume', default=False, help='Per steps to perform validation')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=0.4, help='Cache rate to cache your dataset into GPUs')
@@ -131,18 +131,6 @@ elif args.optim == 'Adam':
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 print('Optimizer for training: {}, learning rate: {}'.format(args.optim, args.lr))
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=10)
-
-run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
-print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$', flush=True)
-
-root_dir = os.path.join(args.output, run_id)
-if os.path.exists(root_dir) == False:
-    os.makedirs(root_dir)
-    
-t_dir = os.path.join(root_dir, 'tensorboard')
-if os.path.exists(t_dir) == False:
-    os.makedirs(t_dir)
-writer = SummaryWriter(log_dir=t_dir)
 
 def validation(val_loader):
     # model_feat.eval()
@@ -274,6 +262,36 @@ dice_val_best = 0.0
 global_step_best = 0
 epoch_loss_values = []
 metric_values = []
+
+
+run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
+print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
+
+
+### if you need to resume from a previous checkpoint.
+### run with python main_train.py --resume True
+### Then set model_path here
+if args.resume:
+    model_path = '/orange/r.forghani/results/02-25-24_0431/model_11000.pth'
+    state_dict = torch.load(model_path)
+    model.load_state_dict(state_dict['model'])
+    optimizer.load_state_dict(state_dict['optimizer'])
+    scheduler.load_state_dict(state_dict['lr_scheduler'])
+    global_step = state_dict['global_step']
+    run_id = state_dict['run_id']
+    print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
+    print(f'resuming from global step:{global_step}')
+
+root_dir = os.path.join(args.output, run_id)
+if os.path.exists(root_dir) == False:
+    os.makedirs(root_dir)
+    
+t_dir = os.path.join(root_dir, 'tensorboard')
+if os.path.exists(t_dir) == False:
+    os.makedirs(t_dir)
+writer = SummaryWriter(log_dir=t_dir)
+
+
 while global_step < max_iterations:
     global_step, dice_val_best, global_step_best = train(
         global_step, train_loader, dice_val_best, global_step_best
