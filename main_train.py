@@ -67,7 +67,6 @@ train_files = [
     {"image": image_name, "label": label_name}
     for image_name, label_name in zip(train_samples['images'], train_samples['labels'])
 ]
-
 val_files = [
     {"image": image_name, "label": label_name}
     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
@@ -272,7 +271,7 @@ print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
 ### run with python main_train.py --resume True
 ### Then set model_path here
 if args.resume:
-    model_path = '/orange/r.forghani/results/02-25-24_0431/model_11000.pth'
+    model_path = '/orange/r.forghani/results/02-25-24_0431/model_12500.pth'
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict['model'])
     optimizer.load_state_dict(state_dict['optimizer'])
