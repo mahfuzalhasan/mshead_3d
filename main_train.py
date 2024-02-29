@@ -51,7 +51,7 @@ parser.add_argument('--resume', default=False, help='resume training from an ear
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=0.2, help='Cache rate to cache your dataset into memory')
-parser.add_argument('--num_workers', type=int, default=15, help='Number of workers')
+parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
 
 
 args = parser.parse_args()
@@ -274,15 +274,16 @@ print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
 ### run with python main_train.py --resume True
 ### Then set model_path here
 if args.resume:
-    model_path = '/orange/r.forghani/results/02-25-24_0431/model_16000.pth'
+    model_path = '/orange/r.forghani/results/02-25-24_0431/model_15750.pth'
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict['model'])
     optimizer.load_state_dict(state_dict['optimizer'])
     scheduler.load_state_dict(state_dict['lr_scheduler'])
-    global_step = state_dict['global_step']
+    global_step = state_dict['global_step'] + 1
     run_id = state_dict['run_id']
+    dice_val_best = state_dict['dice_score']
     print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
-    print(f'resuming from global step:{global_step}')
+    print(f'starting from global step:{global_step}')
 
 root_dir = os.path.join(args.output, run_id)
 if os.path.exists(root_dir) == False:
