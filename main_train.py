@@ -50,8 +50,8 @@ parser.add_argument('--eval_step', type=int, default=500, help='Per steps to per
 parser.add_argument('--resume', default=False, help='Per steps to perform validation')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
-parser.add_argument('--cache_rate', type=float, default=0.4, help='Cache rate to cache your dataset into GPUs')
-parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
+parser.add_argument('--cache_rate', type=float, default=0, help='Cache rate to cache your dataset into GPUs')
+parser.add_argument('--num_workers', type=int, default=10, help='Number of workers')
 
 
 args = parser.parse_args()
@@ -178,7 +178,7 @@ def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, sa
                   'run_id':str(run_id)}
     torch.save(save_state, save_file_path)
     save_time = time.time() - s_time
-    print(f"model saved at iteration:{iteration} and took: {datetime.timedelta(seconds=int(save_time))}")
+    # print(f"model saved at iteration:{iteration} and took: {datetime.timedelta(seconds=int(save_time))}")
 
 
 def train(global_step, train_loader, dice_val_best, global_step_best):
@@ -207,6 +207,9 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         # print after every 100 iteration
         if global_step % 100 == 0:
             print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
+            time_100 = time.time() - s_time
+            print(f"step 100 took: {datetime.timedelta(seconds=int(time_100))}")
+
 
         # saving model after every 250 iteration
         if (global_step % (eval_num//2) == 0) and global_step!=0:
