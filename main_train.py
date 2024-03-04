@@ -92,7 +92,7 @@ val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
 
 
 ## Load Networks
-device = torch.cuda('device')
+device = torch.device("cuda")
 print(f'--- device:{device} ---')
 
 
