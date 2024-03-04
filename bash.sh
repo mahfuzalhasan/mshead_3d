@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=python_train
-#SBATCH --output=/blue/r.forghani/scripts/mshead_3d/results/python_train_fold2_resume_15750.out
-#SBATCH --error=/blue/r.forghani/scripts/mshead_3d/results/python_train_fold2_resume_15750.err
+#SBATCH --output=/blue/r.forghani/scripts/mshead_3d/results/job.%J.out
+#SBATCH --error=/blue/r.forghani/scripts/mshead_3d/results/job.%J.err
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=mdmahfuzalhasan@ufl.edu
 #SBATCH --nodes=1
