@@ -20,4 +20,4 @@ conda activate medical
 cd /blue/r.forghani/scripts/mshead_3d
 
 # Execute the Python script
-srun python main_train.py --resume True
+srun python main_train.py
