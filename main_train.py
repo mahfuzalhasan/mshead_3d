@@ -186,6 +186,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     model.train()
     step = 0
     epoch_loss_values = []
+    previous_step = 0
     # epoch_iterator = tqdm(
     #     train_loader, desc="Training (X / X Steps) (loss=X.X)", dynamic_ncols=True
     # )
@@ -207,8 +208,10 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         # print after every 100 iteration
         if global_step % 100 == 0:
             print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
+            num_steps = global_step - previous_step
             time_100 = time.time() - s_time
-            print(f"step 100 took: {datetime.timedelta(seconds=int(time_100))}")
+            print(f"step {num_steps} took: {datetime.timedelta(seconds=int(time_100))} \n ")
+            previous_step = global_step
 
 
         # saving model after every 250 iteration
