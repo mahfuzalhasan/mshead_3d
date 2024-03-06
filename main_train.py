@@ -135,7 +135,7 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=
 def validation(val_loader):
     # model_feat.eval()
     model.eval()
-    dice_vals = list()
+    dice_vals = []
     s_time = time.time()
     with torch.no_grad():
         for step, batch in enumerate(val_loader):
@@ -162,6 +162,7 @@ def validation(val_loader):
     writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
     val_time = time.time() - s_time
     print(f"val takes {datetime.timedelta(seconds=int(val_time))}")
+    dice_vals = []
     return mean_dice_val
 
 
@@ -225,7 +226,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             #     val_loader, desc="Validate (X / X Steps) (dice=X.X)", dynamic_ncols=True
             # )
             dice_val = validation(val_loader)
-            metric_values.append(dice_val)
+            # metric_values.append(dice_val)
             if dice_val > dice_val_best:
                 dice_val_best = dice_val
                 global_step_best = global_step
@@ -266,8 +267,7 @@ dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans
 global_step = 0
 dice_val_best = 0.0
 global_step_best = 0
-epoch_loss_values = []
-metric_values = []
+# metric_values = []
 
 
 run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
