@@ -30,7 +30,7 @@ import datetime
 import argparse
 import time
 
-print(f'########### Running Flare Segmentation ################# \n', flush=True)
+print(f'########### Running Flare Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
@@ -60,7 +60,7 @@ print(f'################################')
 print(f'args:{args}')
 print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-print('Used GPU: {}'.format(args.gpu), flush=True)
+print('Used GPU: {}'.format(args.gpu))
 
 train_samples, valid_samples, out_classes = data_loader(args)
 
@@ -80,7 +80,7 @@ set_determinism(seed=0)
 train_transforms, val_transforms = data_transforms(args)
 
 ## Train Pytorch Data Loader and Caching
-print('Start caching datasets!',flush=True)
+print('Start caching datasets!')
 train_ds = CacheDataset(
     data=train_files, transform=train_transforms,
     cache_rate=args.cache_rate, num_workers=args.num_workers)
@@ -305,8 +305,3 @@ while global_step < max_iterations:
     )
     print(f'completed: {global_step} iterations')
     print(f'best so far:{dice_val_best} at iteration:{global_step_best}')
-
-
-
-
-
