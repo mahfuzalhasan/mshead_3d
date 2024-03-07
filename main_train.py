@@ -16,12 +16,11 @@ from monai.networks.nets import UNETR, SwinUNETR
 from monai.metrics import DiceMetric
 from monai.losses import DiceCELoss
 from monai.inferers import sliding_window_inference
-from monai.data import CacheDataset, DataLoader, decollate_batch
+from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from load_datasets_transforms import data_loader, data_transforms
-torch.multiprocessing.set_sharing_strategy('file_descriptor')
 
 import os
 import numpy as np
@@ -52,7 +51,7 @@ parser.add_argument('--resume', default=False, help='resume training from an ear
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
-parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
+parser.add_argument('--num_workers', type=int, default=16, help='Number of workers')
 
 
 args = parser.parse_args()
@@ -81,15 +80,16 @@ train_transforms, val_transforms = data_transforms(args)
 
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
-train_ds = CacheDataset(
-    data=train_files, transform=train_transforms,
-    cache_rate=args.cache_rate, num_workers=args.num_workers)
-train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
+val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
+
+train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)
+val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
+#train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
 ## Valid Pytorch Data Loader and Caching
-val_ds = CacheDataset(
-    data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
-val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
+#val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
+# val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
 
 
 ## Load Networks
@@ -135,7 +135,7 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=
 def validation(val_loader):
     # model_feat.eval()
     model.eval()
-    dice_vals = []
+    dice_vals = list()
     s_time = time.time()
     with torch.no_grad():
         for step, batch in enumerate(val_loader):
@@ -162,7 +162,6 @@ def validation(val_loader):
     writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
     val_time = time.time() - s_time
     print(f"val takes {datetime.timedelta(seconds=int(val_time))}")
-    dice_vals = []
     return mean_dice_val
 
 
@@ -267,6 +266,7 @@ dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans
 global_step = 0
 dice_val_best = 0.0
 global_step_best = 0
+epoch_loss_values = []
 # metric_values = []
 
 
