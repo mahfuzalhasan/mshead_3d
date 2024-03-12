@@ -50,8 +50,8 @@ def data_loader(args):
         train_samples = {}
         valid_samples = {}
         print(f'#### loading training and validation set ########## \n')
-        start_index = 0
-        end_index = 69
+        start_index = 276
+        end_index = 341
         ## Input training data
         train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
         train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
