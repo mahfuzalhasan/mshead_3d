@@ -4,8 +4,8 @@ from monai.transforms import AsDiscrete
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from networks.UXNet_3D.network_backbone import UXNET
 # from monai.networks.nets import UNETR, SwinUNETR
-from networks.nnFormer.nnFormer_seg import nnFormer
-from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
+# from networks.nnFormer.nnFormer_seg import nnFormer
+# from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from monai.inferers import sliding_window_inference
 from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
 from monai.metrics import DiceMetric
@@ -64,6 +64,7 @@ test_loader = ThreadDataLoader(test_ds, batch_size=1, num_workers=0)
 
 ## Load Networks
 device = torch.device("cuda")
+print(f'--- device:{device} ---')
 
 if args.network == 'MSHEAD':
     model = MSHEAD_ATTN(
@@ -76,26 +77,14 @@ if args.network == 'MSHEAD':
         use_checkpoint=False,
     ).to(device)
 
-elif args.network == '3DUXNET':
-    model = UXNET(
-        in_chans=1,
-        out_chans=out_classes,
-        depths=[2, 2, 2, 2],
-        feat_size=[48, 96, 192, 384],
-        drop_path_rate=0,
-        layer_scale_init_value=1e-6,
-        spatial_dims=3,
+elif args.network == 'SwinUNETR':
+    model = SwinUNETR(
+        img_size=(96, 96, 96),
+        in_channels=1,
+        out_channels=out_classes,
+        feature_size=48,
+        use_checkpoint=False,
     ).to(device)
-
-elif args.network == 'nnFormer':
-    model = nnFormer(input_channels=1, num_classes=out_classes).to(device)
-
-elif args.network == 'TransBTS':
-    _, model = TransBTS(dataset=args.dataset, _conv_repr=True, _pe_type='learned')
-    model = model.to(device)
-
-
-
 
 model.load_state_dict(torch.load(args.trained_weights))
 model.eval()
