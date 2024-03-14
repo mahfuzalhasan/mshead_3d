@@ -86,7 +86,8 @@ elif args.network == 'SwinUNETR':
         use_checkpoint=False,
     ).to(device)
 
-model.load_state_dict(torch.load(args.trained_weights))
+state_dict = torch.load(args.trained_weights)
+model.load_state_dict(state_dict['model'])
 model.eval()
 # with torch.no_grad():
 #     for i, test_data in enumerate(test_loader):
