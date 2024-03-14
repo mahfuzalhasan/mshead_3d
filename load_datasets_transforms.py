@@ -90,7 +90,10 @@ def data_loader(args):
 
         ## Input inference data
         test_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTs', '*.nii.gz')))
+        test_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTs', '*.nii.gz')))
+
         test_samples['images'] = test_img
+        test_samples['labels'] = test_label
 
         print('Finished loading all inference samples from dataset: {}!'.format(dataset))
 
@@ -223,22 +226,40 @@ def data_transforms(args):
             ]
         )
 
+        # test_transforms = Compose(
+        #     [
+        #         LoadImaged(keys=["image"]),
+        #         AddChanneld(keys=["image"]),
+        #         Spacingd(keys=["image"], pixdim=(
+        #             1.0, 1.0, 1.2), mode=("bilinear")),
+        #         # ResizeWithPadOrCropd(keys=["image"], spatial_size=(168,168,128), mode=("constant")),
+        #         Orientationd(keys=["image"], axcodes="RAS"),
+        #         ScaleIntensityRanged(
+        #             keys=["image"], a_min=-125, a_max=275,
+        #             b_min=0.0, b_max=1.0, clip=True,
+        #         ),
+        #         CropForegroundd(keys=["image"], source_key="image"),
+        #         ToTensord(keys=["image"]),
+        #     ]
+        # )
+
         test_transforms = Compose(
             [
-                LoadImaged(keys=["image"]),
-                AddChanneld(keys=["image"]),
-                Spacingd(keys=["image"], pixdim=(
-                    1.0, 1.0, 1.2), mode=("bilinear")),
+                LoadImaged(keys=["image", "label"]),
+                AddChanneld(keys=["image", "label"]),
+                Spacingd(keys=["image", "label"], pixdim=(
+                    1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
                 # ResizeWithPadOrCropd(keys=["image"], spatial_size=(168,168,128), mode=("constant")),
-                Orientationd(keys=["image"], axcodes="RAS"),
+                Orientationd(keys=["image", "label"], axcodes="RAS"),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-125, a_max=275,
                     b_min=0.0, b_max=1.0, clip=True,
                 ),
-                CropForegroundd(keys=["image"], source_key="image"),
-                ToTensord(keys=["image"]),
+                CropForegroundd(keys=["image", "label"], source_key="image"),
+                ToTensord(keys=["image", "label"]),
             ]
         )
+        
 
     elif dataset == 'amos':
         train_transforms = Compose(
