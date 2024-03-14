@@ -3,7 +3,7 @@ from monai.utils import first, set_determinism
 from monai.transforms import AsDiscrete
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from networks.UXNet_3D.network_backbone import UXNET
-# from monai.networks.nets import UNETR, SwinUNETR
+from monai.networks.nets import UNETR, SwinUNETR
 # from networks.nnFormer.nnFormer_seg import nnFormer
 # from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from monai.inferers import sliding_window_inference
