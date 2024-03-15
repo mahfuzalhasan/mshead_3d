@@ -6,11 +6,14 @@ Created on Sat Jul  3 11:06:19 2021
 @author: leeh43
 """
 
+import glob
 from monai.utils import set_determinism
 from monai.transforms import AsDiscrete
 # from networks.UXNet_3D.network_backbone import UXNET
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
+from networks.Focus_Net.s_net_3d import s_net
 from monai.networks.nets import UNETR, SwinUNETR
+from losses.focusnetloss import FocusNetLoss
 # from networks.nnFormer.nnFormer_seg import nnFormer
 # from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from monai.metrics import DiceMetric
@@ -19,7 +22,7 @@ from monai.inferers import sliding_window_inference
 from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
 
 import torch
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 from load_datasets_transforms import data_loader, data_transforms
 
 import os
@@ -62,16 +65,23 @@ print('#################################')
 print('Used GPU: {}'.format(args.gpu))
 
 train_samples, valid_samples, out_classes = data_loader(args)
+out_classes = 1
+if args.dataset == "LN":
+    pat_ids = sorted(os.listdir(args.root))[:170]
+    train_images = sorted([glob.glob(os.path.join(args.root, pat_id, "IM00*")) for pat_id in pat_ids])
+    train_labels = sorted([glob.glob(os.path.join(args.root, pat_id, "Segmentation_v2*")) for pat_id in pat_ids])
+    data_dicts = [{"image": image_name, "label": label_name} for image_name, label_name in zip(train_images, train_labels)]
+    train_files, val_files = data_dicts[:140], data_dicts[140:]
 
-train_files = [
-    {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(train_samples['images'], train_samples['labels'])
-]
-val_files = [
-    {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
-]
-print(f'train files:{len(train_files)} val files:{len(val_files)}')
+# train_files = [
+#     {"image": image_name, "label": label_name}
+#     for image_name, label_name in zip(train_samples['images'], train_samples['labels'])
+# ]
+# val_files = [
+#     {"image": image_name, "label": label_name}
+#     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
+# ]
+# print(f'train files:{len(train_files)} val files:{len(val_files)}')
 
 
 set_determinism(seed=0)
@@ -96,7 +106,9 @@ val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
 device = torch.device("cuda")
 print(f'--- device:{device} ---')
 
-
+if args.network == 'SNET':
+    model = s_net(channel=1, num_classes=1, se=True, norm='bn').to(device)
+    
 if args.network == 'MSHEAD':
     model = MSHEAD_ATTN(
         img_size=(96, 96, 96),
@@ -123,7 +135,8 @@ if args.pretrain == 'True':
     model.load_state_dict(torch.load(args.pretrained_weights))
 
 ## Define Loss function and optimizer
-loss_function = DiceCELoss(to_onehot_y=True, softmax=True)
+# loss_function = DiceCELoss(to_onehot_y=True, softmax=True)
+loss_function = FocusNetLoss
 print('Loss for training: {}'.format('DiceCELoss'))
 if args.optim == 'AdamW':
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
@@ -159,7 +172,7 @@ def validation(val_loader):
             # )
         dice_metric.reset()
     mean_dice_val = np.mean(dice_vals)
-    writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
+    # writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
     val_time = time.time() - s_time
     print(f"val takes {datetime.timedelta(seconds=int(val_time))}")
     return mean_dice_val
@@ -199,6 +212,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
         logit_map = model(x)
+        print([pred.size() for pred in logit_map], y.size())
         loss = loss_function(logit_map, y)
         loss.backward()
         # epoch_loss += loss.item()
@@ -248,7 +262,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             model.train()
         
         # saving loss for every iteration
-        writer.add_scalar('Training Loss_Itr', loss.data, global_step)
+        # writer.add_scalar('Training Loss_Itr', loss.data, global_step)
         global_step += 1
     
     train_time = time.time() - s_time
@@ -289,14 +303,14 @@ if args.resume:
     print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
     print(f'starting from global step:{global_step}')
 
-root_dir = os.path.join(args.output, run_id)
-if os.path.exists(root_dir) == False:
-    os.makedirs(root_dir)
+# root_dir = os.path.join(args.output, run_id)
+# if os.path.exists(root_dir) == False:
+#     os.makedirs(root_dir)
     
-t_dir = os.path.join(root_dir, 'tensorboard')
-if os.path.exists(t_dir) == False:
-    os.makedirs(t_dir)
-writer = SummaryWriter(log_dir=t_dir)
+# t_dir = os.path.join(root_dir, 'tensorboard')
+# if os.path.exists(t_dir) == False:
+#     os.makedirs(t_dir)
+# writer = SummaryWriter(log_dir=t_dir)
 
 
 while global_step < max_iterations:
