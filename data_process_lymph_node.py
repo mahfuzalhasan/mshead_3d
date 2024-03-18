@@ -33,16 +33,18 @@ for pat_id in T(patient_ids):
 
     img_pat_id, img_header = nrrd.read(os.path.join(data_dir, pat_id, data_file))
     data_switched = np.transpose(img_pat_id, (2, 0, 1))         # H,W,D --> D,H,W
-    print(f'img pat id: {img_pat_id.shape}')
+    print(f'img pat id: {data_switched.shape}')
     
     mask_pat_id, mask_header = nrrd.read(os.path.join(data_dir, pat_id, seg_file))
     print('mask info: ',mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
     mask_pat_id[mask_pat_id>0] = 1
     mask_switched = np.transpose(mask_pat_id, (2, 0, 1))        # H,W,D --> D,H,W
-    print('updated mask value: ', np.min(mask_pat_id), np.max(mask_pat_id))
+    print('updated mask value: ',mask_switched.shape, np.min(mask_pat_id), np.max(mask_pat_id))
     
+    new_patient_path = os.path.join(new_data_dir, pat_id)
+    os.makedirs(new_patient_path, exist_ok=True)
     # saving transposed data and mask in new directory
-    nrrd.write(os.path.join(new_data_dir, pat_id, data_file), data_switched, header=img_header)
-    nrrd.write(os.path.join(new_data_dir, pat_id, seg_file), mask_switched, header=mask_header)
+    nrrd.write(os.path.join(new_patient_path, data_file), data_switched, header=img_header)
+    nrrd.write(os.path.join(new_patient_path, seg_file), mask_switched, header=mask_header)
     
 
