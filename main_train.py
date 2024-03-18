@@ -64,7 +64,7 @@ print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
 
-train_samples, valid_samples, out_classes = data_loader(args)
+# train_samples, valid_samples, out_classes = data_loader(args)
 out_classes = 1
 if args.dataset == "LN":
     pat_ids = sorted(os.listdir(args.root))[:170]
