@@ -20,6 +20,7 @@ patient_ids = os.listdir(data_dir)
     # pat_id, num_slices = args
 for pat_id in T(patient_ids):
     pat_id = str(pat_id)
+    print(f'patient id:{pat_id}')
     try:
         data_file = [f for f in os.listdir(os.path.join(data_dir, pat_id))if 'IM00' in f][0]
     except:
