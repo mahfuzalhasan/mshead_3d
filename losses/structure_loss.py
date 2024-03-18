@@ -20,7 +20,7 @@ def structure_loss_focusnet(mask, pred, kernel_size=31, stride=1, padding=15, al
     print(f'after squeeze pred:{pred.shape} mask:{mask.shape}')
     mask = mask.to(dtype=torch.float32)
     avg_pooling = torch.abs(F.avg_pool3d(mask, kernel_size=kernel_size, stride=stride, padding=padding) - mask)
-
+    print(f'value after avg pooling: ',avg_pooling.shape)
     neg_part_base = 1
     #omitting
     weit =  neg_part_base + 5*avg_pooling                                                   

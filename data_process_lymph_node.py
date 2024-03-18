@@ -11,9 +11,12 @@ import pandas as pd
 # from p_tqdm import p_map
 num_slices = 2
 data_dir = "/blue/r.forghani/data/lymph_node/ct_221"
-# new_data_dir = f"../DATA/lymph_node/ct_221_updated"
+new_data_dir = "/blue/r.forghani/data/lymph_node/ct_221_transposed"
 label_dict = {'patient_id':[], 'slice_num':[], 'label':[]}
 patient_ids = os.listdir(data_dir)
+
+if not os.path.exists(new_data_dir):
+    os.makedirs(new_data_dir)
 
 # for pat_id in T(patient_ids):
 # def data_processing(args):
@@ -25,14 +28,21 @@ for pat_id in T(patient_ids):
         data_file = [f for f in os.listdir(os.path.join(data_dir, pat_id))if 'IM00' in f][0]
     except:
         print(f"Problem with {pat_id}")    
-    seg_file = [f for f in os.listdir(os.path.join(data_dir, pat_id))if 'Segmentation' in f][0]
-    seg2_file = seg_file.replace('Segmentation', 'Segmentation_v2')
+    seg_file = [f for f in os.listdir(os.path.join(data_dir, pat_id))if 'Segmentation.seg' in f][0]
+    # seg2_file = seg_file.replace('Segmentation', 'Segmentation_v2')
+
     img_pat_id, img_header = nrrd.read(os.path.join(data_dir, pat_id, data_file))
+    data_switched = np.transpose(img_pat_id, (2, 0, 1))         # H,W,D --> D,H,W
     print(f'img pat id: {img_pat_id.shape}')
+    
     mask_pat_id, mask_header = nrrd.read(os.path.join(data_dir, pat_id, seg_file))
-    print(mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
+    print('mask info: ',mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
     mask_pat_id[mask_pat_id>0] = 1
-    print(mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
-    nrrd.write(os.path.join(data_dir, pat_id, seg2_file), mask_pat_id, header=mask_header)
+    mask_switched = np.transpose(mask_pat_id, (2, 0, 1))        # H,W,D --> D,H,W
+    print('updated mask value: ', np.min(mask_pat_id), np.max(mask_pat_id))
+    
+    # saving transposed data and mask in new directory
+    nrrd.write(os.path.join(new_data_dir, pat_id, data_file), data_switched, header=img_header)
+    nrrd.write(os.path.join(new_data_dir, pat_id, seg_file), mask_switched, header=mask_header)
     
 
