@@ -7,6 +7,7 @@ Created on Sat Jul  3 11:06:19 2021
 """
 
 import glob
+import natsort
 from monai.utils import set_determinism
 from monai.transforms import AsDiscrete
 # from networks.UXNet_3D.network_backbone import UXNET
@@ -35,12 +36,12 @@ import time
 print(f'########### Running Flare Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='/blue/r.forghani/data/lymph_node/ct_221', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='LN', required=False, help='Datasets: {feta, flare, amos, LN}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
-parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
+parser.add_argument('--network', type=str, default='SNET', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
 parser.add_argument('--pretrained_weights', default='', help='Path of pretrained weights')
@@ -67,11 +68,11 @@ print('Used GPU: {}'.format(args.gpu))
 # train_samples, valid_samples, out_classes = data_loader(args)
 out_classes = 1
 if args.dataset == "LN":
-    pat_ids = sorted(os.listdir(args.root))[:170]
-    train_images = sorted([glob.glob(os.path.join(args.root, pat_id, "IM00*")) for pat_id in pat_ids])
-    train_labels = sorted([glob.glob(os.path.join(args.root, pat_id, "Segmentation_v2*")) for pat_id in pat_ids])
+    pat_ids = natsort.natsorted(os.listdir(args.root))[:200]
+    train_images = natsort.natsorted([glob.glob(os.path.join(args.root, pat_id, "IM00*")) for pat_id in pat_ids])
+    train_labels = natsort.natsorted([glob.glob(os.path.join(args.root, pat_id, "Segmentation_v2*")) for pat_id in pat_ids])
     data_dicts = [{"image": image_name, "label": label_name} for image_name, label_name in zip(train_images, train_labels)]
-    train_files, val_files = data_dicts[:140], data_dicts[140:]
+    train_files, val_files = data_dicts[:160], data_dicts[160:]
 
 # train_files = [
 #     {"image": image_name, "label": label_name}
@@ -81,8 +82,9 @@ if args.dataset == "LN":
 #     {"image": image_name, "label": label_name}
 #     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
 # ]
-# print(f'train files:{len(train_files)} val files:{len(val_files)}')
-
+print(f'train files:{len(train_files)} val files:{len(val_files)}')
+print(' ######## val file list ###########')
+print(val_files)
 
 set_determinism(seed=0)
 
@@ -107,7 +109,7 @@ device = torch.device("cuda")
 print(f'--- device:{device} ---')
 
 if args.network == 'SNET':
-    model = s_net(channel=1, num_classes=1, se=True, norm='bn').to(device)
+    model = s_net(channel=1, num_classes=out_classes, se=True, norm='bn').to(device)
     
 if args.network == 'MSHEAD':
     model = MSHEAD_ATTN(
@@ -212,6 +214,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
         logit_map = model(x)
+        print('##### pred size #####')
         print([pred.size() for pred in logit_map], y.size())
         loss = loss_function(logit_map, y)
         loss.backward()
