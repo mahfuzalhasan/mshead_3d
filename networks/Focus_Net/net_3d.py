@@ -288,26 +288,26 @@ class conv_block(nn.Module):
 
         return out
 class ReverseAxialAttention(nn.Module):
-    def __init__(self, in_ch, out_ch):
+    def __init__(self, in_ch, out_ch, num_classes):
         super(ReverseAxialAttention, self).__init__()
 
         self.in_ch = in_ch
         self.out_ch = out_ch
+        self.num_classes = num_classes
         # self.out_conv = nn.Conv2d(in_ch, 1, 1, 1)
         self.out_conv = nn.Sequential(
                             nn.Conv3d(in_ch, in_ch//2, 3, 1, 1),
-                            nn.Conv3d(in_ch//2, 1, 1, 1))
+                            nn.Conv3d(in_ch//2, self.num_classes, 1, 1))
         self.aa_kernel = AA_kernel(out_ch, out_ch)
 
         self.ra_conv1 = Conv3D(out_ch,out_ch,3,1,padding=1,bn_acti=True)
         self.ra_conv2 = Conv3D(out_ch,out_ch,3,1,padding=1,bn_acti=True)
-        self.ra_conv3 = Conv3D(out_ch,1,3,1,padding=1,bn_acti=True)
+        self.ra_conv3 = Conv3D(out_ch,self.num_classes,3,1,padding=1,bn_acti=True)
 
     def forward(self, dec_out, enc_out):
         partial_output = self.out_conv(dec_out)
-        partial_output_ra = -1*(torch.sigmoid(partial_output)) + 1
-        
-
+        if self.num_classes==1:
+            partial_output_ra = -1*(torch.sigmoid(partial_output)) + 1
         aa_attn = self.aa_kernel(enc_out)
         #print(f'aa attn:{aa_attn.shape} partial_out:{partial_output_ra.shape}')
         aa_attn_o = partial_output_ra.expand(-1, self.out_ch, -1, -1, -1).mul(aa_attn)
@@ -365,7 +365,7 @@ class up_block_cross_attn(nn.Module):
 
 
 class up_block(nn.Module):
-    def __init__(self, in_ch, out_ch, scale=(2, 2, 2), se=False, reduction=2, norm='bn'):
+    def __init__(self, in_ch, out_ch, num_classes=1, scale=(2, 2, 2), se=False, reduction=2, norm='bn'):
         super(up_block, self).__init__()
 
         self.scale = scale
@@ -373,9 +373,9 @@ class up_block(nn.Module):
         self.conv = nn.Sequential(
             conv_block(in_ch+out_ch, out_ch, se=se, reduction=reduction, norm=norm)
         )
-        self.ra_attn = ReverseAxialAttention(in_ch+out_ch, out_ch)
+        self.ra_attn = ReverseAxialAttention(in_ch+out_ch, out_ch, num_classes=num_classes)
 
-        # self.ra_attn = ReverseAxialAttention(in_ch, out_ch)
+        # self.ra_attn = ReverseAxialAttention(in_ch, out_ch, num_classes=num_classes)
 
     def forward(self, x_dec, x_enc):  #x1 from dec and x2 fro encoder
         x_dec = F.interpolate(x_dec, scale_factor=self.scale, mode='nearest')
@@ -383,7 +383,7 @@ class up_block(nn.Module):
         out = torch.cat([x_enc, x_dec], dim=1)
         #print(f'concat:{out.shape}')
         ra_out = self.ra_attn(out, x_enc)    #with concatenated feature
-        #print(f'ra out:{ra_out.shape}')
+        # print(f'ra out:{ra_out.shape}')
         # ra_out = self.ra_attn(x_dec, x_enc)      #with only decoder feature
         out = self.conv(out)
         return out, ra_out

@@ -47,10 +47,10 @@ class s_net(nn.Module):
         current_num_feature = current_num_feature + 4 * d_feature1
 
         # upsample
-        self.up1 = up_block(in_ch=current_num_feature, scale=(2,2,2), out_ch=48, se=se, reduction=reduction, norm=norm)
+        self.up1 = up_block(in_ch=current_num_feature, num_classes=num_classes, scale=(2,2,2), out_ch=48, se=se, reduction=reduction, norm=norm)
         self.literal1 = nn.Conv3d(48, 48, 3, padding=1)
 
-        self.up2 = up_block(in_ch=48, out_ch=32, scale=(1, 2, 2), se=se, reduction=reduction, norm=norm)
+        self.up2 = up_block(in_ch=48, out_ch=32, num_classes=num_classes, scale=(1, 2, 2), se=se, reduction=reduction, norm=norm)
         self.literal2 = nn.Conv3d(32, 32, 3, padding=1)
 
         # output branch
