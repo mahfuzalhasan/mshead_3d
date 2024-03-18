@@ -215,7 +215,7 @@ def data_transforms(args):
         val_transforms = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
-                AddChanneld(keys=["image"]),
+                 AddChanneld(keys=["image", "label"]),
                 Spacingd(keys=["image", "label"], pixdim=(0.488281, 0, 0), mode=("bilinear", "nearest")),
                 Orientationd(keys=["image", "label"], axcodes="RAS"),
                 ScaleIntensityRanged(
