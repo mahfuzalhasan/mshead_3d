@@ -27,7 +27,8 @@ for pat_id in T(patient_ids):
         print(f"Problem with {pat_id}")    
     seg_file = [f for f in os.listdir(os.path.join(data_dir, pat_id))if 'Segmentation' in f][0]
     seg2_file = seg_file.replace('Segmentation', 'Segmentation_v2')
-    # img_pat_id, img_header = nrrd.read(os.path.join(data_dir, pat_id, data_file))
+    img_pat_id, img_header = nrrd.read(os.path.join(data_dir, pat_id, data_file))
+    print(f'img pat id: {img_pat_id.shape}')
     mask_pat_id, mask_header = nrrd.read(os.path.join(data_dir, pat_id, seg_file))
     print(mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
     mask_pat_id[mask_pat_id>0] = 1
