@@ -36,10 +36,8 @@ for pat_id in T(patient_ids):
     img_pat_id, img_header = nrrd.read(os.path.join(data_dir, pat_id, data_file))
     mask_pat_id, mask_header = nrrd.read(os.path.join(data_dir, pat_id, seg_file))
     print(type(mask_header))
-    for k,v in mask_header.items():
-        if k not in contain_keys:
-            del mask_header[k]
-    print(mask_header.keys(), len(mask_header.keys()))
+    mask_header_2 = {k:v for k,v in mask_header.items() if k in contain_keys}
+    print(mask_header_2.keys(), len(mask_header_2.keys()))
     continue
     # print('mask info: ',mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
     mask_pat_id[mask_pat_id>0] = 1
