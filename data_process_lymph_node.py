@@ -11,12 +11,12 @@ import pandas as pd
 # from p_tqdm import p_map
 num_slices = 2
 data_dir = "/blue/r.forghani/data/lymph_node/ct_221"
-new_data_dir = "/blue/r.forghani/data/lymph_node/ct_221_transposed"
+# new_data_dir = "/blue/r.forghani/data/lymph_node/ct_221_transposed"
 label_dict = {'patient_id':[], 'slice_num':[], 'label':[]}
 patient_ids = os.listdir(data_dir)
 
-if not os.path.exists(new_data_dir):
-    os.makedirs(new_data_dir)
+# if not os.path.exists(new_data_dir):
+#     os.makedirs(new_data_dir)
 
 # for pat_id in T(patient_ids):
 # def data_processing(args):
@@ -34,8 +34,12 @@ for pat_id in T(patient_ids):
     img_pat_id, img_header = nrrd.read(os.path.join(data_dir, pat_id, data_file))
     data_switched = np.transpose(img_pat_id, (2, 0, 1))         # H,W,D --> D,H,W
     # print(f'img pat id: {data_switched.shape}')
+    print('img header: ', img_header)
     
     mask_pat_id, mask_header = nrrd.read(os.path.join(data_dir, pat_id, seg_file))
+    print('mask header: ', mask_header)
+
+    exit()
     # print('mask info: ',mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
     mask_pat_id[mask_pat_id>0] = 1
     mask_switched = np.transpose(mask_pat_id, (2, 0, 1))        # H,W,D --> D,H,W
