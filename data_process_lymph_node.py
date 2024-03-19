@@ -23,6 +23,7 @@ patient_ids = os.listdir(data_dir)
     # pat_id, num_slices = args
 presence = []
 absence = []
+count = 0
 for pat_id in T(patient_ids):
     pat_id = str(pat_id)
     print(f'############## patient id ###############:{pat_id}')
@@ -49,9 +50,16 @@ for pat_id in T(patient_ids):
     if 'Segment18_Color' in mask_header.keys():
         print("True in mask_header")
         presence.append(pat_id)
+        count+=1
+        print('mask header in presence \n : ', mask_header.keys())
     else:
         print("False in mask_header")
         absence.append(pat_id)
+        print('mask header in absence \n : ', mask_header.keys())
+        count+=1
+        
+    if count ==2:
+        exit()
 
     continue
     # print('mask info: ',mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
