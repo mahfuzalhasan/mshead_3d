@@ -31,23 +31,13 @@ for pat_id in T(patient_ids):
     except:
         print(f"Problem with {pat_id}")    
     seg_file = [f for f in os.listdir(os.path.join(data_dir, pat_id))if 'Segmentation_v2' in f][0]
-    # seg2_file = seg_file.replace('Segmentation', 'Segmentation_v2')
 
-    img_pat_id, img_header = nrrd.read(os.path.join(data_dir, pat_id, data_file))
-    mask_pat_id, mask_header = nrrd.read(os.path.join(data_dir, pat_id, seg_file))
-    print(type(mask_header))
-    mask_header_2 = {k:v for k,v in mask_header.items() if k in contain_keys}
-    print(mask_header_2.keys(), len(mask_header_2.keys()))
-    continue
-    # print('mask info: ',mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
-    mask_pat_id[mask_pat_id>0] = 1
-    mask_switched = np.transpose(mask_pat_id, (2, 0, 1))        # H,W,D --> D,H,W
-    # print('updated mask value: ',mask_switched.shape, np.min(mask_pat_id), np.max(mask_pat_id))
+    # img_pat_id, img_header = nrrd.read(os.path.join(data_dir, pat_id, data_file))
     
-    new_patient_path = os.path.join(new_data_dir, pat_id)
-    os.makedirs(new_patient_path, exist_ok=True)
-    # saving transposed data and mask in new directory
-    nrrd.write(os.path.join(new_patient_path, data_file), data_switched, header=img_header)
-    nrrd.write(os.path.join(new_patient_path, seg_file), mask_switched, header=mask_header)
+    mask_pat_id, mask_header = nrrd.read(os.path.join(data_dir, pat_id, seg_file))
+    mask_header_2 = {k:v for k,v in mask_header.items() if k in contain_keys}
+    mask_pat_id[mask_pat_id>0] = 1
+    
+    nrrd.write(os.path.join(data_dir, pat_id, seg_file), mask_pat_id, header=mask_header_2)
     
 
