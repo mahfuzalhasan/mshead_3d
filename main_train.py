@@ -46,7 +46,7 @@ parser.add_argument('--mode', type=str, default='train', help='Training or testi
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
 parser.add_argument('--pretrained_weights', default='', help='Path of pretrained weights')
 parser.add_argument('--batch_size', type=int, default='2', help='Batch size for subject input')
-parser.add_argument('--crop_sample', type=int, default='4', help='Number of cropped sub-volumes for each subject')
+parser.add_argument('--crop_sample', type=int, default='2', help='Number of cropped sub-volumes for each subject')
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
@@ -203,7 +203,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     #     train_loader, desc="Training (X / X Steps) (loss=X.X)", dynamic_ncols=True
     # )
     print(f'######### new epoch started. Global Step:{global_step} ###############')
-    # total training data--> 272. Batch 2. This loop will run for 272/2 = 136 times
+    # total training data--> 272. Batch 2. This loop will run for 160/2 = 80 times
     for step, batch in enumerate(train_loader):     
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 2,1,96,96,96. y same
         # print('x,y: ',x.shape, y.shape)
