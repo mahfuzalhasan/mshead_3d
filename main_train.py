@@ -50,7 +50,7 @@ parser.add_argument('--crop_sample', type=int, default='4', help='Number of crop
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
-parser.add_argument('--eval_step', type=int, default=4, help='Per steps to perform validation')
+parser.add_argument('--eval_step', type=int, default=100, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
@@ -205,7 +205,6 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     print(f'######### new epoch started. Global Step:{global_step} ###############')
     # total training data--> 272. Batch 2. This loop will run for 272/2 = 136 times
     for step, batch in enumerate(train_loader):     
-        step += 1
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 2,1,96,96,96. y same
         # print('x,y: ',x.shape, y.shape)
         x = x.permute(0, 1, 4, 2, 3)            # x: B, C, H, W, D  --> B, C, D, H, W
@@ -221,7 +220,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         epoch_loss_values.append(loss.item())
 
         # print after every 100 iteration
-        if global_step % 1 == 0:
+        if global_step % len(train_loader) == 0:
             num_steps = global_step - previous_step
             print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
             time_100 = time.time() - s_time
