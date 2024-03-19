@@ -74,14 +74,6 @@ if args.dataset == "LN":
     data_dicts = [{"image": image_name, "label": label_name} for image_name, label_name in zip(train_images, train_labels)]
     train_files, val_files = data_dicts[:160], data_dicts[160:]
 
-# train_files = [
-#     {"image": image_name, "label": label_name}
-#     for image_name, label_name in zip(train_samples['images'], train_samples['labels'])
-# ]
-# val_files = [
-#     {"image": image_name, "label": label_name}
-#     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
-# ]
 print(f'train files:{len(train_files)} val files:{len(val_files)}')
 # print(' ######## val file list ###########')
 # print(val_files)
