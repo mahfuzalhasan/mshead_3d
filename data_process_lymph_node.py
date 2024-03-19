@@ -23,7 +23,7 @@ patient_ids = os.listdir(data_dir)
     # pat_id, num_slices = args
 for pat_id in T(patient_ids):
     pat_id = str(pat_id)
-    # print(f'patient id:{pat_id}')
+    print(f'############## patient id ###############:{pat_id}')
     try:
         data_file = [f for f in os.listdir(os.path.join(data_dir, pat_id))if 'IM00' in f][0]
     except:
@@ -34,7 +34,7 @@ for pat_id in T(patient_ids):
     img_pat_id, img_header = nrrd.read(os.path.join(data_dir, pat_id, data_file))
     data_switched = np.transpose(img_pat_id, (2, 0, 1))         # H,W,D --> D,H,W
     # print(f'img pat id: {data_switched.shape}')
-    print('img header: ', img_header.keys())
+    # print('img header: ', img_header.keys())
     if 'Segment18_Color' in img_header.keys():
         print("True in img_header")
     else:
@@ -42,7 +42,7 @@ for pat_id in T(patient_ids):
 
     
     mask_pat_id, mask_header = nrrd.read(os.path.join(data_dir, pat_id, seg_file))
-    print('mask header: ', mask_header.keys())
+    # print('mask header: ', mask_header.keys())
     if 'Segment18_Color' in mask_header.keys():
         print("True in mask_header")
     else:
