@@ -38,11 +38,11 @@ for pat_id in T(patient_ids):
     data_switched = np.transpose(img_pat_id, (2, 0, 1))         # H,W,D --> D,H,W
     # print(f'img pat id: {data_switched.shape}')
     # print('img header: ', img_header.keys())
-    if 'Segment18_Color' in img_header.keys():
-        print("True in img_header")
+    # if 'Segment18_Color' in img_header.keys():
+    #     print("True in img_header")
         
-    else:
-        print("False in img_header")
+    # else:
+    #     print("False in img_header")
 
     
     mask_pat_id, mask_header = nrrd.read(os.path.join(data_dir, pat_id, seg_file))
