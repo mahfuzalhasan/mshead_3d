@@ -13,8 +13,8 @@ def tversky(y_true, y_pred, alpha=0.5, beta=0.5, smooth=1e-6):
     """
     # Flatten inputs
     y_pred = y_pred.sigmoid()
-    y_true_f = y_true.view(-1)
-    y_pred_f = y_pred.view(-1)
+    y_true_f = y_true.reshape(-1)
+    y_pred_f = y_pred.reshape(-1)
     # weit = 1 + 20*torch.abs(F.avg_pool2d(y_true, kernel_size=37, stride=1, padding=18) - y_true)
     # True positives, false positives, false negatives
     tp = (y_true_f * y_pred_f).sum()

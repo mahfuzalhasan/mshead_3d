@@ -211,6 +211,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     for step, batch in enumerate(train_loader):     
         step += 1
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 2,1,96,96,96. y same
+        print('x,y: ',x.shape, y.shape)
         x = x.permute(0, 1, 4, 2, 3)            # x: B, C, H, W, D  --> B, C, D, H, W
         y = y.permute(0, 1, 4, 2, 3)            # x: B, C, H, W, D  --> B, C, D, H, W
         # with torch.no_grad():

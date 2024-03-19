@@ -13,7 +13,7 @@ def structure_loss(mask, pred, kernel_size=37, stride=1, padding=18,  alpha=1, b
     logwdice = -torch.log((2. * intersection + smooth) / (union + smooth))
     return alpha*logwiou.mean() + beta*logwdice.mean()
 
-def structure_loss_focusnet(mask, pred, kernel_size=31, stride=1, padding=15, alpha=1, beta=2, smooth=1e-5):
+def structure_loss_focusnet(mask, pred, kernel_size=15, stride=1, padding=7, alpha=1, beta=2, smooth=1e-5):
     print(f'pred:{pred.shape} mask:{mask.shape}')
     pred = torch.squeeze(pred)
     mask = torch.squeeze(mask)
