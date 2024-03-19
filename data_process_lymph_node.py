@@ -51,20 +51,20 @@ for pat_id in T(patient_ids):
         # print("True in mask_header")
         presence.extend(mask_header.keys())
         presence = list(set(presence))
-        # count+=1
-        # print('mask header in presence \n : ', mask_header.keys())
-        # print(mask_header['Segment18_Color'])
+        count+=1
+        print('mask header in presence \n : ', mask_header.keys())
+        print(mask_header['Segment18_Color'])
     else:
         # print("False in mask_header")
         absence.extend(mask_header.keys())
         absence = list(set(absence))
-        # print('mask header in absence \n : ', mask_header.keys())
-        # count+=1
+        print('mask header in absence \n : ', mask_header.keys())
+        count+=1
         # print(mask_header['Segment18_Color'])
 
 
-    # if count ==2:
-    #     exit()
+    if count ==2:
+        exit()
 
     continue
     # print('mask info: ',mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
