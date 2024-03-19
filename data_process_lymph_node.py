@@ -38,7 +38,7 @@ for pat_id in T(patient_ids):
     print(type(mask_header))
     for k,v in mask_header.items():
         if k not in contain_keys:
-            del k
+            del mask_header[k]
     print(mask_header.keys(), len(mask_header.keys()))
     continue
     # print('mask info: ',mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
