@@ -48,20 +48,23 @@ for pat_id in T(patient_ids):
     mask_pat_id, mask_header = nrrd.read(os.path.join(data_dir, pat_id, seg_file))
     # print('mask header: ', mask_header.keys())
     if 'Segment18_Color' in mask_header.keys():
-        print("True in mask_header")
-        presence.append(pat_id)
-        count+=1
-        print('mask header in presence \n : ', mask_header.keys())
-        print(mask_header['Segment18_Color'])
+        # print("True in mask_header")
+        presence.extend(mask_header.keys())
+        presence = list(set(presence))
+        # count+=1
+        # print('mask header in presence \n : ', mask_header.keys())
+        # print(mask_header['Segment18_Color'])
     else:
-        print("False in mask_header")
-        absence.append(pat_id)
-        print('mask header in absence \n : ', mask_header.keys())
-        count+=1
-        print(mask_header['Segment18_Color'])
+        # print("False in mask_header")
+        absence.extend(mask_header.keys())
+        absence = list(set(absence))
+        # print('mask header in absence \n : ', mask_header.keys())
+        # count+=1
+        # print(mask_header['Segment18_Color'])
 
-    if count ==2:
-        exit()
+
+    # if count ==2:
+    #     exit()
 
     continue
     # print('mask info: ',mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
@@ -76,5 +79,8 @@ for pat_id in T(patient_ids):
     nrrd.write(os.path.join(new_patient_path, seg_file), mask_switched, header=mask_header)
 print('presence: ', presence)
 print('absence: ', absence)
+
+difference = set(presence) - set(absence)
+print('difference: ', list(difference))
     
 
