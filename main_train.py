@@ -54,7 +54,7 @@ parser.add_argument('--eval_step', type=int, default=500, help='Per steps to per
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
-parser.add_argument('--cache_rate', type=float, default=0.1, help='Cache rate to cache your dataset into memory')
+parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
 parser.add_argument('--num_workers', type=int, default=8, help='Number of workers')
 
 
@@ -174,7 +174,7 @@ def validation(val_loader):
             # )
         dice_metric.reset()
     mean_dice_val = np.mean(dice_vals)
-    # writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
+    writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
     val_time = time.time() - s_time
     print(f"val takes {datetime.timedelta(seconds=int(val_time))}")
     return mean_dice_val
@@ -211,14 +211,14 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     for step, batch in enumerate(train_loader):     
         step += 1
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 2,1,96,96,96. y same
-        print('x,y: ',x.shape, y.shape)
+        # print('x,y: ',x.shape, y.shape)
         x = x.permute(0, 1, 4, 2, 3)            # x: B, C, H, W, D  --> B, C, D, H, W
         y = y.permute(0, 1, 4, 2, 3)            # x: B, C, H, W, D  --> B, C, D, H, W
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
         logit_map = model(x)
-        print('##### pred size #####')
-        print([pred.size() for pred in logit_map], y.size())
+        # print('##### pred size #####')
+        # print([pred.size() for pred in logit_map], y.size())
         loss = loss_function(logit_map, y)
         loss.backward()
         # epoch_loss += loss.item()
@@ -227,17 +227,12 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         epoch_loss_values.append(loss.item())
 
         # print after every 100 iteration
-        if global_step % 100 == 0:
-            print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
+        if global_step % len(train_loader) == 0:
             num_steps = global_step - previous_step
+            print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
             time_100 = time.time() - s_time
             print(f"step {num_steps} took: {datetime.timedelta(seconds=int(time_100))} \n ")
             previous_step = global_step
-
-
-        # saving model after every 250 iteration
-        if (global_step % (eval_num//2) == 0) and global_step!=0:
-            save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
         
         # evaluating after every 500 iteration
         if (global_step % eval_num) == 0 and global_step!=0 or global_step == max_iterations-1:
@@ -249,26 +244,26 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             if dice_val > dice_val_best:
                 dice_val_best = dice_val
                 global_step_best = global_step
-                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir, best=True)
                 print(
-                    "Model Was Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
+                    "Best Model Found ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
                         dice_val_best, dice_val
                     )
                 )
+                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir, best=True)
                 scheduler.step(dice_val)
                 # save model if we acheive best dice score at the evaluation
-                
             else:
                 print(
-                    "Not Best Model. Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
+                    "Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
                 )
+                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
                 scheduler.step(dice_val)
-
+            
             # setting model to train mode again
             model.train()
         
         # saving loss for every iteration
-        # writer.add_scalar('Training Loss_Itr', loss.data, global_step)
+        writer.add_scalar('Training Loss_Itr', loss.data, global_step)
         global_step += 1
     
     train_time = time.time() - s_time
@@ -309,14 +304,14 @@ if args.resume:
     print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
     print(f'starting from global step:{global_step}')
 
-# root_dir = os.path.join(args.output, run_id)
-# if os.path.exists(root_dir) == False:
-#     os.makedirs(root_dir)
+root_dir = os.path.join(args.output, run_id)
+if os.path.exists(root_dir) == False:
+    os.makedirs(root_dir)
     
-# t_dir = os.path.join(root_dir, 'tensorboard')
-# if os.path.exists(t_dir) == False:
-#     os.makedirs(t_dir)
-# writer = SummaryWriter(log_dir=t_dir)
+t_dir = os.path.join(root_dir, 'tensorboard')
+if os.path.exists(t_dir) == False:
+    os.makedirs(t_dir)
+writer = SummaryWriter(log_dir=t_dir)
 
 
 while global_step < max_iterations:

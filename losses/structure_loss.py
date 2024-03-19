@@ -13,27 +13,27 @@ def structure_loss(mask, pred, kernel_size=37, stride=1, padding=18,  alpha=1, b
     logwdice = -torch.log((2. * intersection + smooth) / (union + smooth))
     return alpha*logwiou.mean() + beta*logwdice.mean()
 
-def structure_loss_focusnet(mask, pred, kernel_size=15, stride=1, padding=7, alpha=1, beta=2, smooth=1e-5):
-    print(f'pred:{pred.shape} mask:{mask.shape}')
+def structure_loss_focusnet(mask, pred, kernel_size=31, stride=1, padding=15, alpha=1, beta=2, smooth=1e-5):
+    # print(f'pred:{pred.shape} mask:{mask.shape}')
     pred = torch.squeeze(pred)
     mask = torch.squeeze(mask)
-    print(f'after squeeze pred:{pred.shape} mask:{mask.shape}')
+    # print(f'after squeeze pred:{pred.shape} mask:{mask.shape}')
     mask = mask.to(dtype=torch.float32)
     avg_pooling = torch.abs(F.avg_pool3d(mask, kernel_size=kernel_size, stride=stride, padding=padding) - mask)
-    print(f'value after avg pooling: ',avg_pooling.shape)
+    # print(f'value after avg pooling: ',avg_pooling.shape)
     neg_part_base = 1
     #omitting
     weit =  neg_part_base + 5*avg_pooling                                                   
     bce = F.binary_cross_entropy_with_logits(pred, mask, reduction='none')
     wbce = (weit * bce)
-    print(f'bce: {bce.shape} wbce:{wbce.shape}')
+    # print(f'bce: {bce.shape} wbce:{wbce.shape}')
     wbce = wbce.sum(dim=(1, 2, 3))/weit.sum(dim=(1, 2, 3))
     
     pred = torch.sigmoid(pred)
     inter = ((pred * mask)*weit).sum(dim=(1, 2, 3))
     union = ((pred + mask)*weit).sum(dim=(1, 2, 3))
     wiou = 1 - ((inter + 1)/(union - inter+1))
-    print(f'before mean::: wbce:{wbce.shape} wiou:{wiou.shape}')
+    # print(f'before mean::: wbce:{wbce.shape} wiou:{wiou.shape}')
     m_wbce = wbce.mean()
     m_iou = wiou.mean()
 
@@ -45,7 +45,7 @@ def total_structure_loss(mask, preds, kernel_size=37, stride=1, padding=18,  alp
         loss += structure_loss(mask, pred, kernel_size, stride, padding,  alpha, beta, smooth)
     return loss/len(preds)
 
-def total_structure_loss_focusnet(mask, preds, kernel_size=15, stride=1, padding=7, alpha=1, beta=2, smooth=1e-5):
+def total_structure_loss_focusnet(mask, preds, kernel_size=31, stride=1, padding=15, alpha=1, beta=2, smooth=1e-5):
     loss = 0
     for pred in preds:
         loss += structure_loss_focusnet(mask, pred, kernel_size, stride, padding,  alpha, beta, smooth)
