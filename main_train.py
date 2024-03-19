@@ -54,7 +54,7 @@ parser.add_argument('--eval_step', type=int, default=250, help='Per steps to per
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
-parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
+parser.add_argument('--cache_rate', type=float, default=0.1, help='Cache rate to cache your dataset into memory')
 parser.add_argument('--num_workers', type=int, default=8, help='Number of workers')
 
 
