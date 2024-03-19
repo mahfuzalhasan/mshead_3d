@@ -52,12 +52,14 @@ for pat_id in T(patient_ids):
         presence.append(pat_id)
         count+=1
         print('mask header in presence \n : ', mask_header.keys())
+        print(mask_header['Segment18_Color'])
     else:
         print("False in mask_header")
         absence.append(pat_id)
         print('mask header in absence \n : ', mask_header.keys())
         count+=1
-        
+        print(mask_header['Segment18_Color'])
+
     if count ==2:
         exit()
 
