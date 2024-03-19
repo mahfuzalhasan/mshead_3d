@@ -23,7 +23,7 @@ from monai.inferers import sliding_window_inference
 from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
 
 import torch
-# from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 from load_datasets_transforms import data_loader, data_transforms
 
 import os
@@ -83,8 +83,8 @@ if args.dataset == "LN":
 #     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
 # ]
 print(f'train files:{len(train_files)} val files:{len(val_files)}')
-print(' ######## val file list ###########')
-print(val_files)
+# print(' ######## val file list ###########')
+# print(val_files)
 
 set_determinism(seed=0)
 
