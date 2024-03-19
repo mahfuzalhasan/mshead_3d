@@ -21,9 +21,8 @@ patient_ids = os.listdir(data_dir)
 # for pat_id in T(patient_ids):
 # def data_processing(args):
     # pat_id, num_slices = args
-presence = []
-absence = []
-count = 0
+contain_keys = ['type', 'dimension', 'space', 'sizes', 'space directions', 'kinds', 'encoding', 'space origin', 'Segmentation_ContainedRepresentationNames', 'Segmentation_ConversionParameters', 'Segmentation_MasterRepresentation', 'Segmentation_ReferenceImageExtentOffset']
+
 for pat_id in T(patient_ids):
     pat_id = str(pat_id)
     print(f'############## patient id ###############:{pat_id}')
@@ -35,37 +34,12 @@ for pat_id in T(patient_ids):
     # seg2_file = seg_file.replace('Segmentation', 'Segmentation_v2')
 
     img_pat_id, img_header = nrrd.read(os.path.join(data_dir, pat_id, data_file))
-    data_switched = np.transpose(img_pat_id, (2, 0, 1))         # H,W,D --> D,H,W
-    # print(f'img pat id: {data_switched.shape}')
-    # print('img header: ', img_header.keys())
-    # if 'Segment18_Color' in img_header.keys():
-    #     print("True in img_header")
-        
-    # else:
-    #     print("False in img_header")
-
-    
     mask_pat_id, mask_header = nrrd.read(os.path.join(data_dir, pat_id, seg_file))
-    # print('mask header: ', mask_header.keys())
-    if 'Segment18_Color' in mask_header.keys():
-        # print("True in mask_header")
-        presence.extend(mask_header.keys())
-        presence = list(set(presence))
-        count+=1
-        print('mask header in presence \n : ', mask_header.keys())
-        print(mask_header['Segment18_Color'])
-    else:
-        # print("False in mask_header")
-        absence.extend(mask_header.keys())
-        absence = list(set(absence))
-        print('mask header in absence \n : ', mask_header.keys())
-        count+=1
-        # print(mask_header['Segment18_Color'])
-
-
-    if count ==2:
-        exit()
-
+    print(type(mask_header))
+    for k,v in mask_header.items():
+        if k not in contain_keys:
+            del k
+    print(mask_header.keys(), len(mask_header.keys()))
     continue
     # print('mask info: ',mask_pat_id.shape, np.min(mask_pat_id), np.max(mask_pat_id))
     mask_pat_id[mask_pat_id>0] = 1
@@ -77,10 +51,5 @@ for pat_id in T(patient_ids):
     # saving transposed data and mask in new directory
     nrrd.write(os.path.join(new_patient_path, data_file), data_switched, header=img_header)
     nrrd.write(os.path.join(new_patient_path, seg_file), mask_switched, header=mask_header)
-print('presence: ', presence)
-print('absence: ', absence)
-
-difference = set(presence) - set(absence)
-print('difference: ', list(difference))
     
 
