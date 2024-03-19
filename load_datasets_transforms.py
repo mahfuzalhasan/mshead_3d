@@ -177,7 +177,7 @@ def data_transforms(args):
     elif dataset == 'LN':
         train_transforms = Compose(
             [
-                LoadImaged(keys=["image", "label"]),
+                LoadImaged(keys=["image", "label"], allow_missing_keys=True),
                 AddChanneld(keys=["image", "label"]),
                 Spacingd(keys=["image", "label"], pixdim=(0.488281, 0, 0), mode=("bilinear", "nearest")),
                 Orientationd(keys=["image", "label"], axcodes="RAS"),
@@ -214,7 +214,7 @@ def data_transforms(args):
 
         val_transforms = Compose(
             [
-                LoadImaged(keys=["image", "label"]),
+                LoadImaged(keys=["image", "label"], allow_missing_keys=True),
                 AddChanneld(keys=["image", "label"]),
                 Spacingd(keys=["image", "label"], pixdim=(0.488281, 0, 0), mode=("bilinear", "nearest")),
                 Orientationd(keys=["image", "label"], axcodes="RAS"),
@@ -229,17 +229,17 @@ def data_transforms(args):
 
         test_transforms = Compose(
             [
-                LoadImaged(keys=["image"]),
-                AddChanneld(keys=["image"]),
-                Spacingd(keys=["image"], pixdim=(
-                    1.5, 1.5, 2.0), mode=("bilinear")),
-                Orientationd(keys=["image"], axcodes="RAS"),
+                LoadImaged(keys=["image", "label"], allow_missing_keys=True),
+                AddChanneld(keys=["image", "label"]),
+                Spacingd(keys=["image", "label"], pixdim=(0.488281, 0, 0), mode=("bilinear", "nearest")),
+                # ResizeWithPadOrCropd(keys=["image"], spatial_size=(168,168,128), mode=("constant")),
+                Orientationd(keys=["image", "label"], axcodes="RAS"),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-160, a_max=240,
                     b_min=0.0, b_max=1.0, clip=True,
                 ),
-                CropForegroundd(keys=["image"], source_key="image"),
-                ToTensord(keys=["image"]),
+                CropForegroundd(keys=["image", "label"], source_key="image"),
+                ToTensord(keys=["image", "label"]),
             ]
         )
     elif dataset == 'flare':
