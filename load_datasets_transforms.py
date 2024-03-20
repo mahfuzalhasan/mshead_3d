@@ -46,7 +46,7 @@ def data_loader(args):
     elif dataset == 'amos':
         out_classes = 16
     elif dataset == 'LN':
-        out_classes = 3
+        out_classes = 1
     
 
     if args.mode == 'train':

@@ -22,6 +22,8 @@ from monai.losses import DiceCELoss
 from monai.inferers import sliding_window_inference
 from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
 
+from monai.transforms import Compose, Activations
+
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from load_datasets_transforms import data_loader, data_transforms
@@ -270,7 +272,11 @@ max_iterations = args.max_iter
 print('Maximum Iterations for training: {}'.format(str(args.max_iter)), flush=True)
 eval_num = args.eval_step
 post_label = AsDiscrete(argmax = False, to_onehot=out_classes, threshold=0.5)
-post_pred = AsDiscrete(argmax=False, to_onehot=out_classes, threshold=0.5)
+# post_pred = AsDiscrete(argmax=False, to_onehot=out_classes, threshold=0.5)
+post_pred = Compose([
+Activations(sigmoid=True),
+AsDiscrete(argmax=False, logit_thresh=0.5),
+])
 dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
 global_step = 0
 dice_val_best = 0.0
