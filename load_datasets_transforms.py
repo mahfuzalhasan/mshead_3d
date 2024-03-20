@@ -46,7 +46,7 @@ def data_loader(args):
     elif dataset == 'amos':
         out_classes = 16
     elif dataset == 'LN':
-        out_classes = 1
+        out_classes = 3
     
 
     if args.mode == 'train':
@@ -103,7 +103,7 @@ def data_loader(args):
         return test_samples, out_classes
 
 
-def data_transforms(args):
+def data_transforms(args, spatial_size=(96, 96, 96)):
     dataset = args.dataset
     if args.mode == 'train':
         crop_samples = args.crop_sample
@@ -124,7 +124,7 @@ def data_transforms(args):
                 RandCropByPosNegLabeld(
                     keys=["image", "label"],
                     label_key="label",
-                    spatial_size=(96, 96, 96),
+                    spatial_size=spatial_size,
                     pos=1,
                     neg=1,
                     num_samples=crop_samples,

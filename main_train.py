@@ -64,8 +64,9 @@ print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
 
+spatial_size = (8, 8, 16)
 train_samples, valid_samples, out_classes = data_loader(args)
-out_classes = 1
+# out_classes = 3
 if args.dataset == "LN":
     pat_ids = sorted(os.listdir(args.root))[:170]
     train_images = sorted([glob.glob(os.path.join(args.root, pat_id, "IM00*")) for pat_id in pat_ids])
@@ -86,7 +87,7 @@ if args.dataset == "LN":
 
 set_determinism(seed=0)
 
-train_transforms, val_transforms = data_transforms(args)
+train_transforms, val_transforms = data_transforms(args, spatial_size)
 
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
@@ -111,7 +112,7 @@ if args.network == 'SNET':
     
 if args.network == 'MSHEAD':
     model = MSHEAD_ATTN(
-        img_size=(96, 96, 96),
+        img_size = spatial_size,
         in_chans=1,
         out_chans=out_classes,
         depths=[2,2,6,2],
@@ -121,7 +122,7 @@ if args.network == 'MSHEAD':
     ).to(device)
 elif args.network == 'SwinUNETR':
     model = SwinUNETR(
-        img_size=(96, 96, 96),
+        img_size= spatial_size,
         in_channels=1,
         out_channels=out_classes,
         feature_size=48,
@@ -154,7 +155,7 @@ def validation(val_loader):
         for step, batch in enumerate(val_loader):
             val_inputs, val_labels = (batch["image"].to(device), batch["label"].to(device))
             # val_outputs = model(val_inputs)
-            val_outputs = sliding_window_inference(val_inputs, (96, 96, 96), 2, model)
+            val_outputs = sliding_window_inference(val_inputs, spatial_size, 2, model)
             # val_outputs = model_seg(val_inputs, val_feat[0], val_feat[1])
             val_labels_list = decollate_batch(val_labels)
             val_labels_convert = [
@@ -274,7 +275,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
 max_iterations = args.max_iter
 print('Maximum Iterations for training: {}'.format(str(args.max_iter)), flush=True)
 eval_num = args.eval_step
-post_label = AsDiscrete(to_onehot=out_classes)
+post_label = AsDiscrete(argmax = False, to_onehot=out_classes, threshold=0.5)
 post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
 dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
 global_step = 0
