@@ -7,6 +7,7 @@ Created on Sat Jul  3 11:06:19 2021
 """
 
 import glob
+import natsort
 from monai.utils import set_determinism
 from monai.transforms import AsDiscrete
 # from networks.UXNet_3D.network_backbone import UXNET
@@ -22,7 +23,7 @@ from monai.inferers import sliding_window_inference
 from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
 
 import torch
-# from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 from load_datasets_transforms import data_loader, data_transforms
 
 import os
@@ -35,12 +36,12 @@ import time
 print(f'########### Running Flare Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='/blue/r.forghani/data/lymph_node/ct_221', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='LN', required=False, help='Datasets: {feta, flare, amos, LN}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
-parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
+parser.add_argument('--network', type=str, default='SNET', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
 parser.add_argument('--pretrained_weights', default='', help='Path of pretrained weights')
@@ -49,7 +50,7 @@ parser.add_argument('--crop_sample', type=int, default='2', help='Number of crop
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
-parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
+parser.add_argument('--eval_step', type=int, default=100, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
@@ -64,26 +65,18 @@ print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
 
-spatial_size = (8, 8, 16)
-train_samples, valid_samples, out_classes = data_loader(args)
-# out_classes = 3
+# train_samples, valid_samples, out_classes = data_loader(args)
+out_classes = 1
 if args.dataset == "LN":
-    pat_ids = sorted(os.listdir(args.root))[:170]
-    train_images = sorted([glob.glob(os.path.join(args.root, pat_id, "IM00*")) for pat_id in pat_ids])
-    train_labels = sorted([glob.glob(os.path.join(args.root, pat_id, "Segmentation_v2*")) for pat_id in pat_ids])
+    pat_ids = natsort.natsorted(os.listdir(args.root))[:200]
+    train_images = natsort.natsorted([glob.glob(os.path.join(args.root, pat_id, "IM00*")) for pat_id in pat_ids])
+    train_labels = natsort.natsorted([glob.glob(os.path.join(args.root, pat_id, "Segmentation_v2*")) for pat_id in pat_ids])
     data_dicts = [{"image": image_name, "label": label_name} for image_name, label_name in zip(train_images, train_labels)]
-    train_files, val_files = data_dicts[:140], data_dicts[140:]
+    train_files, val_files = data_dicts[:160], data_dicts[160:]
 
-# train_files = [
-#     {"image": image_name, "label": label_name}
-#     for image_name, label_name in zip(train_samples['images'], train_samples['labels'])
-# ]
-# val_files = [
-#     {"image": image_name, "label": label_name}
-#     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
-# ]
-# print(f'train files:{len(train_files)} val files:{len(val_files)}')
-
+print(f'train files:{len(train_files)} val files:{len(val_files)}')
+# print(' ######## val file list ###########')
+# print(val_files)
 
 set_determinism(seed=0)
 
@@ -108,7 +101,7 @@ device = torch.device("cuda")
 print(f'--- device:{device} ---')
 
 if args.network == 'SNET':
-    model = s_net(channel=1, num_classes=1, se=True, norm='bn').to(device)
+    model = s_net(channel=1, num_classes=out_classes, se=True, norm='bn').to(device)
     
 if args.network == 'MSHEAD':
     model = MSHEAD_ATTN(
@@ -154,8 +147,12 @@ def validation(val_loader):
     with torch.no_grad():
         for step, batch in enumerate(val_loader):
             val_inputs, val_labels = (batch["image"].to(device), batch["label"].to(device))
+
+            val_inputs = val_inputs.permute(0, 1, 4, 2, 3)          # B, C, H, W, D --> B, C, D, H, W
+            val_labels = val_labels.permute(0, 1, 4, 2, 3)          # B, C, H, W, D --> B, C, D, H, W
+
             # val_outputs = model(val_inputs)
-            val_outputs = sliding_window_inference(val_inputs, spatial_size, 2, model)
+            val_outputs = sliding_window_inference(val_inputs, (64, 96, 96), 2, model)
             # val_outputs = model_seg(val_inputs, val_feat[0], val_feat[1])
             val_labels_list = decollate_batch(val_labels)
             val_labels_convert = [
@@ -173,7 +170,7 @@ def validation(val_loader):
             # )
         dice_metric.reset()
     mean_dice_val = np.mean(dice_vals)
-    # writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
+    writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
     val_time = time.time() - s_time
     print(f"val takes {datetime.timedelta(seconds=int(val_time))}")
     return mean_dice_val
@@ -206,14 +203,15 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     #     train_loader, desc="Training (X / X Steps) (loss=X.X)", dynamic_ncols=True
     # )
     print(f'######### new epoch started. Global Step:{global_step} ###############')
-    # total training data--> 272. Batch 2. This loop will run for 272/2 = 136 times
+    # total training data--> 272. Batch 2. This loop will run for 160/2 = 80 times
     for step, batch in enumerate(train_loader):     
-        step += 1
-        x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,D,H,W = 2,1,96,96,96. y same
-        # with torch.no_grad():
-        #     g_feat, dense_feat = model_feat(x)
-        logit_map = model(x)
-        print([pred.size() for pred in logit_map], y.size())
+        x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 2,1,96,96,96. y same
+        # print('x,y: ',x.shape, y.shape)
+        x = x.permute(0, 1, 4, 2, 3)            # x: B, C, H, W, D  --> B, C, D, H, W
+        y = y.permute(0, 1, 4, 2, 3)            # x: B, C, H, W, D  --> B, C, D, H, W
+        logit_map = model(x, train=True)
+        # print('##### pred size #####')
+        # print([pred.size() for pred in logit_map], y.size())
         loss = loss_function(logit_map, y)
         loss.backward()
         # epoch_loss += loss.item()
@@ -222,20 +220,16 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         epoch_loss_values.append(loss.item())
 
         # print after every 100 iteration
-        if global_step % 100 == 0:
-            print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
+        if global_step % len(train_loader) == 0:
             num_steps = global_step - previous_step
+            print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
             time_100 = time.time() - s_time
             print(f"step {num_steps} took: {datetime.timedelta(seconds=int(time_100))} \n ")
             previous_step = global_step
-
-
-        # saving model after every 250 iteration
-        if (global_step % (eval_num//2) == 0) and global_step!=0:
-            save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
         
         # evaluating after every 500 iteration
         if (global_step % eval_num) == 0 and global_step!=0 or global_step == max_iterations-1:
+            print("####### Evaluating ############")
             # epoch_iterator_val = tqdm(
             #     val_loader, desc="Validate (X / X Steps) (dice=X.X)", dynamic_ncols=True
             # )
@@ -244,26 +238,26 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             if dice_val > dice_val_best:
                 dice_val_best = dice_val
                 global_step_best = global_step
-                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir, best=True)
                 print(
-                    "Model Was Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
+                    "Best Model Found ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
                         dice_val_best, dice_val
                     )
                 )
+                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir, best=True)
                 scheduler.step(dice_val)
                 # save model if we acheive best dice score at the evaluation
-                
             else:
                 print(
-                    "Not Best Model. Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
+                    "Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
                 )
+                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
                 scheduler.step(dice_val)
-
+            
             # setting model to train mode again
             model.train()
         
         # saving loss for every iteration
-        # writer.add_scalar('Training Loss_Itr', loss.data, global_step)
+        writer.add_scalar('Training Loss_Itr', loss.data, global_step)
         global_step += 1
     
     train_time = time.time() - s_time
@@ -304,14 +298,14 @@ if args.resume:
     print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
     print(f'starting from global step:{global_step}')
 
-# root_dir = os.path.join(args.output, run_id)
-# if os.path.exists(root_dir) == False:
-#     os.makedirs(root_dir)
+root_dir = os.path.join(args.output, run_id)
+if os.path.exists(root_dir) == False:
+    os.makedirs(root_dir)
     
-# t_dir = os.path.join(root_dir, 'tensorboard')
-# if os.path.exists(t_dir) == False:
-#     os.makedirs(t_dir)
-# writer = SummaryWriter(log_dir=t_dir)
+t_dir = os.path.join(root_dir, 'tensorboard')
+if os.path.exists(t_dir) == False:
+    os.makedirs(t_dir)
+writer = SummaryWriter(log_dir=t_dir)
 
 
 while global_step < max_iterations:

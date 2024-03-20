@@ -6,9 +6,9 @@ def FocusNetLoss(preds, mask):
     # print([pred.size() for pred in preds])
     outputs, lateral_map_2, lateral_map_1 = preds
     # print(outputs.size())
-    tversky_loss = TverskyLoss(to_onehot_y=True, softmax=True)
-    t_l = tversky_loss(outputs, mask)
+    # tversky_loss = TverskyLoss(to_onehot_y=True, softmax=True)
+    # t_l = tversky_loss(outputs, mask)
+    t_l = tversky_loss(mask, outputs)
     # print(t_l)
     s_l = total_structure_loss_focusnet(mask, (lateral_map_2, lateral_map_1))
     return t_l + s_l
-    
