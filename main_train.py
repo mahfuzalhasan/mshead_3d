@@ -64,7 +64,7 @@ print(f'args:{args}')
 print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
-
+spatial_size = (64, 96, 96)
 # train_samples, valid_samples, out_classes = data_loader(args)
 out_classes = 1
 if args.dataset == "LN":
@@ -152,7 +152,7 @@ def validation(val_loader):
             val_labels = val_labels.permute(0, 1, 4, 2, 3)          # B, C, H, W, D --> B, C, D, H, W
 
             # val_outputs = model(val_inputs)
-            val_outputs = sliding_window_inference(val_inputs, (64, 96, 96), 2, model)
+            val_outputs = sliding_window_inference(val_inputs, spatial_size, 2, model)
             # val_outputs = model_seg(val_inputs, val_feat[0], val_feat[1])
             val_labels_list = decollate_batch(val_labels)
             val_labels_convert = [
@@ -270,7 +270,7 @@ max_iterations = args.max_iter
 print('Maximum Iterations for training: {}'.format(str(args.max_iter)), flush=True)
 eval_num = args.eval_step
 post_label = AsDiscrete(argmax = False, to_onehot=out_classes, threshold=0.5)
-post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
+post_pred = AsDiscrete(argmax=False, to_onehot=out_classes, threshold=0.5)
 dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
 global_step = 0
 dice_val_best = 0.0
