@@ -238,13 +238,13 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             dice_val = validation(val_loader)
             # metric_values.append(dice_val)
             if dice_val > dice_val_best:
-                dice_val_best = dice_val
                 global_step_best = global_step
                 print(
                     "Best Model Found ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
                         dice_val_best, dice_val
                     )
                 )
+                dice_val_best = dice_val
                 save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir, best=True)
                 scheduler.step(dice_val)
                 # save model if we acheive best dice score at the evaluation
