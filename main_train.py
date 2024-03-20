@@ -271,7 +271,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
 max_iterations = args.max_iter
 print('Maximum Iterations for training: {}'.format(str(args.max_iter)), flush=True)
 eval_num = args.eval_step
-post_label = AsDiscrete(argmax = False, to_onehot=out_classes, threshold=0.5)
+post_label = AsDiscrete(argmax = False)
 # post_pred = AsDiscrete(argmax=False, to_onehot=out_classes, threshold=0.5)
 post_pred = Compose([
 Activations(sigmoid=True),
