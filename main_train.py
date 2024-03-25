@@ -274,9 +274,9 @@ eval_num = args.eval_step
 post_label = AsDiscrete(argmax = False)
 # post_pred = AsDiscrete(argmax=False, to_onehot=out_classes, threshold=0.5)
 post_pred = Compose([
-Activations(sigmoid=True),
-AsDiscrete(argmax=False, logit_thresh=0.5),
-])
+                Activations(sigmoid=True),
+                AsDiscrete(argmax=False, threshold=0.5),
+            ])
 dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
 global_step = 0
 dice_val_best = 0.0
