@@ -7,8 +7,8 @@ Created on Tue Aug 10 17:17:13 2021
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from conv_layer import Conv3D
-from self_attention import self_attn_3d
+from .conv_layer import Conv3D
+from .self_attention import self_attn_3d
 import math
 
 class AA_kernel(nn.Module):

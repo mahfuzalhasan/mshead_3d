@@ -8,7 +8,7 @@ Created on Tue Aug 10 17:15:44 2021
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from conv_layer import Conv, Conv3D
+from .conv_layer import Conv, Conv3D
 import math
 
 

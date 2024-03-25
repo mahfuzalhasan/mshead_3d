@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from net_3d import *
+from .net_3d import *
 # from torch_receptive_field import receptive_field
 import pdb
 
@@ -25,8 +25,8 @@ class s_net(nn.Module):
         self.conv4xd2 = self._make_layer(
             conv_block, 64, 64, 2, se=se, stride=1, reduction=reduction, norm=norm, dilation_rate=(1, 2, 2))
 
-        ##print(f'conv4x:{self.conv4x}')
-        ##print(f'conv4xd2:{self.conv4xd2}')
+        ###print(f'conv4x:{self.conv4x}')
+        ###print(f'conv4xd2:{self.conv4xd2}')
 
         # DenseASPP
         current_num_feature = 64
@@ -61,49 +61,49 @@ class s_net(nn.Module):
     def forward(self, x, train=False):
         # down
         o1 = self.conv1x(x)
-        print('o1: ',o1.size())
+        #print('o1: ',o1.size())
         o2 = self.maxpool1(o1)
-        print('o1 after maxpool = o2: ',o2.size())
+        #print('o1 after maxpool = o2: ',o2.size())
         o2 = self.conv2x(o2)
-        print('o2: ',o2.size())
+        #print('o2: ',o2.size())
         o3 = self.maxpool2(o2)
-        print('o2 after maxpool = o3: ',o3.size())
+        #print('o2 after maxpool = o3: ',o3.size())
         o3 = self.conv4x(o3)
-        print('o3: ',o3.size())
+        #print('o3: ',o3.size())
         o4 = self.conv4xd2(o3)
-        print('o4: ',o4.size())
+        #print('o4: ',o4.size())
 
         # DenseASPP
         aspp1 = self.ASPP_1(o4)
-        print('aspp1: ', aspp1.size())
+        #print('aspp1: ', aspp1.size())
         feature = torch.cat((aspp1, o4), dim=1)
-        print('feature aspp 1: ',feature.size())
+        #print('feature aspp 1: ',feature.size())
 
         aspp2 = self.ASPP_2(feature)
-        print('aspp2: ', aspp2.size())
+        #print('aspp2: ', aspp2.size())
         feature = torch.cat((aspp2, feature), dim=1)
-        print('feature aspp 2: ',feature.size())
+        #print('feature aspp 2: ',feature.size())
 
         aspp3 = self.ASPP_3(feature)
-        print('aspp3: ', aspp3.size())
+        #print('aspp3: ', aspp3.size())
         feature = torch.cat((aspp3, feature), dim=1)
-        print('feature aspp 3: ',feature.size())
+        #print('feature aspp 3: ',feature.size())
 
         aspp4 = self.ASPP_4(feature)
-        print('aspp4: ', aspp4.size())
+        #print('aspp4: ', aspp4.size())
         feature = torch.cat((aspp4, feature), dim=1)
-        print(f'final feature: {feature.shape}')
+        #print(f'final feature: {feature.shape}')
 
         # exit()
         
         o2_literal = self.literal1(o2)
-        print(f'o2_literal: {o2_literal.shape}')
+        #print(f'o2_literal: {o2_literal.shape}')
         out, ra_out1 = self.up1(feature, o2_literal)
-        print(f'out from first decoder stage:{out.shape}')
+        #print(f'out from first decoder stage:{out.shape}')
         ra_out1 = F.interpolate(ra_out1, scale_factor=(1,2,2), mode='trilinear')
 
         o1_literal = self.literal2(o1)
-        print(f'o1_literal: {o1_literal.shape}')
+        #print(f'o1_literal: {o1_literal.shape}')
         feature_map, ra_out2 = self.up2(out, o1_literal)
         out = self.out_conv(feature_map)
         
@@ -125,7 +125,7 @@ class s_net(nn.Module):
 
 if __name__=='__main__':
     network = s_net(1, 1, se=True, norm='bn')
-    #####print(network)
+    ######print(network)
     #exit()
     # network.cuda()
     B = 2
@@ -137,11 +137,11 @@ if __name__=='__main__':
     outputs = network(inputs, train=True)
     for output in outputs:
         print(output.size())
-    # #print(f'output:{outputs[0].size()} partial_1:{outputs[1].size()} partial_2:{outputs[2].size()}')
+    # ##print(f'output:{outputs[0].size()} partial_1:{outputs[1].size()} partial_2:{outputs[2].size()}')
     # receptive_field_dict = receptive_field(network, (1, 384, 384), device="cpu")
-    # #print(receptive_field_dict)
-    # #print(f'output:{outputs[0].size()} partial_1:{outputs[1].size()} partial_2:{outputs[2].size()}')
-    ###print(f'output:{output.size()}')
+    # ##print(receptive_field_dict)
+    # ##print(f'output:{outputs[0].size()} partial_1:{outputs[1].size()} partial_2:{outputs[2].size()}')
+    ####print(f'output:{output.size()}')
 
 
 

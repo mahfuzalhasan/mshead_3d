@@ -5,10 +5,10 @@ import numpy as np
 # from skimage.measure import label, regionprops
 import pdb
 
-from axial_atten_3d import AA_kernel
+from .axial_atten_3d import AA_kernel
 # from cross_attention import CrossAttentionBlock
-from self_attention import SelfAttentionBlock
-from conv_layer import Conv, Conv3D
+from .self_attention import SelfAttentionBlock
+from .conv_layer import Conv, Conv3D
 
 
 def print_network(net):
@@ -446,99 +446,3 @@ class DenseASPPBlock(nn.Sequential):
             feature = F.dropout3d(feature, p=self.drop_rate, training=self.training)
 
         return feature
-
-
-class SOS_branch(nn.Module):
-    """share weights before the last conv layer"""
-    def __init__(self, channel, num_classes, se=True, reduction=2, norm='bn'):
-        super(SOS_branch, self).__init__()
-        # downsample twice
-        self.share_conv1x = inconv(channel, 24, norm=norm)
-
-        self.share_conv1x_2 = self._make_layer(
-            conv_block,  24, 32, 2, se=se, stride=1, reduction=reduction, norm=norm)
-        self.share_maxpool1 = nn.MaxPool2d((2, 2))
-
-        self.share_conv2x = self._make_layer(
-            conv_block, 32, 48, 2, se=se, stride=1, reduction=reduction, norm=norm)
-        self.share_maxpool2 = nn.MaxPool2d((2, 2)) 
-
-        self.share_conv4x = self._make_layer(
-            conv_block, 48, 64, 2, se=se, stride=1, reduction=reduction, norm=norm)
-
-        # DenseASPP
-        current_num_feature = 64
-        d_feature0 = 64
-        d_feature1 = 32
-        dropout0 = 0 
-        self.share_ASPP_1 = DenseASPPBlock(input_num=current_num_feature, num1=d_feature0, num2=d_feature1,
-                                     dilation_rate=(1, 3, 3), drop_out=dropout0, norm=norm)
-
-        self.share_ASPP_2 = DenseASPPBlock(input_num=current_num_feature+d_feature1*1, num1=d_feature0, num2=d_feature1,
-                                     dilation_rate=(1, 5, 5), drop_out=dropout0, norm=norm)
-
-        self.share_ASPP_3 = DenseASPPBlock(input_num=current_num_feature+d_feature1*2, num1=d_feature0, num2=d_feature1,
-                                     dilation_rate=(1, 7, 7), drop_out=dropout0, norm=norm)
-
-        self.share_ASPP_4 = DenseASPPBlock(input_num=current_num_feature+d_feature1*3, num1=d_feature0, num2=d_feature1,
-                                     dilation_rate=(1, 9, 9), drop_out=dropout0, norm=norm)
-        current_num_feature = current_num_feature + 4 * d_feature1
-
-        # upsample
-        self.share_up1 = up_block(in_ch=current_num_feature,
-                               out_ch=48, se=se, reduction=reduction, norm=norm)
-        self.share_literal1 = nn.Conv3d(48, 48, 3, padding=1)
-
-        self.share_up2 = up_block(in_ch=48, out_ch=32, scale=(
-            1, 2, 2), se=se, reduction=reduction, norm=norm)
-        self.share_literal2 = nn.Conv3d(32, 32, 3, padding=1)
-        # branch
-        self.out_conv = nn.Conv2d(32, num_classes, 1, 1)
-
-
-
-    def forward(self, x):
-        # down
-        x1 = self.share_conv1x(x[:, -1:, :, :, :])
-
-        o1 = self.share_conv1x_2(x1)
-
-        o2 = self.share_maxpool1(o1)
-        o2 = self.share_conv2x(o2)
-        o3 = self.share_maxpool2(o2)
-        o3 = self.share_conv4x(o3)
-
-        # DenseASPP
-        aspp1 = self.share_ASPP_1(o3)
-        feature = torch.cat((aspp1, o3), dim=1)
-
-        aspp2 = self.share_ASPP_2(feature)
-        feature = torch.cat((aspp2, feature), dim=1)
-
-        aspp3 = self.share_ASPP_3(feature)
-        feature = torch.cat((aspp3, feature), dim=1)
-
-        aspp4 = self.share_ASPP_4(feature)
-        feature = torch.cat((aspp4, feature), dim=1)
-
-        out = self.share_up1(feature, self.share_literal1(o2))
-        out = self.share_up2(out, self.share_literal2(o1))
-
-        out = self.out_conv(out)
-
-        return out
-
-
-    def _make_layer(self, block, in_ch, out_ch, num_blocks, se=True, stride=1, reduction=2, dilation_rate=1, norm='bn'):
-        layers = []
-        layers.append(block(in_ch, out_ch, se=se, stride=stride,
-                            reduction=reduction, dilation_rate=dilation_rate, norm=norm))
-        for i in range(num_blocks-1):
-            layers.append(block(out_ch, out_ch, se=se, stride=1,
-                                reduction=reduction, dilation_rate=dilation_rate, norm=norm))
-
-        return nn.Sequential(*layers)
-
-        out = self.out_conv(out)
-
-        return out
