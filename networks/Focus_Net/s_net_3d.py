@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .net_3d import *
+from net_3d import *
 # from torch_receptive_field import receptive_field
 import pdb
 

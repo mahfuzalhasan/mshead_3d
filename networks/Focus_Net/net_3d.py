@@ -5,10 +5,10 @@ import numpy as np
 # from skimage.measure import label, regionprops
 import pdb
 
-from .axial_atten_3d import AA_kernel
+from axial_atten_3d import AA_kernel
 # from cross_attention import CrossAttentionBlock
-from .self_attention import SelfAttentionBlock
-from .conv_layer import Conv, Conv3D
+from self_attention import SelfAttentionBlock
+from conv_layer import Conv, Conv3D
 
 
 def print_network(net):
