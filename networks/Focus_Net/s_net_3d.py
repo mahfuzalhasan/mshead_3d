@@ -58,7 +58,7 @@ class s_net(nn.Module):
 
         # self.SOL = heatmap_pred(in_ch=32, out_ch=1)
 
-    def forward(self, x, train=False):
+    def forward(self, x):
         # down
         o1 = self.conv1x(x)
         #print('o1: ',o1.size())
@@ -98,20 +98,17 @@ class s_net(nn.Module):
         
         o2_literal = self.literal1(o2)
         #print(f'o2_literal: {o2_literal.shape}')
-        out, ra_out1 = self.up1(feature, o2_literal)
+        out = self.up1(feature, o2_literal)
         #print(f'out from first decoder stage:{out.shape}')
-        ra_out1 = F.interpolate(ra_out1, scale_factor=(1,2,2), mode='trilinear')
+        # ra_out1 = F.interpolate(ra_out1, scale_factor=(1,2,2), mode='trilinear')
 
         o1_literal = self.literal2(o1)
         #print(f'o1_literal: {o1_literal.shape}')
-        feature_map, ra_out2 = self.up2(out, o1_literal)
+        feature_map = self.up2(out, o1_literal)
         out = self.out_conv(feature_map)
         
         # heatmap = self.SOL(feature_map)
-        if train:
-            return out, ra_out1, ra_out2
-        else:
-            return out
+        return out
 
     def _make_layer(self, block, in_ch, out_ch, num_blocks, se=True, stride=1, reduction=2, dilation_rate=1, norm='bn'):
         layers = []

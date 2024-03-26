@@ -211,7 +211,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         # print('x,y: ',x.shape, y.shape)
         x = x.permute(0, 1, 4, 2, 3)            # x: B, C, H, W, D  --> B, C, D, H, W
         y = y.permute(0, 1, 4, 2, 3)            # x: B, C, H, W, D  --> B, C, D, H, W
-        logit_map = model(x, train=True)
+        logit_map = model(x)
         # print('##### pred size #####')
         # print([pred.size() for pred in logit_map], y.size())
         loss = loss_function(logit_map, y)

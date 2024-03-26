@@ -69,126 +69,7 @@ class heatmap_pred(nn.Module):
         out = self.sigmoid(out)
 
         return out
-
-class SOSNet_sep(nn.Module):
-    def __init__(self, in_ch, num, pooled_depth=8, pooled_height=64, pooled_width=64, threshold=0.6):
-        super(SOSNet_sep, self).__init__()
-        layers = []
-        for i in range(num):
-            layers.append(SOS_branch(1, 1))
-        self.SOS_module = nn.ModuleList(layers)
-        self.num = num
-        self.h_depth = int(pooled_depth//2)
-        self.h_height = int(pooled_height//2)
-        self.h_width = int(pooled_width//2)
-        self.threshold = threshold
-
-    def forward(self, x, heatmap, raw, o1, label=False):
-        # #print("heatmap size", heatmap.size())
-        b, n, h, w = heatmap.shape
-        locationList = []
-
-        #all samples will be croped, those sample which doesn't have small organ is negtive samples
-        if label is False:
-            croped_feature, croped_heatmap, croped_highRes_feat, croped_raw, location, croped_label = self.RoICrop(x, heatmap, raw, o1, label, 0)
-        else:
-            croped_feature, croped_heatmap, croped_highRes_feat, croped_raw, location, croped_label = self.RoICrop(x, heatmap, raw, o1, label.clone(), 0)
-
-
-        input_feat = torch.cat((croped_feature, croped_highRes_feat, croped_heatmap, croped_raw), 1)
-        result = self.SOS_module[0](input_feat)
-        if label is False:
-            croped_label = -1
-        else:
-            croped_label = croped_label
-        locationList.append(location)
-        for i in range(1, self.num):
-            if label is False:
-                croped_feature, croped_heatmap, croped_highRes_feat, croped_raw, location, tmp_croped_label = self.RoICrop(x, heatmap, raw, o1, label, i)
-            else:
-                croped_feature, croped_heatmap, croped_highRes_feat, croped_raw, location, tmp_croped_label = self.RoICrop(x, heatmap, raw, o1, label.clone(), i)
-
-            input_feat = torch.cat((croped_feature, croped_highRes_feat, croped_heatmap, croped_raw), 1)
-            tmp_result = self.SOS_module[i](input_feat)
-            result = torch.cat((result, tmp_result), dim=1)
-            if label is False:
-                croped_label = -1
-            else:
-                croped_label = torch.cat((croped_label, tmp_croped_label), dim=1)
-            locationList.append(location)
-
-        return locationList, result, croped_label
-
-
-    def RoICrop(self, features, heatmap, raw, highRes_feature, label, organ_index):
-        label_index = [2, 4, 5]
-        b, c, h, w = features.shape
-
-        location = self.center_locate(heatmap[:, :, :])
-        roi_z, roi_x, roi_y = location
-
-        croped_feature = features[:, :, roi_z-self.h_depth:roi_z+self.h_depth, roi_x-self.h_height:roi_x+self.h_height, roi_y-self.h_width:roi_y+self.h_width].detach()
-        croped_heatmap = heatmap[:, organ_index:organ_index+1, roi_z-self.h_depth:roi_z+self.h_depth, roi_x-self.h_height:roi_x+self.h_height, roi_y-self.h_width:roi_y+self.h_width].detach()
-        croped_highRes_feature = highRes_feature[:, :, roi_z-self.h_depth:roi_z+self.h_depth, roi_x-self.h_height:roi_x+self.h_height, roi_y-self.h_width:roi_y+self.h_width].detach()
-        croped_raw = raw[:, :, roi_z-self.h_depth:roi_z+self.h_depth, roi_x-self.h_height:roi_x+self.h_height, roi_y-self.h_width:roi_y+self.h_width].detach()
-
-        if not label is False:
-            croped_label = label[:, :, roi_z-self.h_depth:roi_z+self.h_depth, roi_x-self.h_height:roi_x+self.h_height, roi_y-self.h_width:roi_y+self.h_width]
-            croped_label[croped_label != label_index[organ_index]] = 0
-            croped_label[croped_label == label_index[organ_index]] = 1
-        else:
-            croped_label = -1
-
-        return croped_feature, croped_heatmap, croped_highRes_feature, croped_raw, location, croped_label
-
     
-    
-    def gt_center_locate(self, label, label_idx, noise_level=0):
-        tmp_label = label[label == label_idx]
-        tmp_label = tmp_label[0, 0, :, :, :].cpu().numpy()
-
-        props = regionprops(tmp_label)
-
-        x = self.h_height if x<self.h_height else x
-        x = 192-self.h_height if x>192-self.h_height else x
-        y = self.h_width if y<self.h_width else y
-        y = 192-self.h_width if y>192-self.h_width else y
-        z = self.h_depth if z<self.h_depth else z
-        z = 40-self.h_depth if z>40-self.h_depth else z
-        
-        return z, x, y
-
-
-    def center_locate(self, heatmap):
-        b, c, w, h = heatmap.shape
-        assert c ==1 ,"Channel should be 1"
-        heatmap = heatmap.view(b, -1)
-        index = torch.argmax(heatmap, dim=1)
-        # #print((index))
-        y = index//w
-        x = index - y*w
-        # #print(x, y)
-        # z = int(index // w // h)
-        # index -= z * w * h
-        
-        # x = int(index // h)
-        # index -= x * h
-
-        # y = int(index)
-
-        x = self.h_height if x<self.h_height else x
-        x = h-self.h_height if x>h-self.h_height else x
-        y = self.h_width if y<self.h_width else y
-        y = w-self.h_width if y>w-self.h_width else y
-        # z = self.h_depth if z<self.h_depth else z
-        # z = 40-self.h_depth if z>40-self.h_depth else z
-
-        return x, y
-    
-
-
-
-
 
 class SEBasicBlock(nn.Module):
     expansion = 1
@@ -373,7 +254,7 @@ class up_block(nn.Module):
         self.conv = nn.Sequential(
             conv_block(in_ch+out_ch, out_ch, se=se, reduction=reduction, norm=norm)
         )
-        self.ra_attn = ReverseAxialAttention(in_ch+out_ch, out_ch, num_classes=num_classes)
+        # self.ra_attn = ReverseAxialAttention(in_ch+out_ch, out_ch, num_classes=num_classes)
 
         # self.ra_attn = ReverseAxialAttention(in_ch, out_ch, num_classes=num_classes)
 
@@ -382,11 +263,11 @@ class up_block(nn.Module):
         #print(f'x_enc:{x_enc.shape} x_dec:{x_dec.shape}')
         out = torch.cat([x_enc, x_dec], dim=1)
         #print(f'concat:{out.shape}')
-        ra_out = self.ra_attn(out, x_enc)    #with concatenated feature
+        # ra_out = self.ra_attn(out, x_enc)    #with concatenated feature
         # print(f'ra out:{ra_out.shape}')
         # ra_out = self.ra_attn(x_dec, x_enc)      #with only decoder feature
         out = self.conv(out)
-        return out, ra_out
+        return out
 
 class up_nocat(nn.Module):
     def __init__(self, in_ch, out_ch, scale=(2,2,2), se=False, reduction=2, norm='bn'):
