@@ -7,8 +7,8 @@ def FocusNetLoss(preds, mask):
     # outputs, lateral_map_2, lateral_map_1 = preds
     outputs = preds
     # print(outputs.size())
-    tversky_loss = TverskyLoss(to_onehot_y=False, softmax=False, sigmoid=True)
-    focal_loss = FocalLoss(to_onehot_y=False, softmax=False, sigmoid=True)
+    tversky_loss = TverskyLoss(to_onehot_y=False, softmax=False, sigmoid=True, reduction="mean")
+    focal_loss = FocalLoss(to_onehot_y=False, reduction="mean")
     t_l = tversky_loss(outputs, mask)
     f_l = focal_loss(outputs, mask)
     # t_l = tversky_loss(mask, outputs)
