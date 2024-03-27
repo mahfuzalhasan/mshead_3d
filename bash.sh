@@ -1,16 +1,16 @@
 #!/bin/bash
 #SBATCH --job-name=python_train_LN_3D
-#SBATCH --output=/blue/r.forghani/scripts/mshead_3d/results/job.%J.out
-#SBATCH --error=/blue/r.forghani/scripts/mshead_3d/results/job.%J.err
+#SBATCH --output=/blue/r.forghani/share/scripts/mshead_3d/results/job.%J.out
+#SBATCH --error=/blue/r.forghani/share/scripts/mshead_3d/results/job.%J.err
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=mdmahfuzalhasan@ufl.edu
+#SBATCH --mail-user=m.tahsinmostafiz@ufl.edu
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=250GB
 #SBATCH --partition=hpg-ai
 #SBATCH --gpus=a100:1
-#SBATCH --time=48:00:00
+#SBATCH --time=50:00:00
 #SBATCH --account=r.forghani
 #SBATCH --qos=r.forghani
 
