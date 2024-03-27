@@ -154,7 +154,7 @@ def validation(val_loader):
             val_labels = val_labels.permute(0, 1, 4, 2, 3)          # B, C, H, W, D --> B, C, D, H, W
 
             # val_outputs = model(val_inputs)
-            val_outputs = sliding_window_inference(val_inputs, spatial_size, 2, model, progress=True)   # spatial size: 64, 96, 96
+            val_outputs = sliding_window_inference(val_inputs, spatial_size, 2, model, progress=False)   # spatial size: 64, 96, 96
             # val_outputs = model_seg(val_inputs, val_feat[0], val_feat[1])
             val_labels_list = decollate_batch(val_labels)
             val_labels_convert = [

@@ -17,8 +17,9 @@
 module load conda
 conda activate medical
 
-cd /blue/r.forghani/scripts/mshead_3d
+cd /blue/r.forghani/share/scripts/mshead_3d/
 
+git checkout snet_with_focal_loss
 # Execute the Python script
 srun python main_train.py --dataset LN --network SNET --cache_rate 1.0 --batch_size 3 --crop_sample 4 --lr 0.00015 --num_workers $SLURM_CPUS_PER_TASK
 # srun python test_seg.py --dataset LN --network SNET --cache_rate 1.0 --batch_size 3 --crop_sample 4 --lr 0.00015 --num_workers $SLURM_CPUS_PER_TASK
