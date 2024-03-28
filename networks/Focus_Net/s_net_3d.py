@@ -140,7 +140,7 @@ if __name__=='__main__':
     outputs = network(inputs, train=True)
 
     for output in outputs:
-        #print(output.size())
+        print(output.size())
 
     # ###print(f'output:{outputs[0].size()} partial_1:{outputs[1].size()} partial_2:{outputs[2].size()}')
     # receptive_field_dict = receptive_field(network, (1, 384, 384), device="cpu")
