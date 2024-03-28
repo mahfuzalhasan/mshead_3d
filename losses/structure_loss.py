@@ -45,7 +45,7 @@ def total_structure_loss(mask, preds, kernel_size=37, stride=1, padding=18,  alp
         loss += structure_loss(mask, pred, kernel_size, stride, padding,  alpha, beta, smooth)
     return loss/len(preds)
 
-def total_structure_loss_focusnet(mask, preds, kernel_size=31, stride=1, padding=15, alpha=1, beta=2, smooth=1e-5):
+def total_structure_loss_focusnet(mask, preds, kernel_size=(3,7,7), stride=1, padding=(1,3,3), alpha=1, beta=2, smooth=1e-5):
     loss = 0
     for pred in preds:
         loss += structure_loss_focusnet(mask, pred, kernel_size, stride, padding,  alpha, beta, smooth)
