@@ -33,17 +33,19 @@ class s_net(nn.Module):
         d_feature0 = 64
         d_feature1 = 32
         dropout0 = 0
+        
         self.ASPP_1 = DenseASPPBlock(input_num=current_num_feature, num1=d_feature0, num2=d_feature1,
-                                     dilation_rate=(1, 3, 3), drop_out=dropout0, norm=norm)
+                                     dilation_rate=(1, 1, 1), drop_out=dropout0, norm=norm)
 
         self.ASPP_2 = DenseASPPBlock(input_num=current_num_feature+d_feature1*1, num1=d_feature0, num2=d_feature1,
-                                     dilation_rate=(1, 6, 6), drop_out=dropout0, norm=norm)
+                                     dilation_rate=(1, 2, 2), drop_out=dropout0, norm=norm)
 
         self.ASPP_3 = DenseASPPBlock(input_num=current_num_feature+d_feature1*2, num1=d_feature0, num2=d_feature1,
-                                     dilation_rate=(1, 12, 12), drop_out=dropout0, norm=norm)
+                                     dilation_rate=(1, 3, 3), drop_out=dropout0, norm=norm)
 
         self.ASPP_4 = DenseASPPBlock(input_num=current_num_feature+d_feature1*3, num1=d_feature0, num2=d_feature1,
-                                     dilation_rate=(1, 18, 18), drop_out=dropout0, norm=norm)
+                                     dilation_rate=(1, 4, 4), drop_out=dropout0, norm=norm)
+        
         current_num_feature = current_num_feature + 4 * d_feature1
 
         # upsample
