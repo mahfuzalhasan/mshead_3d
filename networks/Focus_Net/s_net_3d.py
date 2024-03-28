@@ -127,7 +127,7 @@ if __name__=='__main__':
     # network.cuda()
     B = 2
     C = 1
-    D = 64
+    D = 16
     H = 96
     W = 96
     inputs = torch.randn(B, C, D, H, W)

@@ -66,7 +66,7 @@ print(f'args:{args}')
 print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
-spatial_size = (64, 96, 96)
+spatial_size = (16, 96, 96)
 # train_samples, valid_samples, out_classes = data_loader(args)
 out_classes = 1
 if args.dataset == "LN":
@@ -154,7 +154,7 @@ def validation(val_loader):
             val_labels = val_labels.permute(0, 1, 4, 2, 3)          # B, C, H, W, D --> B, C, D, H, W
 
             # val_outputs = model(val_inputs)
-            val_outputs = sliding_window_inference(val_inputs, spatial_size, 2, model, progress=False)   # spatial size: 64, 96, 96
+            val_outputs = sliding_window_inference(val_inputs, spatial_size, 2, model, progress=False)   # spatial size: 16, 96, 96
             # val_outputs = model_seg(val_inputs, val_feat[0], val_feat[1])
             val_labels_list = decollate_batch(val_labels)
             val_labels_convert = [
@@ -167,9 +167,6 @@ def validation(val_loader):
             dice_metric(y_pred=val_output_convert, y=val_labels_convert)
             dice = dice_metric.aggregate().item()
             dice_vals.append(dice)
-            # epoch_iterator_val.set_description(
-            #     "Validate (%d / %d Steps) (dice=%2.5f)" % (global_step, 10.0, dice)
-            # )
         dice_metric.reset()
     mean_dice_val = np.mean(dice_vals)
     writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
