@@ -66,7 +66,7 @@ print(f'args:{args}')
 print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
-spatial_size = (64, 96, 96)
+spatial_size = (16, 96, 96)
 # train_samples, valid_samples, out_classes = data_loader(args)
 out_classes = 1
 if args.dataset == "LN":
