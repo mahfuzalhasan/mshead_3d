@@ -51,7 +51,7 @@ parser.add_argument('--batch_size', type=int, default='2', help='Batch size for 
 parser.add_argument('--crop_sample', type=int, default='4', help='Number of cropped sub-volumes for each subject')
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
-parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
+parser.add_argument('--max_iter', type=int, default=20000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=400, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
 ## Efficiency hyperparameters
@@ -141,6 +141,10 @@ elif args.optim == 'Adam':
 print('Optimizer for training: {}, learning rate: {}'.format(args.optim, args.lr))
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=10)
 
+def get_lr(optimizer):
+    for param_group in optimizer.param_groups:
+        return param_group['lr']
+
 def validation(val_loader):
     # model_feat.eval()
     model.eval()
@@ -201,36 +205,34 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     step = 0
     epoch_loss_values = []
     previous_step = 0
-    # epoch_iterator = tqdm(
-    #     train_loader, desc="Training (X / X Steps) (loss=X.X)", dynamic_ncols=True
-    # )
-    print(f'######### new epoch started. Global Step:{global_step} ###############')
-    # total training data--> 272. Batch 2. This loop will run for 160/2 = 80 times
-    for step, batch in enumerate(train_loader):     
-        x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 2,1,96,96,96. y same
-        # print('x,y: ',x.shape, y.shape)
+
+    current_lr = get_lr(optimizer)
+    print(f'######### new epoch started. Global Step:{global_step} current lr: {current_lr} ###############')
+    
+    for step, batch in enumerate(train_loader):
+        global_step += 1     
+        x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 12,1,96,96,16. y same
         x = x.permute(0, 1, 4, 2, 3)            # x: B, C, H, W, D  --> B, C, D, H, W
         y = y.permute(0, 1, 4, 2, 3)            # x: B, C, H, W, D  --> B, C, D, H, W
+
         logit_map = model(x, train=True)
-        # print('##### pred size #####')
-        # print([pred.size() for pred in logit_map], y.size())
         loss = loss_function(logit_map, y)
         loss.backward()
-        # epoch_loss += loss.item()
+
         optimizer.step()
         optimizer.zero_grad()
         epoch_loss_values.append(loss.item())
 
-        # print after every 100 iteration
-        if global_step % len(train_loader) == 0:
+        # print after every epoch number iteration
+        if global_step % (len(train_loader)) == 0:
             num_steps = global_step - previous_step
             print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
             time_100 = time.time() - s_time
             print(f"step {num_steps} took: {datetime.timedelta(seconds=int(time_100))} \n ")
             previous_step = global_step
         
-        # evaluating after every 500 iteration
-        if (global_step % eval_num) == 0 and global_step!=0 or global_step == max_iterations-1:
+        # evaluating after every 5 epochs
+        if (global_step % (5*len(train_loader))) == 0 and global_step!=0 or global_step == max_iterations-1:
             print("####### Evaluating ############")
             # epoch_iterator_val = tqdm(
             #     val_loader, desc="Validate (X / X Steps) (dice=X.X)", dynamic_ncols=True
@@ -246,21 +248,24 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                 )
                 dice_val_best = dice_val
                 save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir, best=True)
-                scheduler.step(dice_val)
+                # scheduler.step(dice_val)
                 # save model if we acheive best dice score at the evaluation
             else:
                 print(
                     "Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
                 )
-                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
-                scheduler.step(dice_val)
+                # saving after every 40 epochs
+                if global_step % (40*len(train_loader))==0:
+                    save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
+
+            scheduler.step(dice_val)
             
             # setting model to train mode again
             model.train()
         
         # saving loss for every iteration
         writer.add_scalar('Training Loss_Itr', loss.data, global_step)
-        global_step += 1
+        
     
     train_time = time.time() - s_time
     print(f"train takes {datetime.timedelta(seconds=int(train_time))}")
