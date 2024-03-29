@@ -254,8 +254,8 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                 print(
                     "Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
                 )
-                # saving after every 40 epochs
-                if global_step % (40*len(train_loader))==0:
+                # saving after every 50 epochs
+                if global_step % (50*len(train_loader))==0:
                     save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
 
             scheduler.step(dice_val)
