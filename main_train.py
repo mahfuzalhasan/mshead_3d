@@ -86,7 +86,7 @@ train_transforms, val_transforms = data_transforms(args, spatial_size)
 
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
-train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
+train_ds = CacheDataset(data=train_files, transform=train_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
 val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
 
 train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)

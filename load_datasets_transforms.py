@@ -193,6 +193,7 @@ def data_transforms(args, spatial_size=(96, 96, 96)):
                     pos=1,
                     neg=1,
                     num_samples=crop_samples,
+                    
                 ),
                 RandShiftIntensityd(
                     keys=["image"],
