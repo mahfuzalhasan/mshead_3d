@@ -13,7 +13,7 @@ import ptwt
 class WaveletTransform3D(torch.nn.Module):
     def __init__(self, wavelet='db1', level=2, mode='zero'):
         super(WaveletTransform3D, self).__init__()
-        self.wavelet = pywt.Wavelet(wavelet)
+        self.wavelet = wavelet #pywt.Wavelet(wavelet)
         self.level = level
         self.mode = mode
 
@@ -54,7 +54,7 @@ class MultiScaleAttention(nn.Module):
         self.proj_drop = nn.Dropout(proj_drop)
         
         self.dwt_downsamples = nn.ModuleList([
-            WaveletTransform3D(wavelet='db1', level=i, mode='symmetric')
+            WaveletTransform3D(wavelet='haar', level=i, mode='reflect')
             for i in range(1, n_local_region_scales)
         ])
 
