@@ -227,11 +227,11 @@ class MRATransformer(nn.Module):
 
 
 class mra_b0(MRATransformer):
-    def __init__(self, img_size, num_classes, embed_dims, depths, num_heads, drop_path_rate):
+    def __init__(self, img_size, num_classes, embed_dims, depths, num_heads, local_region_scales, drop_path_rate):
         super(mra_b0, self).__init__(
             img_size = img_size, patch_size = 2, num_classes=num_classes, embed_dims=embed_dims, 
             num_heads=num_heads, mlp_ratios=[4, 4, 4, 4], qkv_bias=True, 
-            norm_layer=partial(nn.LayerNorm, eps=1e-6), local_region_scales=[3, 3, 2, 1], depths=depths, 
+            norm_layer=partial(nn.LayerNorm, eps=1e-6), local_region_scales=local_region_scales, depths=depths, 
             drop_rate=0, drop_path_rate=drop_path_rate)
 
 

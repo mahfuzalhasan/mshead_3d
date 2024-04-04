@@ -12,8 +12,16 @@ import torch
 #     print('Allocated:', round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
 #     print('Cached:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
 
-step = 0
-for step in range(48):
-    print(f'step before:{step}')
-    step += 1
-    print(f'step after:{step}')
+import torch
+# from pytorch_wavelets import DWT3D  # For 2D wavelet transforms
+import pywt
+import ptwt
+
+
+
+# Example input: a batch of 1-channel images, size 64x64
+x = torch.randn(1, 1, 64, 64, 64)
+transformed = ptwt.wavedec3(x, pywt.Wavelet("haar"), level=2, mode="reflect")
+for x in transformed:
+    print(type(x))
+

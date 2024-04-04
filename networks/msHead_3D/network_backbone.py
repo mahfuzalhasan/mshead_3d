@@ -52,9 +52,10 @@ class MSHEAD_ATTN(nn.Module):
         img_size = (96,96,96),
         in_chans=1,
         out_chans=13,
-        depths=[2, 2, 6, 2],
+        depths=[1, 1, 1, 1],
         feat_size=[48, 96, 192, 384],
         num_heads = [3, 6, 12, 24],
+        local_region_Scales = [3,3,2,1],
         drop_path_rate=0,
         layer_scale_init_value=1e-6,
         hidden_size: int = 768,
@@ -115,6 +116,7 @@ class MSHEAD_ATTN(nn.Module):
             embed_dims = self.feat_size,
             depths=self.depths,
             num_heads = self.num_heads,
+            local_region_scales=local_region_Scales,
             drop_path_rate=self.drop_path_rate,
         )
         self.encoder1 = UnetrBasicBlock(
@@ -269,7 +271,8 @@ if __name__=="__main__":
     W = 96
     num_classes = 5
     model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes)
-    x = torch.randn(B, C, D, H, W)
+    model.cuda()
+    x = torch.randn(B, C, D, H, W).cuda()
     outputs = model(x)
     for y in outputs:
         print(f'y shape:{y.shape}')

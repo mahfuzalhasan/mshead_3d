@@ -6,27 +6,22 @@ import torch.nn.functional as F
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 import math
 import time
+import pywt
+import ptwt
 
-class MergeRegions(nn.Module):
-    def __init__(self, in_channel, out_channel, num_heads=3):
-        super(MergeRegions, self).__init__()
-        self.conv = nn.Conv2d(in_channels=in_channel * num_heads, 
-                              out_channels=out_channel * num_heads, 
-                              kernel_size=2, stride=2, groups=num_heads)
-    
-    # B, num_local_head, num_regions_7x7, 49(7x7 flattened), head_dim 
+
+class WaveletTransform3D(torch.nn.Module):
+    def __init__(self, wavelet='db1', level=2, mode='zero'):
+        super(WaveletTransform3D, self).__init__()
+        self.wavelet = pywt.Wavelet(wavelet)
+        self.level = level
+        self.mode = mode
+
     def forward(self, x):
-        B, h, R, Nr, C_h = x.shape
-        R_out = R//4
-        r = int(math.sqrt(R))
-       
-        x = x.view(B, h * C_h, R, Nr)
-        x_reshaped = x.view(B, h * C_h, r, r * Nr)
-        x_merged = self.conv(x_reshaped)
-        
-        out_shape = (B, h, R_out, Nr, C_h)
-        x_out = x_merged.view(out_shape)
-        return x_out
+        coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
+        Yl = coeffs[0]  # Extracting the approximation coefficients
+        return Yl
+
 
 class MultiScaleAttention(nn.Module):
     def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., 
@@ -56,6 +51,11 @@ class MultiScaleAttention(nn.Module):
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
+        
+        self.dwt_downsamples = nn.ModuleList([
+            WaveletTransform3D(wavelet='db1', level=i, mode='symmetric')
+            for i in range(1, n_local_region_scales)
+        ])
 
         # define a parameter table of relative position bias
         self.relative_position_bias_table = nn.Parameter(
@@ -132,48 +132,6 @@ class MultiScaleAttention(nn.Module):
         return x, attn
     
 
-    def upsample(self, x):
-        B, l_h, R, Nr, C_h = x.shape
-        r = math.ceil(R**(1./3.))
-        output_size = math.ceil(self.N_G**(1./3.))
-        perm_x = x.permute(0, 1, 4, 3, 2).contiguous().reshape(B, l_h*C_h*Nr, r, r, r)
-        upsampled_x = F.interpolate(perm_x, size=(output_size, output_size, output_size), mode='trilinear')
-        upsampled_x = upsampled_x.reshape(B, l_h, C_h, Nr, self.N_G).permute(0, 1, 4, 3, 2).contiguous()    
-        return upsampled_x
-    
-    def merge_regions_spatial(self, x, merge_size):
-        # x shape is expected to be (B, H, R, N, C_h)
-        
-        _, B, H, R, N, C_h = x.shape
-        x = x.reshape(-1, H, R, N, C_h)
-        B_, H, R, N, C_h = x.shape      # B_ = B*3, H=#num_head, R = #region_6x6x6=512, N = 216, C_h = self.head_dim
-        # print(f'x:{x.shape}')
-        
-        # Determine the new grid size based on the merge size
-        grid_size = math.ceil((R // (merge_size ** 3)) ** (1/3))
-        # print(f'grid size:{grid_size}')
-        new_R = grid_size ** 3  # Number of regions after merge
-        
-        r = math.ceil(R**(1/3))
-        # print(f'r:{r}')
-        x_reshaped = x.view(B_, H, r, r, r, N, C_h)
-        
-        # Apply pooling over the spatial dimensions representing the regions
-        # while preserving the separate channel information
-        x_avg = F.avg_pool3d(x_reshaped.permute(0, 1, 6, 5, 2, 3, 4).reshape(B_, H * C_h * N, r, r, r),
-                                kernel_size=(merge_size, merge_size, merge_size),
-                                stride=(merge_size, merge_size, merge_size)).reshape(B_, H, C_h, N, grid_size, grid_size, grid_size)
-        
-        x_max = F.max_pool3d(x_reshaped.permute(0, 1, 6, 5, 2, 3, 4).reshape(B_, H * C_h * N, r, r, r),
-                                kernel_size=(merge_size, merge_size, merge_size),
-                                stride=(merge_size, merge_size, merge_size)).reshape(B_, H, C_h, N, grid_size, grid_size, grid_size)
-        
-        # Reshape back to match the expected output format
-        x_avg = x_avg.permute(0, 1, 4, 5, 6, 3, 2).contiguous().reshape(B_, H, new_R, N, C_h)
-        x_max = x_max.permute(0, 1, 4, 5, 6, 3, 2).contiguous().reshape(B_, H, new_R, N, C_h)
-        
-        return (x_avg + x_max)
-
 
 
     def forward(self, x, D, H, W):
@@ -201,44 +159,47 @@ class MultiScaleAttention(nn.Module):
             # print(f'################ {i} #####################')
             local_C = C//self.n_local_region_scales
             qkv = temp[:, :, :, i*local_C:i*local_C + local_C]
-            # print(f'qkv shape: {qkv.shape}')
+            
             # 3, B*num_region_6x6, num_local_head, Nr, head_dim
             qkv = qkv.reshape(3, B_, Nr, self.local_head, self.head_dim).permute(0, 1, 3, 2, 4).contiguous()
-            # print(f'qkv mh:{qkv.shape} self.N_G:{self.N_G}')
-            # exit()
+            
+            output_size = (self.D//pow(2,i), self.H//pow(2,i), self.W//pow(2,i))
+            n_region = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
             if i>0:
-                #3, B, num_local_head, num_region_6x6x6, 216, head_dim 
-                qkv = qkv.view(3, B, self.N_G, self.local_head, Nr, self.head_dim).permute(0, 1, 3, 2, 4, 5).contiguous()
-                # print(f'qkv reshape: {qkv.shape}')
-                #B*3, num_local_head, num_region_6x6x6, 216, head_dim
-                qkv = self.merge_regions_spatial(qkv, merge_size=int(math.pow(2,i)))
-                # print(f'qkv merged: {qkv.shape}')
-                # 3, B_, num_local_head, Nr, head_dim
-                qkv = qkv.permute(0, 2, 1, 3, 4).contiguous().reshape(3, -1, self.local_head, Nr, self.head_dim)
+                # 3*B, num_local_head, head_dim, num_region_6x6, Nr  
+                qkv = qkv.view(3, B, self.N_G, self.local_head, Nr, self.head_dim).reshape(-1, self.N_G, self.local_head, Nr, self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
+                qkv = qkv.reshape(B*3, local_C, D, H, W)
+                print(f'qkv: {qkv.shape}')
+
+                ## Downsampling
+                qkv = self.dwt_downsamples[i - 1](qkv)
+                print(f'qkv after DWT: {qkv.shape}')
+
+                
+                # 3, B, reduced_num_region_6x6, num_local_head, Nr, head_dim
+                qkv = qkv.reshape(3, B, self.local_head, self.head_dim, n_region, Nr).permute(0, 1, 4, 2, 5, 3).contiguous()
+                qkv = qkv.reshape(3, -1, self.local_head, Nr, self.head_dim)
 
             q,k,v = qkv[0], qkv[1], qkv[2]      #B_, num_local_head, Nr, Ch
-            # print(f'q:{q.shape} k:{k.shape} v:{v.shape}')
+            print(f'i:{i} --> q:{q.shape} k:{k.shape} v:{v.shape}')
             
             y, attn = self.attention(q, k, v)
             # print(f'y:{y.shape} attn:{attn.shape}')
             
-            output_size = (self.D//pow(2,i), self.H//pow(2,i), self.W//pow(2,i))
-            n_region = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
-            # print(f'output size:{output_size} n_region:{n_region}')
-            
-            y = y.reshape(B, n_region, self.local_head, self.window_size* self.window_size * self.window_size, self.head_dim).permute(0, 2, 1, 3, 4)
-            # print(f'y reshape:{y.shape}')
+            # B, num_local_head, Ch, num_region_6x6, Nr
+            y = y.reshape(B, n_region, self.local_head, Nr , self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
+            y = y.reshape(B, local_C, output_size[0], output_size[1], output_size[2])
             if i>0:
-                y = self.upsample(y)
+                y = F.interpolate(y, size=(self.D, self.H, self.W), mode='trilinear')
+            
+            y = y.view(B, self.local_head, self.head_dim, self.D, self.H, self.W).permute(0, 1, 3, 4, 5, 2).contiguous()
+            
             self.attn_outcome_per_group.append(y)
 
-        # # #concatenating multi-group attention
+        # concatenating multi-group attention
         attn_fused = torch.cat(self.attn_outcome_per_group, axis=1)
-        # print(f'attn fused: {attn_fused.shape}')
         attn_fused = attn_fused.reshape(B, self.num_heads, -1, C//self.num_heads)
         attn_fused = attn_fused.permute(0, 2, 1, 3).contiguous().reshape(B, N, C)
-        # print(f'mh attn: {attn_fused.shape}')
-        # exit()
         attn_fused = self.proj(attn_fused)
         attn_fused = self.proj_drop(attn_fused )
         return attn_fused
