@@ -18,6 +18,7 @@ class WaveletTransform3D(torch.nn.Module):
         self.mode = mode
 
     def forward(self, x):
+        print(f'x:{x.shape} ')
         coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
         Yl = coeffs[0]  # Extracting the approximation coefficients
         return Yl
@@ -142,7 +143,7 @@ class MultiScaleAttention(nn.Module):
         self.W=W
         A = []
         B, N, C = x.shape
-        # print('reshape: ',x.shape)
+        print('reshape: ',x.shape)
         assert N==self.D*self.H*self.W
         
         x = x.view(B, D, H, W, C)
