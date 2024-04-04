@@ -54,7 +54,7 @@ class MultiScaleAttention(nn.Module):
         self.proj_drop = nn.Dropout(proj_drop)
         
         self.dwt_downsamples = nn.ModuleList([
-            WaveletTransform3D(wavelet='haar', level=i, mode='reflect')
+            WaveletTransform3D(wavelet='haar', level=i, mode='zero')
             for i in range(1, n_local_region_scales)
         ])
 
