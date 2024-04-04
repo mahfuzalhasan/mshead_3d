@@ -264,7 +264,7 @@ class MSHEAD_ATTN(nn.Module):
     
 
 if __name__=="__main__":
-    B = 1
+    B = 2
     C = 1
     D = 96
     H = 96

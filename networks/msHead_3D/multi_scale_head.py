@@ -156,7 +156,7 @@ class MultiScaleAttention(nn.Module):
         self.attn_mat_per_head = []
         
         for i in range(self.n_local_region_scales):
-            # print(f'################ {i} #####################')
+            print(f'################ {i} #####################')
             local_C = C//self.n_local_region_scales
             qkv = temp[:, :, :, i*local_C:i*local_C + local_C]
             
@@ -184,7 +184,7 @@ class MultiScaleAttention(nn.Module):
             print(f'i:{i} --> q:{q.shape} k:{k.shape} v:{v.shape}')
             
             y, attn = self.attention(q, k, v)
-            # print(f'y:{y.shape} attn:{attn.shape}')
+            print(f'y:{y.shape} attn:{attn.shape}')
             
             # B, num_local_head, Ch, num_region_6x6, Nr
             y = y.reshape(B, n_region, self.local_head, Nr , self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
