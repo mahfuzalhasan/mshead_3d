@@ -150,7 +150,7 @@ class MultiScaleAttention(nn.Module):
         x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
         B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
         temp = self.qkv_proj(x).reshape(B_, Nr, 3, C).permute(2, 0, 1, 3)   # temp--> 3, B_, Nr, C
-        # print(f'temp shape:{temp.shape}')
+        print(f'temp shape:{temp.shape}')
 
         self.attn_outcome_per_group = []
         self.attn_mat_per_head = []
