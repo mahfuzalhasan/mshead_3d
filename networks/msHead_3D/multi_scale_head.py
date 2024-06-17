@@ -15,14 +15,14 @@ import ptwt
 
 
 class WaveletTransform3D(torch.nn.Module):
-    def __init__(self, wavelet='db1', level=2, mode='zero'):
+    def __init__(self, wavelet='db1', level=5, mode='zero'):
         super(WaveletTransform3D, self).__init__()
         self.wavelet = wavelet #pywt.Wavelet(wavelet)
         self.level = level
         self.mode = mode
 
     def forward(self, x):
-        print(f'x:{x.shape} ')
+        print(f'x:{x.shape}  ')
         coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
         Yl = coeffs[0]  # Extracting the approximation coefficients
         return Yl
@@ -58,7 +58,7 @@ class MultiScaleAttention(nn.Module):
         self.proj_drop = nn.Dropout(proj_drop)
         
         self.dwt_downsamples = nn.ModuleList([
-            WaveletTransform3D(wavelet='haar', level=i, mode='zero')
+            WaveletTransform3D(wavelet='haar', level=5, mode='zero')
             for i in range(1, n_local_region_scales)
         ])
 
@@ -147,10 +147,11 @@ class MultiScaleAttention(nn.Module):
         self.W=W
         A = []
         B, N, C = x.shape
-        print('reshape: ',x.shape)
+        
         assert N==self.D*self.H*self.W
         
         x = x.view(B, D, H, W, C)
+        print('x in attention after view: ',x.shape)
         x_windows = self.window_partition(x)
         x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
         print(f'windows:{x_windows.shape}')
