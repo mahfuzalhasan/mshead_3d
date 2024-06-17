@@ -3,6 +3,10 @@ import torch.nn as nn
 import torch.nn.init as init
 import torch.nn.functional as F
 
+from typing_extensions import Protocol
+from typing import Sequence, Tuple, Union
+
+
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 import math
 import time
@@ -149,6 +153,7 @@ class MultiScaleAttention(nn.Module):
         x = x.view(B, D, H, W, C)
         x_windows = self.window_partition(x)
         x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
+        print(f'windows:{x_windows.shape}')
         B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
         temp = self.qkv_proj(x).reshape(B_, Nr, 3, C).permute(2, 0, 1, 3)   # temp--> 3, B_, Nr, C
         print(f'temp shape:{temp.shape}')

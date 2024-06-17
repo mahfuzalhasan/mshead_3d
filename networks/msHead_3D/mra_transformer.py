@@ -148,11 +148,13 @@ class MRATransformer(nn.Module):
         """
         x_rgb: B x C x D x H x W
         """
+        print(f'input: {x_rgb.shape}')
         outs = []
         B, C, _, _, _ = x_rgb.shape
         # stage 1
         stage = 0
         x_rgb, D, H, W = self.patch_embed1(x_rgb)    # B, N, C = B, Pd*Ph*Pw, C  --> Pd=(D//2), Ph=(H//2), Pw=(W//2)
+        print(f'pe 1: {x_rgb.shape}')
         # self.logger.info('Stage 1 - Tokenization: {}'.format(x_rgb.shape))
         # print('Stage 1 - Tokenization: {}'.format(x_rgb.shape))
         # print(f'D:{D} H:{H} W:{W}')
