@@ -22,7 +22,7 @@ class WaveletTransform3D(torch.nn.Module):
         self.mode = mode
 
     def forward(self, x):
-        print(f'x:{x.shape}  ')
+        # print(f'x:{x.shape}  ')
         coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
         Yl = coeffs[0]  # Extracting the approximation coefficients
         return Yl
@@ -151,19 +151,19 @@ class MultiScaleAttention(nn.Module):
         assert N==self.D*self.H*self.W
         
         x = x.view(B, D, H, W, C)
-        print('x in attention after view: ',x.shape)
+        # print('x in attention after view: ',x.shape)
         x_windows = self.window_partition(x)
         x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
-        print(f'windows:{x_windows.shape}')
+        # print(f'windows:{x_windows.shape}')
         B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
         temp = self.qkv_proj(x).reshape(B_, Nr, 3, C).permute(2, 0, 1, 3)   # temp--> 3, B_, Nr, C
-        print(f'temp shape:{temp.shape}')
+        # print(f'temp shape:{temp.shape}')
 
         self.attn_outcome_per_group = []
         self.attn_mat_per_head = []
         
         for i in range(self.n_local_region_scales):
-            print(f'################ {i} #####################')
+            # print(f'################ {i} #####################')
             local_C = C//self.n_local_region_scales
             qkv = temp[:, :, :, i*local_C:i*local_C + local_C]
             
@@ -176,22 +176,20 @@ class MultiScaleAttention(nn.Module):
                 # 3*B, num_local_head, head_dim, num_region_6x6, Nr  
                 qkv = qkv.view(3, B, self.N_G, self.local_head, Nr, self.head_dim).reshape(-1, self.N_G, self.local_head, Nr, self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
                 qkv = qkv.reshape(B*3, local_C, D, H, W)
-                print(f'qkv: {qkv.shape}')
-
+                # print(f'qkv: {qkv.shape}')
                 ## Downsampling
                 qkv = self.dwt_downsamples[i - 1](qkv)
-                print(f'qkv after DWT: {qkv.shape}')
+                # print(f'qkv after DWT: {qkv.shape}')
 
-                
                 # 3, B, reduced_num_region_6x6, num_local_head, Nr, head_dim
                 qkv = qkv.reshape(3, B, self.local_head, self.head_dim, n_region, Nr).permute(0, 1, 4, 2, 5, 3).contiguous()
                 qkv = qkv.reshape(3, -1, self.local_head, Nr, self.head_dim)
 
             q,k,v = qkv[0], qkv[1], qkv[2]      #B_, num_local_head, Nr, Ch
-            print(f'i:{i} --> q:{q.shape} k:{k.shape} v:{v.shape}')
+            # print(f'i:{i} --> q:{q.shape} k:{k.shape} v:{v.shape}')
             
             y, attn = self.attention(q, k, v)
-            print(f'y:{y.shape} attn:{attn.shape}')
+            # print(f'y:{y.shape} attn:{attn.shape}')
             
             # B, num_local_head, Ch, num_region_6x6, Nr
             y = y.reshape(B, n_region, self.local_head, Nr , self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
@@ -217,7 +215,7 @@ class MultiScaleAttention(nn.Module):
         flops_linear_kv = 2 * self.dim * self.dim * 2
         head_dim = self.dim // self.num_heads
         flops = 0
-        print("number of heads ", self.num_heads)
+        # print("number of heads ", self.num_heads)
         for i in range(self.num_heads):
             r_size = self.local_region_shape[i]
             if r_size == 1:
