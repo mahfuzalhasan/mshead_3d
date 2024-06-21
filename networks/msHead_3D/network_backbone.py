@@ -274,8 +274,9 @@ if __name__=="__main__":
     model.cuda()
     x = torch.randn(B, C, D, H, W).cuda()
     outputs = model(x)
-    for y in outputs:
-        print(f'y shape:{y.shape}')
+    print(f'outputs: {outputs.shape}')
+    # for y in outputs:
+    #     print(f'y shape:{y.shape}')
 
 
     # Assuming 'model' is your PyTorch model
