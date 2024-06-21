@@ -1,27 +1,55 @@
-# setting device on GPU if available, else CPU
 import torch
+import torch.nn.functional as F
 
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# print('Using device:', device)
-# print()
+# def create_haar_filters():
+#     # Haar wavelet filters in 3D
+#     filters = torch.tensor([
+#         [[[1, 1], [1, 1]], [[1, 1], [1, 1]]],
+#         [[[1, 1], [1, 1]], [[-1, -1], [-1, -1]]],
+#         [[[1, 1], [-1, -1]], [[1, 1], [-1, -1]]],
+#         [[[1, 1], [-1, -1]], [[-1, -1], [1, 1]]]
+#     ], dtype=torch.float32) / 8
 
-# #Additional Info when using cuda
-# if device.type == 'cuda':
-#     print(torch.cuda.get_device_name(0))
-#     print('Memory Usage:')
-#     print('Allocated:', round(torch.cuda.memory_allocated(0)/1024**3,1), 'GB')
-#     print('Cached:   ', round(torch.cuda.memory_reserved(0)/1024**3,1), 'GB')
+#     filters = filters.unsqueeze(1)  # Add input channels dimension
+#     return filters
 
-import torch
-# from pytorch_wavelets import DWT3D  # For 2D wavelet transforms
-import pywt
+# def apply_dwt3d(data, filters):
+#     batch_size, channels, depth, height, width = data.shape
+#     transformed = []
+
+#     # Apply each filter to each channel separately
+#     for i in range(filters.shape[0]):
+#         filter_i = filters[i].unsqueeze(1)  # Shape: (1, 1, 2, 2, 2)
+#         filter_i = filter_i.repeat(1, channels, 1, 1, 1)  # Repeat filter for each channel
+#         # Apply convolution and downsampling
+#         conv_result = F.conv3d(data, filter_i, stride=2, padding=1, groups=channels)
+#         transformed.append(conv_result)
+    
+#     # Concatenate all results along the channels dimension
+#     transformed = torch.cat(transformed, dim=1)
+#     return transformed
+
+# # Example usage
+# data = torch.randn(1, 3, 64, 64, 64)  # Example tensor with B=1, C=3, D=64, H=64, W=64
+
+# # Get Haar wavelet filters
+# haar_filters = create_haar_filters()
+
+# # Apply 3D DWT
+# coeffs = apply_dwt3d(data, haar_filters)
+
+# print("DWT Coefficients shape:", coeffs.shape)
+
+
+
+
+# # Example input: a batch of 1-channel images, size 64x64
 import ptwt
-
-
-
-# Example input: a batch of 1-channel images, size 64x64
-x = torch.randn(1, 1, 64, 64, 64)
-transformed = ptwt.wavedec3(x, pywt.Wavelet("haar"), level=2, mode="reflect")
-for x in transformed:
-    print(type(x))
+import torch
+data = torch.randn(6,16,48,48,48)
+for i in range(1, 4):
+    coeffs = ptwt.wavedec3(data, wavelet="haar", level=i)
+    Y1 = coeffs[0]
+    print(Y1.shape)
+# print([(key, coeff.shape) for key, coeff in ptwt.wavedec3(data, wavelet="haar", level=2)[-1].items()])
 
