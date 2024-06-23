@@ -11,7 +11,7 @@
 #SBATCH --time=24:00:00
 
 module load conda
-conda activate medical
+conda activate waveformer
 
 cd /blue/r.forghani/scripts/mshead_3d
 
