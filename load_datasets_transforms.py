@@ -50,6 +50,7 @@ def data_loader(args):
         train_samples = {}
         valid_samples = {}
         print(f'#### loading training and validation set ########## \n')
+        print(f'Training on fold:{args.fold}')
         
         val_per_fold = 69
         start_index = val_per_fold * args.fold
