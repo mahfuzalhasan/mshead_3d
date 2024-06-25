@@ -216,8 +216,8 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             previous_step = global_step
 
 
-        # saving model after every 250 iteration
-        if (global_step % (eval_num//2) == 0) and global_step!=0:
+        # saving model after every 500 iteration
+        if (global_step % (eval_num) == 0) and global_step!=0:
             save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
         
         # evaluating after every 500 iteration
