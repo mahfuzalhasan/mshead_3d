@@ -30,7 +30,7 @@ class WaveletTransform3D(torch.nn.Module):
 
 class MultiScaleAttention(nn.Module):
     def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., 
-                    proj_drop=0., n_local_region_scales = 3, window_size=6, img_size=(32, 32)):
+                    proj_drop=0., window_size=6, img_size=(48, 48, 48)):
         super().__init__()
         assert dim % num_heads == 0, f"dim {dim} should be divided by num_heads {num_heads}."
 
@@ -41,15 +41,17 @@ class MultiScaleAttention(nn.Module):
         
         self.window_size = window_size
         
-        self.n_local_region_scales = n_local_region_scales
-        self.local_dim = self.dim//self.n_local_region_scales
-        self.local_head = self.num_heads//self.n_local_region_scales
-        
         self.img_size = img_size
         self.D, self.H, self.W = img_size[0], img_size[1], img_size[2]
         self.N_G = self.D//self.window_size * self.H//self.window_size * self.W//self.window_size
 
-        assert self.num_heads%n_local_region_scales == 0
+        self.factor = int(self.H//self.window_size)
+        self.level = int(math.log2(self.factor))
+
+        if self.level > 0:
+            self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=self.level)
+
+        # assert self.num_heads%n_local_region_scales == 0
         # Linear embedding
         self.qkv_proj = nn.Linear(dim, dim*3, bias=qkv_bias) 
         # self.kv = nn.Linear(dim, dim * 2, bias=qkv_bias)
@@ -57,15 +59,10 @@ class MultiScaleAttention(nn.Module):
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
         
-        self.dwt_downsamples = nn.ModuleList([
-            WaveletTransform3D(wavelet='haar', level=i)
-            for i in range(1, n_local_region_scales)
-        ])
-
         # define a parameter table of relative position bias
         self.relative_position_bias_table = nn.Parameter(
             torch.zeros((2 * self.window_size - 1) * (2 * self.window_size - 1) * (2 * self.window_size - 1),
-                        self.local_head))  
+                        self.num_heads))  
 
         # get pair-wise relative position index for each token inside the window
         coords_s = torch.arange(self.window_size)
@@ -139,74 +136,48 @@ class MultiScaleAttention(nn.Module):
 
 
 
-    def forward(self, x, D, H, W):
+    def forward(self, x):
         #####print('!!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
-        # N = H*W
-        self.D=D
-        self.H=H
-        self.W=W
         A = []
+        D, H, W = self.D, self.H, self.W
         B, N, C = x.shape
         
         assert N==self.D*self.H*self.W
         
         x = x.view(B, D, H, W, C)
+        if self.level > 0:
+            x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
+            x, Yh = self.dwt_downsamples(x)
+            x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D,H,W,C
+        output_size = (x.shape[1], x.shape[2], x.shape[3])
+        n_region = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
+
         # print('x in attention after view: ',x.shape)
         x_windows = self.window_partition(x)
         x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
         # print(f'windows:{x_windows.shape}')
         B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
-        temp = self.qkv_proj(x).reshape(B_, Nr, 3, C).permute(2, 0, 1, 3)   # temp--> 3, B_, Nr, C
-        # print(f'temp shape:{temp.shape}')
-
-        self.attn_outcome_per_group = []
-        self.attn_mat_per_head = []
         
-        for i in range(self.n_local_region_scales):
-            # print(f'################ {i} #####################')
-            local_C = C//self.n_local_region_scales
-            qkv = temp[:, :, :, i*local_C:i*local_C + local_C]
-            
-            # 3, B*num_region_6x6, num_local_head, Nr, head_dim
-            qkv = qkv.reshape(3, B_, Nr, self.local_head, self.head_dim).permute(0, 1, 3, 2, 4).contiguous()
-            
-            output_size = (self.D//pow(2,i), self.H//pow(2,i), self.W//pow(2,i))
-            n_region = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
-            if i>0:
-                # 3*B, num_local_head, head_dim, num_region_6x6, Nr  
-                qkv = qkv.view(3, B, self.N_G, self.local_head, Nr, self.head_dim).reshape(-1, self.N_G, self.local_head, Nr, self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
-                qkv = qkv.reshape(B*3, local_C, D, H, W)
-                # print(f'qkv: {qkv.shape}')
-                ## Downsampling
-                qkv = self.dwt_downsamples[i - 1](qkv)
-                # print(f'qkv after DWT: {qkv.shape}')
+        ######## Attention
+        qkv = self.qkv_proj(x).reshape(B_, Nr, 3, C).permute(2, 0, 1, 3)   # temp--> 3, B_, Nr, C
+        # 3, B*num_region_7x7, num_head, Nr, head_dim
+        qkv = qkv.reshape(3, B_, Nr, self.num_heads, self.head_dim).permute(0, 1, 3, 2, 4).contiguous() 
+        q,k,v = qkv[0], qkv[1], qkv[2]      #B_, h, Nr, Ch
+        #B_, h, Nr, Ch 
+        y, attn = self.attention(q, k, v)
+        #######################
 
-                # 3, B, reduced_num_region_6x6, num_local_head, Nr, head_dim
-                qkv = qkv.reshape(3, B, self.local_head, self.head_dim, n_region, Nr).permute(0, 1, 4, 2, 5, 3).contiguous()
-                qkv = qkv.reshape(3, -1, self.local_head, Nr, self.head_dim)
+        # B, num_head, Ch, num_region_6x6, Nr
+        y = y.reshape(B, n_region, self.num_heads, Nr, self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
+        y = y.reshape(B, C, output_size[0], output_size[1], output_size[2])
+        if self.level>0:
+            y = F.interpolate(y, size=(self.D, self.H, self.W), mode='trilinear')
 
-            q,k,v = qkv[0], qkv[1], qkv[2]      #B_, num_local_head, Nr, Ch
-            # print(f'i:{i} --> q:{q.shape} k:{k.shape} v:{v.shape}')
-            
-            y, attn = self.attention(q, k, v)
-            # print(f'y:{y.shape} attn:{attn.shape}')
-            
-            # B, num_local_head, Ch, num_region_6x6, Nr
-            y = y.reshape(B, n_region, self.local_head, Nr , self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
-            y = y.reshape(B, local_C, output_size[0], output_size[1], output_size[2])
-            if i>0:
-                y = F.interpolate(y, size=(self.D, self.H, self.W), mode='trilinear')
-            
-            y = y.view(B, self.local_head, self.head_dim, self.D, self.H, self.W).permute(0, 1, 3, 4, 5, 2).contiguous()
-            
-            self.attn_outcome_per_group.append(y)
-
-        # concatenating multi-group attention
-        attn_fused = torch.cat(self.attn_outcome_per_group, axis=1)
-        attn_fused = attn_fused.reshape(B, self.num_heads, -1, C//self.num_heads)
+        y = y.view(B, self.num_heads, self.head_dim, self.D, self.H, self.W).permute(0, 1, 3, 4, 5, 2).contiguous()
+        attn_fused = y.reshape(B, self.num_heads, -1, C//self.num_heads)
         attn_fused = attn_fused.permute(0, 2, 1, 3).contiguous().reshape(B, N, C)
         attn_fused = self.proj(attn_fused)
-        attn_fused = self.proj_drop(attn_fused )
+        attn_fused = self.proj_drop(attn_fused)
         return attn_fused
 
     def flops(self):

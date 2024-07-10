@@ -105,7 +105,6 @@ if args.network == 'MSHEAD':
         depths=[2,2,6,2],
         feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
-        local_region_Scales=[3,3,2,1],
         use_checkpoint=False,
     ).to(device)
 elif args.network == 'SwinUNETR':

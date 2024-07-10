@@ -63,11 +63,12 @@ class DWConv(nn.Module):
 
 
 class CCF_FFN(nn.Module):
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, norm_layer=nn.LayerNorm, drop=0.):
+    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, norm_layer=nn.LayerNorm, drop=0., img_size=(48, 48, 48)):
         super().__init__()
         """
         FFN Block
         """
+        self.D, self.H, self.W = img_size[0], img_size[1], img_size[2]
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         self.C_hid = hidden_features
@@ -103,8 +104,10 @@ class CCF_FFN(nn.Module):
             if m.bias is not None:
                 m.bias.data.zero_()
 
-    def forward(self, x, D, H, W):
+    def forward(self, x):
+        D, H, W = self.D, self.H, self.W
         B, N, C = x.shape
+        assert N == D * H * W
         x_perm = x.permute(0, 2, 1).contiguous().view(B, C, D, H, W)
         
         p_out = self.pwconv(x_perm).reshape(B, self.C_hid, N).permute(0, 2, 1).contiguous()
@@ -168,22 +171,19 @@ class Mlp(nn.Module):
 
 class Block(nn.Module):
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, n_local_region_scales=3, img_size=(96, 96, 96)):
+                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, img_size=(1024, 1024)):
         super().__init__()
         self.norm1 = norm_layer(dim)
-        self.n_local_region_scales = n_local_region_scales
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.attn = MultiScaleAttention(
-            dim,
-            num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
-            attn_drop=attn_drop, proj_drop=drop, 
-            n_local_region_scales=self.n_local_region_scales, img_size=img_size)
+            dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
+            attn_drop=attn_drop, proj_drop=drop, img_size=img_size)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
         self.norm2 = norm_layer(dim)
         
-        self.mlp = CCF_FFN(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, norm_layer=norm_layer, drop=drop)
+        self.mlp = CCF_FFN(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, norm_layer=norm_layer, drop=drop, img_size=img_size)
 
         self.apply(self._init_weights)
 
@@ -195,16 +195,16 @@ class Block(nn.Module):
         elif isinstance(m, nn.LayerNorm):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
-        elif isinstance(m, nn.Conv2d):
+        elif isinstance(m, nn.Conv3d):
             fan_out = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
             fan_out //= m.groups
             m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
             if m.bias is not None:
                 m.bias.data.zero_()
 
-    def forward(self, x, D, H, W):
-        x = x + self.drop_path(self.attn(self.norm1(x), D, H, W))
-        x = x + self.drop_path(self.mlp(self.norm2(x), D, H, W))
+    def forward(self, x):
+        x = x + self.drop_path(self.attn(self.norm1(x)))
+        x = x + self.drop_path(self.mlp(self.norm2(x)))
         return x
     
     def flops(self):
