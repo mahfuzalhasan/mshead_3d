@@ -46,7 +46,7 @@ import torch.nn.functional as F
 # # Example input: a batch of 1-channel images, size 64x64
 import ptwt
 import torch
-data = torch.randn(6,16,48,48,48)
+data = torch.randn(2,48,48,48,48)
 for i in range(1, 4):
     coeffs = ptwt.wavedec3(data, wavelet="haar", level=i)
     Y1 = coeffs[0]
