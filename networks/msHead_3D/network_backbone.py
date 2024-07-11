@@ -55,7 +55,7 @@ class MSHEAD_ATTN(nn.Module):
         depths=[1, 1, 1, 1],
         feat_size=[48, 96, 192, 384],
         num_heads = [3, 6, 12, 24],
-        local_region_Scales = [3,3,2,1],
+        local_region_Scales = [3,2,2,1],
         drop_path_rate=0,
         layer_scale_init_value=1e-6,
         hidden_size: int = 768,

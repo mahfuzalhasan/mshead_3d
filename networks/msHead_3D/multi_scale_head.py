@@ -59,7 +59,7 @@ class MultiScaleAttention(nn.Module):
         
         self.dwt_downsamples = nn.ModuleList([
             WaveletTransform3D(wavelet='haar', level=i)
-            for i in range(1, n_local_region_scales)
+            for i in range(1, n_local_region_scales+1)
         ])
 
         # define a parameter table of relative position bias
@@ -140,7 +140,7 @@ class MultiScaleAttention(nn.Module):
 
 
     def forward(self, x, D, H, W):
-        #####print('!!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
+        # print('!!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
         # N = H*W
         self.D=D
         self.H=H
