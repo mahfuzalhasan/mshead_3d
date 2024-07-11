@@ -49,7 +49,7 @@ class MultiScaleAttention(nn.Module):
         self.level = int(math.log2(self.factor))
 
         if self.level > 0:
-            self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=self.level)
+            self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=2)
 
         # assert self.num_heads%n_local_region_scales == 0
         # Linear embedding
