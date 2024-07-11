@@ -137,7 +137,7 @@ class MultiScaleAttention(nn.Module):
 
 
     def forward(self, x):
-        print('!!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
+        # print('!!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
         A = []
         D, H, W = self.D, self.H, self.W
         B, N, C = x.shape
@@ -148,7 +148,7 @@ class MultiScaleAttention(nn.Module):
         if self.level > 0:
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             print(f'x:{x.shape} level:{self.level}')
-            x, Yh = self.dwt_downsamples(x)
+            x = self.dwt_downsamples(x)
             print(f'x:{x.shape} level:{self.level}')
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D,H,W,C
         output_size = (x.shape[1], x.shape[2], x.shape[3])
