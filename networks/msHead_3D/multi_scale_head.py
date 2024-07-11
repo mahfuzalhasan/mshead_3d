@@ -162,7 +162,7 @@ class MultiScaleAttention(nn.Module):
         self.attn_outcome_per_group = []
         self.attn_mat_per_head = []
         
-        for i in range(self.n_local_region_scales):
+        for i in range(self.n_local_region_scales + 1):
             # print(f'################ {i} #####################')
             local_C = C//self.n_local_region_scales
             qkv = temp[:, :, :, i*local_C:i*local_C + local_C]
