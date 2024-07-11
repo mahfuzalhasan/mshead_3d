@@ -147,6 +147,7 @@ class MultiScaleAttention(nn.Module):
         x = x.view(B, D, H, W, C)
         if self.level > 0:
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
+            print(f'x:{x.shape} level:{self.level}')
             x, Yh = self.dwt_downsamples(x)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D,H,W,C
         output_size = (x.shape[1], x.shape[2], x.shape[3])
