@@ -59,7 +59,7 @@ class MultiScaleAttention(nn.Module):
         
         self.dwt_downsamples = nn.ModuleList([
             WaveletTransform3D(wavelet='haar', level=i)
-            for i in range(1, n_local_region_scales+1)
+            for i in range(1, n_local_region_scales)
         ])
 
         # define a parameter table of relative position bias
@@ -162,7 +162,7 @@ class MultiScaleAttention(nn.Module):
         self.attn_outcome_per_group = []
         self.attn_mat_per_head = []
         
-        for i in range(self.n_local_region_scales + 1):
+        for i in range(self.n_local_region_scales):
             # print(f'################ {i} #####################')
             local_C = C//self.n_local_region_scales
             qkv = temp[:, :, :, i*local_C:i*local_C + local_C]
@@ -176,10 +176,10 @@ class MultiScaleAttention(nn.Module):
                 # 3*B, num_local_head, head_dim, num_region_6x6, Nr  
                 qkv = qkv.view(3, B, self.N_G, self.local_head, Nr, self.head_dim).reshape(-1, self.N_G, self.local_head, Nr, self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
                 qkv = qkv.reshape(B*3, local_C, D, H, W)
-                print(f'qkv: {qkv.shape}')
+                # print(f'qkv: {qkv.shape}')
                 ## Downsampling
                 qkv = self.dwt_downsamples[i - 1](qkv)
-                print(f'qkv after DWT: {qkv.shape}')
+                # print(f'qkv after DWT: {qkv.shape}')
 
                 # 3, B, reduced_num_region_6x6, num_local_head, Nr, head_dim
                 qkv = qkv.reshape(3, B, self.local_head, self.head_dim, n_region, Nr).permute(0, 1, 4, 2, 5, 3).contiguous()
