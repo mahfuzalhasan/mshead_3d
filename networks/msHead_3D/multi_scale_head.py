@@ -156,7 +156,7 @@ class MultiScaleAttention(nn.Module):
         qkv = qkv.reshape(3, B_, Nr, self.num_heads, self.head_dim).permute(0, 1, 3, 2, 4).contiguous()
         
         if self.level > 0:
-            qkv = qkv.view(3, B, self.N_G, self.num_heads, Nr, self.head_dim).reshape(-1, self.N_G, self.local_head, Nr, self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
+            qkv = qkv.view(3, B, self.N_G, self.num_heads, Nr, self.head_dim).reshape(-1, self.N_G, self.num_heads, Nr, self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
             qkv = qkv.reshape(B*3, C, D, H, W)
             qkv = self.dwt_downsamples(qkv)
             qkv = qkv.reshape(3, B, self.num_heads, self.head_dim, n_region, Nr).permute(0, 1, 4, 2, 5, 3).contiguous()
