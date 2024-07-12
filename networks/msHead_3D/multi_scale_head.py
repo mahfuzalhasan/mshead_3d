@@ -143,25 +143,26 @@ class MultiScaleAttention(nn.Module):
         B, N, C = x.shape
         
         assert N==self.D*self.H*self.W
-        
-        x = x.view(B, D, H, W, C)
-        if self.level > 0:
-            x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
-            x = self.dwt_downsamples(x)
-            x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D,H,W,C
-        output_size = (x.shape[1], x.shape[2], x.shape[3])
-        n_region = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
 
-        # print('x in attention after view: ',x.shape)
+        x = x.view(B, D, H, W, C)
+        output_size = (x.shape[1]//(2**self.level), x.shape[2]//(2**self.level), x.shape[3]//(2**self.level))
+        n_region = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
+        
         x_windows = self.window_partition(x)
         x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
         # print(f'windows:{x_windows.shape}')
         B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
-        
-        ######## Attention
         qkv = self.qkv_proj(x).reshape(B_, Nr, 3, C).permute(2, 0, 1, 3)   # temp--> 3, B_, Nr, C
-        # 3, B*num_region_7x7, num_head, Nr, head_dim
-        qkv = qkv.reshape(3, B_, Nr, self.num_heads, self.head_dim).permute(0, 1, 3, 2, 4).contiguous() 
+        qkv = qkv.reshape(3, B_, Nr, self.num_heads, self.head_dim).permute(0, 1, 3, 2, 4).contiguous()
+        
+        if self.level > 0:
+            qkv = qkv.view(3, B, self.N_G, self.num_heads, Nr, self.head_dim).reshape(-1, self.N_G, self.local_head, Nr, self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
+            qkv = qkv.reshape(B*3, C, D, H, W)
+            qkv = self.dwt_downsamples(qkv)
+            qkv = qkv.reshape(3, B, self.local_head, self.head_dim, n_region, Nr).permute(0, 1, 4, 2, 5, 3).contiguous()
+            qkv = qkv.reshape(3, -1, self.local_head, Nr, self.head_dim)
+        
+        ######## Attention 
         q,k,v = qkv[0], qkv[1], qkv[2]      #B_, h, Nr, Ch
         #B_, h, Nr, Ch 
         y, attn = self.attention(q, k, v)
