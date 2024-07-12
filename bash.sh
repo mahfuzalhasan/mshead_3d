@@ -13,7 +13,7 @@
 module load conda
 conda activate waveformer
 
-cd /blue/r.forghani/scripts/mshead_3d
+cd /blue/r.forghani/mdmahfuzalhasan/scripts/mshead_3d
 
 # Execute the Python script
 srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
