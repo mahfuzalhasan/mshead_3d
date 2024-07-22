@@ -280,9 +280,9 @@ print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
 if args.resume:
     # model_path = '/orange/r.forghani/results/06-26-24_2259/model_36500.pth'
     if args.fold == 0:
-        model_path = '/orange/r.forghani/results/07-11-24_2054/model_26500.pth'
+        model_path = '/orange/r.forghani/results/07-11-24_2054/model_36500.pth'
     elif args.fold == 1:
-        model_path = '/orange/r.forghani/results/07-11-24_2121/model_27000.pth'
+        model_path = '/orange/r.forghani/results/07-11-24_2121/model_33000.pth'
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict['model'])
     optimizer.load_state_dict(state_dict['optimizer'])
