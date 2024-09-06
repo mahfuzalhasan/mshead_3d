@@ -165,7 +165,7 @@ def validation(val_loader):
     return mean_dice_val
 
 
-def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, save_dir, best=False):
+def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, global_step_best, save_dir, best=False):
     s_time = time.time()
     save_file_path = os.path.join(save_dir, 'model_{}.pth'.format(iteration))
     if best:
@@ -176,6 +176,7 @@ def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, sa
                   'lr_scheduler': lr_scheduler.state_dict(),
                   'dice_score': dice_score,
                   'global_step': iteration,
+                  'global_step_best': global_step_best,
                   'run_id':str(run_id)}
     torch.save(save_state, save_file_path)
     save_time = time.time() - s_time
@@ -217,7 +218,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
 
         # saving model after every 500 iteration
         if (global_step % (eval_num) == 0) and global_step!=0:
-            save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir)
+            save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
         
         # evaluating after every 500 iteration
         if (global_step % eval_num) == 0 and global_step!=0 or global_step == max_iterations-1:
@@ -229,7 +230,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             if dice_val > dice_val_best:
                 dice_val_best = dice_val
                 global_step_best = global_step
-                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, root_dir, best=True)
+                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir, best=True)
                 print(
                     "Model Was Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
                         dice_val_best, dice_val
@@ -288,6 +289,7 @@ if args.resume:
     optimizer.load_state_dict(state_dict['optimizer'])
     scheduler.load_state_dict(state_dict['lr_scheduler'])
     global_step = state_dict['global_step'] + 1
+    global_step_best = state_dict['global_step_best']
     run_id = state_dict['run_id']
     dice_val_best = state_dict['dice_score']
     print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
