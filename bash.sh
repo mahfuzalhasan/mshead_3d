@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=python_train_flare
+#SBATCH --job-name=python_train_feta
 #SBATCH --output=/blue/r.forghani/scripts/mshead_3d/results/feta_wavelet_max_ds_job.%J.out
 #SBATCH --error=/blue/r.forghani/scripts/mshead_3d/results/feta_wavelet_max_ds_job.%J.err
 #SBATCH --nodes=1
