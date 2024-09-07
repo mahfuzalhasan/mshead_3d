@@ -245,7 +245,7 @@ if __name__=="__main__":
         embed_dims=[48,96,192,384],
         depths=[2,2,2,2],
         num_heads = [3,6,12,24],
-        deop_path_rate=0)
+        drop_path_rate=0)
     
     # ########print(backbone)
     B = 2
