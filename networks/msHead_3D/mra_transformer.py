@@ -15,6 +15,7 @@ sys.path.append(model_dir)
 import torch
 import torch.nn as nn
 import torch.nn.init as init
+from ptflops import get_model_complexity_info
 from mra_helper import OverlapPatchEmbed, Block, PosCNN, PatchEmbed
 # import sys
 # sys.path.append('..')
@@ -253,6 +254,9 @@ if __name__=="__main__":
     for i,out in enumerate(outputs):
         print(f'{i}:{out.size()}')
 
-    # Assuming 'model' is your PyTorch model
     total_params = sum(p.numel() for p in backbone.parameters() if p.requires_grad)
     print(f"Total trainable parameters: {total_params}")
+
+    macs, params = get_model_complexity_info(backbone, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
+    print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
+    print('{:<30}  {:<8}'.format('Number of parameters: ', params))
