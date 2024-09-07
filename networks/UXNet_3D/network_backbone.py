@@ -22,6 +22,7 @@ import torch.nn.functional as F
 # from lib.utils.tools.logger import Logger as Log
 from lib.models.tools.module_helper import ModuleHelper
 from networks.UXNet_3D.uxnet_encoder import uxnet_conv
+from ptflops import get_model_complexity_info
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -327,5 +328,11 @@ if __name__=="__main__":
     outputs = model(x)
     for y in outputs:
         print(f'y shape:{y.shape}')
+
+    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"Total trainable parameters: {total_params}")
+    macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
+    print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
+    print('{:<30}  {:<8}'.format('Number of parameters: ', params))
     
     
