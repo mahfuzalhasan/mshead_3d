@@ -240,7 +240,7 @@ class mra_b0(MRATransformer):
 
 
 if __name__=="__main__":
-    backbone = mra_b0(norm_layer = partial(nn.LayerNorm, eps=1e-6))
+    backbone = mra_b0()
     
     # ########print(backbone)
     B = 2
