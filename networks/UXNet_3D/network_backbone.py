@@ -288,9 +288,8 @@ class UXNET(nn.Module):
         print(outs[2].size())
         print(outs[3].size())
         print(f'encoder-1: {self.encoder1}')
-
         enc1 = self.encoder1(x_in)
-        print(f'enc1_output:{enc1.size()}')
+        print(f'enc1: input:{x_in.shape} output:{enc1.size()}')
         x2 = outs[0]
         print(f'encoder-2: {self.encoder2}')
         enc2 = self.encoder2(x2)
@@ -307,10 +306,16 @@ class UXNET(nn.Module):
         print(f'encoder-5: {self.encoder5}')
         enc_hidden = self.encoder5(outs[3])
         print(f'enc_5 input:{outs[3].shape} output:{enc_hidden.size()}')
+
+        print(f'Decoder 5:{self.decoder5} ')
         dec3 = self.decoder5(enc_hidden, enc4)
+        print(f'Decoder 4:{self.decoder4} ')
         dec2 = self.decoder4(dec3, enc3)
+        print(f'Decoder 3:{self.decoder3} ')
         dec1 = self.decoder3(dec2, enc2)
+        print(f'Decoder 2:{self.decoder2} ')
         dec0 = self.decoder2(dec1, enc1)
+        print(f'Decoder 1:{self.decoder1} ')
         out = self.decoder1(dec0)
         
         # feat = self.conv_proj(dec4)
