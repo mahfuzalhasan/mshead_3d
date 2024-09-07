@@ -275,7 +275,7 @@ if __name__=="__main__":
     x = torch.randn(B, C, D, H, W).cuda()
     # outputs = model(x)
     # print(f'outputs: {outputs.shape}')
-    encoder_net = model.multiscale_transformer()
+    encoder_net = model.multiscale_transformer
     y = encoder_net(x)
     for y in encoder_net:
         print(f'y shape:{y.shape}')
