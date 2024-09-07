@@ -276,8 +276,8 @@ if __name__=="__main__":
     # outputs = model(x)
     # print(f'outputs: {outputs.shape}')
     encoder_net = model.multiscale_transformer
-    y = encoder_net(x)
-    for y in encoder_net:
+    encoder_outputs = encoder_net(x)
+    for y in encoder_outputs:
         print(f'y shape:{y.shape}')
     # Assuming 'model' is your PyTorch model
     total_params = sum(p.numel() for p in encoder_net.parameters() if p.requires_grad)
