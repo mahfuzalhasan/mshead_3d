@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from timm.models.layers import trunc_normal_, DropPath
 from functools import partial
+from ptflops import get_model_complexity_info
 
 class LayerNorm(nn.Module):
     r""" LayerNorm that supports two data formats: channels_last (default) or channels_first.
@@ -141,12 +142,12 @@ class uxnet_conv(nn.Module):
     def forward_features(self, x):
         outs = []
         for i in range(4):
-            #print(f'######## stage:{i} ##########')
-            # #print(x.size())
+            print(f'######## stage:{i} ##########')
+            print(x.size())
             x = self.downsample_layers[i](x)
-            #print(f'ds:{x.shape}')
+            print(f'ds:{x.shape}')
             x = self.stages[i](x)
-            #print(f'stage:{i} output :{x.shape}')
+            print(f'stage:{i} output :{x.shape}')
             # exit()
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
@@ -171,3 +172,10 @@ if __name__=="__main__":
     outputs = model(x)
     for y in outputs:
         print(f'y shape:{y.shape}')
+
+    total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"Total trainable parameters: {total_params}")
+    macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
+    print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
+    print('{:<30}  {:<8}'.format('Number of parameters: ', params))
+    

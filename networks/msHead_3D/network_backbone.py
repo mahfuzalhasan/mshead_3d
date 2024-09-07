@@ -53,7 +53,7 @@ class MSHEAD_ATTN(nn.Module):
         img_size = (96,96,96),
         in_chans=1,
         out_chans=13,
-        depths=[1, 1, 1, 1],
+        depths=[2, 2, 2, 2],
         feat_size=[48, 96, 192, 384],
         num_heads = [3, 6, 12, 24],
         drop_path_rate=0,
