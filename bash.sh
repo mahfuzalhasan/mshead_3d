@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=python_train_flare
-#SBATCH --output=/blue/r.forghani/scripts/mshead_3d/results/job.%J.out
-#SBATCH --error=/blue/r.forghani/scripts/mshead_3d/results/job.%J.err
+#SBATCH --output=/blue/r.forghani/scripts/mshead_3d/results/wavelet_max_ds_job.%J.out
+#SBATCH --error=/blue/r.forghani/scripts/mshead_3d/results/wavelet_max_ds_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
