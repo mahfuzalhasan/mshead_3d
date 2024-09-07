@@ -53,7 +53,7 @@ class MSHEAD_ATTN(nn.Module):
         img_size = (96,96,96),
         in_chans=1,
         out_chans=13,
-        depths=[2, 2, 2, 2],
+        depths=[2, 2, 6, 2],
         feat_size=[48, 96, 192, 384],
         num_heads = [3, 6, 12, 24],
         drop_path_rate=0,
@@ -223,11 +223,11 @@ class MSHEAD_ATTN(nn.Module):
     
     def forward(self, x_in):
         outs = self.multiscale_transformer(x_in)
-        # print(f'output from ms transformer: \n')
-        # print(outs[0].size())
-        # print(outs[1].size())
-        # print(outs[2].size())
-        # print(outs[3].size())
+        print(f'output from ms transformer: \n')
+        print(outs[0].size())
+        print(outs[1].size())
+        print(outs[2].size())
+        print(outs[3].size())
         # print(f'encoder-1: {self.encoder1}')
 
         enc1 = self.encoder1(x_in)
