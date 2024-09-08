@@ -165,7 +165,7 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        print(f'encoder 5:{self.encoder5}')
+        # print(f'encoder 5:{self.encoder5}')
 
         self.decoder5 = UnetrUpBlock(
             spatial_dims=spatial_dims,
@@ -225,11 +225,11 @@ class MSHEAD_ATTN(nn.Module):
     
     def forward(self, x_in):
         outs = self.multiscale_transformer(x_in)
-        print(f'output from ms transformer: \n')
-        print(outs[0].size())
-        print(outs[1].size())
-        print(outs[2].size())
-        print(outs[3].size())
+        # print(f'output from ms transformer: \n')
+        # print(outs[0].size())
+        # print(outs[1].size())
+        # print(outs[2].size())
+        # print(outs[3].size())
         # print(f'encoder-1: {self.encoder1}')
 
         enc1 = self.encoder1(x_in)
@@ -271,14 +271,14 @@ if __name__=="__main__":
     H = 96
     W = 96
     num_classes = 5
-    # model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes)
-    model = SwinUNETR(
-        img_size=(96, 96, 96),
-        in_channels=1,
-        out_channels=num_classes,
-        feature_size=48,
-        use_checkpoint=False,
-    )
+    model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes)
+    # model = SwinUNETR(
+    #     img_size=(96, 96, 96),
+    #     in_channels=1,
+    #     out_channels=num_classes,
+    #     feature_size=48,
+    #     use_checkpoint=False,
+    # )
     model.cuda()
     x = torch.randn(B, C, D, H, W).cuda()
     outputs = model(x)
