@@ -15,6 +15,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 import torch
 import torch.nn as nn
 from ptflops import get_model_complexity_info
+from monai.networks.nets import UNETR, SwinUNETR
 
 from monai.networks.blocks.dynunet_block import UnetOutBlock
 from monai.networks.blocks.unetr_block import UnetrBasicBlock, UnetrUpBlock
@@ -270,7 +271,14 @@ if __name__=="__main__":
     H = 96
     W = 96
     num_classes = 5
-    model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes)
+    # model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes)
+    model = SwinUNETR(
+        img_size=(96, 96, 96),
+        in_channels=1,
+        out_channels=num_classes,
+        feature_size=48,
+        use_checkpoint=False,
+    )
     model.cuda()
     x = torch.randn(B, C, D, H, W).cuda()
     outputs = model(x)
