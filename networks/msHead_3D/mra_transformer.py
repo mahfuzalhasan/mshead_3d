@@ -15,7 +15,7 @@ sys.path.append(model_dir)
 import torch
 import torch.nn as nn
 import torch.nn.init as init
-from mra_helper import OverlapPatchEmbed, Block, PosCNN, PatchEmbed
+from mra_helper import OverlapPatchEmbed, Block, PosCNN, PatchEmbed, PatchMerging3D
 from ptflops import get_model_complexity_info
 # import sys
 # sys.path.append('..')
@@ -30,7 +30,7 @@ from functools import partial
 
 # How to apply multihead multiscale
 class MRATransformer(nn.Module):
-    def __init__(self, img_size=(96, 96, 96), patch_size=2, in_chans=1, num_classes=5, embed_dims=[48, 96, 192, 384], 
+    def __init__(self, img_size=(96, 96, 96), patch_size=2, in_chans=1, num_classes=5, embed_dims=[48, 96, 192, 384, 768], 
                  num_heads=[3, 6, 12, 24], mlp_ratios=[4, 4, 4, 4], qkv_bias=False, qk_scale=None, drop_rate=0.,
                  attn_drop_rate=0., drop_path_rate=0., norm_layer=nn.LayerNorm, 
                  depths=[2, 2, 2, 2]):
@@ -50,6 +50,8 @@ class MRATransformer(nn.Module):
                                               embed_dim=embed_dims[2], norm_layer=norm_layer)
         self.patch_embed4 = PatchEmbed(img_size=(img_size[0]// 8, img_size[1]//8, img_size[2]//8), patch_size=2, in_chans=embed_dims[2],
                                               embed_dim=embed_dims[3], norm_layer=norm_layer)
+        self.patch_embed5 = PatchEmbed(img_size=(img_size[0]// 16, img_size[1]//16, img_size[2]//16), patch_size=2, in_chans=embed_dims[3],
+                                              embed_dim=embed_dims[4], norm_layer=norm_layer)
         # transformer encoder
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]  # stochastic depth decay rule
         cur = 0
@@ -152,57 +154,42 @@ class MRATransformer(nn.Module):
         # print(f'input: {x_rgb.shape}')
         outs = []
         B, C, _, _, _ = x_rgb.shape
-        # stage 1
         stage = 0
-        x_rgb, D, H, W = self.patch_embed1(x_rgb)    # B, N, C = B, Pd*Ph*Pw, C  --> Pd=(D//2), Ph=(H//2), Pw=(W//2)
-        # print(f'pe 1: {x_rgb.shape}')
-        # self.logger.info('Stage 1 - Tokenization: {}'.format(x_rgb.shape))
-        # print('Stage 1 - Tokenization: {}'.format(x_rgb.shape))
-        # print(f'D:{D} H:{H} W:{W}')
-        # exit()
+        # B, N, C = B, Pd*Ph*Pw, C  --> Pd=(D//2), Ph=(H//2), Pw=(W//2)
+        x_rgb, D, H, W = self.patch_embed1(x_rgb)    # There is norm at the end of PatchEMbed 
+        outs.append(x_rgb)
+
+        # stage 1        
         for j,blk in enumerate(self.block1):
             x_rgb = blk(x_rgb)
         # print('########### Stage 1 - Output: {}'.format(x_rgb.shape))
-        x_rgb = self.norm1(x_rgb)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
-        # print('########### Stage 1 - Output: {}'.format(x_rgb.shape))
+        x_rgb, D, H, W = self.patch_embed2(x_rgb)       # There is norm at the end of PatchEMbed
         outs.append(x_rgb)
 
         # stage 2
         stage += 1
-        x_rgb, D, H, W = self.patch_embed2(x_rgb)
-        # print('Stage 2 - Tokenization: {}'.format(x_rgb.shape))
-        # print(f'D:{D} H:{H} W:{W}')
         for j,blk in enumerate(self.block2):
             x_rgb = blk(x_rgb)
-        x_rgb = self.norm2(x_rgb)
+        # x_rgb = self.norm2(x_rgb)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
-        # print('############# Stage 2 - Output: {}'.format(x_rgb.shape))
+        x_rgb, D, H, W = self.patch_embed3(x_rgb)       # There is norm at the end of PatchEMbed
         outs.append(x_rgb)
 
         # stage 3
         stage += 1
-        x_rgb, D, H, W = self.patch_embed3(x_rgb)
-        # print('Stage 3 - Tokenization: {}'.format(x_rgb.shape))
-        # print(f'D:{D} H:{H} W:{W}')
         for j,blk in enumerate(self.block3):
             x_rgb = blk(x_rgb)
-        x_rgb = self.norm3(x_rgb)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
-        # print('###########Stage 3 - Output: {}'.format(x_rgb.shape))
+        x_rgb, D, H, W = self.patch_embed4(x_rgb)       # There is norm at the end of PatchEMbed
         outs.append(x_rgb)
 
         # stage 4
         stage += 1
-        x_rgb, D, H, W = self.patch_embed4(x_rgb)
-        # print('Stage 4 - Tokenization: {}'.format(x_rgb.shape))
-        # print(f'D:{D} H:{H} W:{W}')
         for j,blk in enumerate(self.block4):
             x_rgb = blk(x_rgb)
-        x_rgb = self.norm4(x_rgb)   # B, L, C
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
-        # print('######## Stage 4 - Output: {}'.format(x_rgb.shape))
-        # print(f'D:{D} H:{H} W:{W}')
+        x_rgb, D, H, W = self.patch_embed5(x_rgb)       # There is norm at the end of PatchEMbed
         outs.append(x_rgb)
         return outs
 

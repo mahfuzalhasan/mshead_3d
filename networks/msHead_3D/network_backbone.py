@@ -130,7 +130,7 @@ class MSHEAD_ATTN(nn.Module):
         self.encoder2 = UnetrBasicBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[0],
-            out_channels=self.feat_size[1],
+            out_channels=self.feat_size[0],
             kernel_size=3,
             stride=1,
             norm_name=norm_name,
@@ -139,7 +139,7 @@ class MSHEAD_ATTN(nn.Module):
         self.encoder3 = UnetrBasicBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[1],
-            out_channels=self.feat_size[2],
+            out_channels=self.feat_size[1],
             kernel_size=3,
             stride=1,
             norm_name=norm_name,
@@ -148,19 +148,19 @@ class MSHEAD_ATTN(nn.Module):
         self.encoder4 = UnetrBasicBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[2],
-            out_channels=self.feat_size[3],
+            out_channels=self.feat_size[2],
             kernel_size=3,
             stride=1,
             norm_name=norm_name,
             res_block=res_block,
         )
 
-        self.encoder5 = UnetrBasicBlock(
+        self.encoder10 = UnetrBasicBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.feat_size[3],
+            in_channels=self.hidden_size,
             out_channels=self.hidden_size,
             kernel_size=3,
-            stride=1,
+            stride=2,
             norm_name=norm_name,
             res_block=res_block,
         )
@@ -201,12 +201,12 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        self.decoder1 = UnetrBasicBlock(
+        self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[0],
             out_channels=self.feat_size[0],
             kernel_size=3,
-            stride=1,
+            stride=2,
             norm_name=norm_name,
             res_block=res_block,
         )
@@ -223,41 +223,36 @@ class MSHEAD_ATTN(nn.Module):
     
     def forward(self, x_in):
         outs = self.multiscale_transformer(x_in)
-        # print(f'output from ms transformer: \n')
-        # print(outs[0].size())
-        # print(outs[1].size())
-        # print(outs[2].size())
-        # print(outs[3].size())
-        # print(f'encoder-1: {self.encoder1}')
-
-        enc1 = self.encoder1(x_in)
-        # print(f'enc1 input:{x_in.shape} output:{enc1.size()}')
-
-        x2 = outs[0]
-        enc2 = self.encoder2(x2)
-        # print(f'enc2 input:{x2.shape} output:{enc2.size()}')
-
-        x3 = outs[1]
-        # print(f'encoder-3: {self.encoder3}')
-        enc3 = self.encoder3(x3)
-        # print(f'enc3:input:{x3.shape} output:{enc3.size()}')
-
-        x4 = outs[2]
-        # print(f'encoder-4: {self.encoder4}')
-        enc4 = self.encoder4(x4)
-        # print(f'enc4:input:{x4.shape} output:{enc4.size()}')
-        # dec4 = self.proj_feat(outs[3], self.hidden_size, self.feat_size)
-        # print(f'encoder-5: {self.encoder5}')
-
-        enc_hidden = self.encoder5(outs[3])
-        # print(f'enc_5 input:{outs[3].shape} output:{enc_hidden.size()}')
-        dec3 = self.decoder5(enc_hidden, enc4)
-        dec2 = self.decoder4(dec3, enc3)
-        dec1 = self.decoder3(dec2, enc2)
-        dec0 = self.decoder2(dec1, enc1)
-        out = self.decoder1(dec0)
         
-        # feat = self.conv_proj(dec4)
+        print(f'output from ms transformer: \n')
+        for i,out in enumerate(outs):
+            print(f'{i}:{out.shape}')
+
+        enc0 = self.encoder1(x_in)
+        print(f'enc1 input:{x_in.shape} output:{enc0.size()}')
+
+        enc1 = self.encoder2(outs[0])
+        print(f'enc2 input:{outs[0].shape} output:{enc1.size()}')
+
+        enc2 = self.encoder3(outs[1])
+        print(f'enc3:input:{outs[1].shape} output:{enc2.size()}')
+
+        enc3 = self.encoder4(outs[2])
+        print(f'enc4:input:{outs[2].shape} output:{enc3.size()}')
+
+        dec4 = self.encoder10(outs[4])
+        print(f'bottleneck:input:{outs[4].shape} output:{dec4.size()}')
+        
+        dec3 = self.decoder5(dec4, outs[3])
+        print(f'dec5: {dec3.shape}')
+        dec2 = self.decoder4(dec3, enc3)
+        print(f'dec4: {dec3.shape}')
+        dec1 = self.decoder3(dec2, enc2)
+        print(f'dec3: {dec3.shape}')
+        dec0 = self.decoder2(dec1, enc1)
+        print(f'dec2: {dec3.shape}')
+        out = self.decoder1(dec0, enc0)
+        print(f'dec1: {dec3.shape}')
         
         return self.out(out)
     

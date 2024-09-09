@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.init as init
 import torch.nn.functional as F
 from functools import partial
+from einops import rearrange
 
 import os
 import sys
@@ -61,6 +62,50 @@ class DWConv(nn.Module):
         total_flops = conv_flops
         return total_flops
 
+class PatchMerging3D(nn.Module):
+    """ 
+    Patch Merging layer for 3D inputs.
+    It performs downsampling by merging 2x2x2 patches and applying a linear transformation.
+    """
+    def __init__(self, dim, norm_layer=nn.LayerNorm):
+        """
+        Args:
+            dim (int): Input feature dimension (number of input channels).
+            norm_layer (nn.Module): Normalization layer (default is LayerNorm).
+        """
+        super(PatchMerging3D, self).__init__()
+        self.reduction = nn.Linear(8 * dim, 2 * dim, bias=False)  # Reducing by 2 (8 -> 2)
+        self.norm = norm_layer(8 * dim)
+
+    def forward(self, x, D, H, W):
+        """
+        Forward pass for patch merging.
+        
+        Args:
+            x (torch.Tensor): Input tensor of shape (B, L, C), where B is batch size, L is the total number of patches, and C is the feature dimension.
+            D (int): Depth of the 3D input.
+            H (int): Height of the 3D input.
+            W (int): Width of the 3D input.
+        
+        Returns:
+            torch.Tensor: Downsampled feature map.
+        """
+        B, L, C = x.shape
+        assert L == D * H * W, "Input feature has incorrect size"
+        
+        # Reshape x into a 3D form with separate depth, height, and width dimensions
+        x = x.view(B, D, H, W, C)
+        
+        # Merging neighboring 2x2x2 patches
+        x = rearrange(x, 'b (d p1) (h p2) (w p3) c -> b (d h w) (p1 p2 p3 c)', p1=2, p2=2, p3=2)
+        
+        # Apply layer normalization
+        x = self.norm(x)
+        
+        # Reduce the channel dimension
+        x = self.reduction(x)
+        
+        return x
 
 class CCF_FFN(nn.Module):
     def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, norm_layer=nn.LayerNorm, drop=0., img_size=(48, 48, 48)):
