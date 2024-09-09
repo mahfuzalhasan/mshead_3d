@@ -105,7 +105,7 @@ class MSHEAD_ATTN(nn.Module):
         self.feat_size = feat_size
         self.layer_scale_init_value = layer_scale_init_value
         self.out_indice = []
-        for i in range(len(self.feat_size)):
+        for i in range(len(self.depths)):
             self.out_indice.append(i)
 
         self.spatial_dims = spatial_dims
