@@ -155,6 +155,7 @@ class MRATransformer(nn.Module):
         # stage 1
         stage = 0
         x_rgb, D, H, W = self.patch_embed1(x_rgb)    # B, N, C = B, Pd*Ph*Pw, C  --> Pd=(D//2), Ph=(H//2), Pw=(W//2)
+        outs.append(x_rgb)
         # print(f'pe 1: {x_rgb.shape}')
         # self.logger.info('Stage 1 - Tokenization: {}'.format(x_rgb.shape))
         # print('Stage 1 - Tokenization: {}'.format(x_rgb.shape))
@@ -166,11 +167,12 @@ class MRATransformer(nn.Module):
         x_rgb = self.norm1(x_rgb)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         # print('########### Stage 1 - Output: {}'.format(x_rgb.shape))
-        outs.append(x_rgb)
+        
 
         # stage 2
         stage += 1
         x_rgb, D, H, W = self.patch_embed2(x_rgb)
+        outs.append(x_rgb)
         # print('Stage 2 - Tokenization: {}'.format(x_rgb.shape))
         # print(f'D:{D} H:{H} W:{W}')
         for j,blk in enumerate(self.block2):
@@ -178,11 +180,12 @@ class MRATransformer(nn.Module):
         x_rgb = self.norm2(x_rgb)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         # print('############# Stage 2 - Output: {}'.format(x_rgb.shape))
-        outs.append(x_rgb)
+        
 
         # stage 3
         stage += 1
         x_rgb, D, H, W = self.patch_embed3(x_rgb)
+        outs.append(x_rgb)
         # print('Stage 3 - Tokenization: {}'.format(x_rgb.shape))
         # print(f'D:{D} H:{H} W:{W}')
         for j,blk in enumerate(self.block3):
@@ -190,11 +193,12 @@ class MRATransformer(nn.Module):
         x_rgb = self.norm3(x_rgb)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         # print('###########Stage 3 - Output: {}'.format(x_rgb.shape))
-        outs.append(x_rgb)
+        
 
         # stage 4
         stage += 1
         x_rgb, D, H, W = self.patch_embed4(x_rgb)
+        outs.append(x_rgb)
         # print('Stage 4 - Tokenization: {}'.format(x_rgb.shape))
         # print(f'D:{D} H:{H} W:{W}')
         for j,blk in enumerate(self.block4):

@@ -131,7 +131,7 @@ class MSHEAD_ATTN(nn.Module):
         self.encoder2 = UnetrBasicBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[0],
-            out_channels=self.feat_size[1],
+            out_channels=self.feat_size[0],
             kernel_size=3,
             stride=1,
             norm_name=norm_name,
@@ -140,7 +140,7 @@ class MSHEAD_ATTN(nn.Module):
         self.encoder3 = UnetrBasicBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[1],
-            out_channels=self.feat_size[2],
+            out_channels=self.feat_size[1],
             kernel_size=3,
             stride=1,
             norm_name=norm_name,
@@ -149,7 +149,7 @@ class MSHEAD_ATTN(nn.Module):
         self.encoder4 = UnetrBasicBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[2],
-            out_channels=self.feat_size[3],
+            out_channels=self.feat_size[2],
             kernel_size=3,
             stride=1,
             norm_name=norm_name,
@@ -272,13 +272,13 @@ if __name__=="__main__":
     W = 96
     num_classes = 5
     model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes)
-    # model = SwinUNETR(
-    #     img_size=(96, 96, 96),
-    #     in_channels=1,
-    #     out_channels=num_classes,
-    #     feature_size=48,
-    #     use_checkpoint=False,
-    # )
+    model = SwinUNETR(
+        img_size=(96, 96, 96),
+        in_channels=1,
+        out_channels=num_classes,
+        feature_size=48,
+        use_checkpoint=False,
+    )
     model.cuda()
     x = torch.randn(B, C, D, H, W).cuda()
     outputs = model(x)
