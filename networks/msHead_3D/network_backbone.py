@@ -278,14 +278,10 @@ if __name__=="__main__":
     model.cuda()
     x = torch.randn(B, C, D, H, W).cuda()
     outputs = model(x)
-    #print(f'outputs: {outputs.shape}')
-    # encoder_net = model.multiscale_transformer
-    # encoder_outputs = encoder_net(x)
-    # for y in encoder_outputs:
-    #     #print(f'y shape:{y.shape}')
+    print(f'outputs: {outputs.shape}')
     # # Assuming 'model' is your PyTorch model
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    #print(f"Total trainable parameters: {total_params}")
-    macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, #print_per_layer_stat=True, verbose=True)
-    #print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
-    #print('{:<30}  {:<8}'.format('Number of parameters: ', params))
+    print(f"Total trainable parameters: {total_params}")
+    macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
+    print('{:<30}  {:<8}'.format('Computational complexity ptflops: ', macs))
+    print('{:<30}  {:<8}'.format('Number of parameters from ptflops: ', params))
