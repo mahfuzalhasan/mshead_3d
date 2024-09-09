@@ -206,7 +206,7 @@ class MSHEAD_ATTN(nn.Module):
             in_channels=self.feat_size[0],
             out_channels=self.feat_size[0],
             kernel_size=3,
-            stride=2,
+            upsample_kernel_size=2,
             norm_name=norm_name,
             res_block=res_block,
         )
