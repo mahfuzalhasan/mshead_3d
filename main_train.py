@@ -47,7 +47,7 @@ parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for 
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
-parser.add_argument('--resume', default=True, help='resume training from an earlier iteration')
+parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
@@ -216,9 +216,9 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             previous_step = global_step
 
 
-        # saving model after every 500 iteration
-        if (global_step % (eval_num) == 0) and global_step!=0:
-            save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
+        # # saving model after every 500 iteration
+        # if (global_step % (eval_num) == 0) and global_step!=0:
+        #     save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
         
         # evaluating after every 500 iteration
         if (global_step % eval_num) == 0 and global_step!=0 or global_step == max_iterations-1:
@@ -243,6 +243,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                 print(
                     "Not Best Model. Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
                 )
+                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
                 scheduler.step(dice_val)
 
             # setting model to train mode again
