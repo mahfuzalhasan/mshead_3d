@@ -61,6 +61,9 @@ print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
 
+run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
+print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
+
 train_samples, valid_samples, out_classes = data_loader(args)
 
 train_files = [
@@ -270,10 +273,6 @@ dice_val_best = 0.0
 global_step_best = 0
 epoch_loss_values = []
 # metric_values = []
-
-
-run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
-print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
 
 
 ### if you need to resume from a previous checkpoint.
