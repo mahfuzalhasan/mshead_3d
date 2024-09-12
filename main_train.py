@@ -61,6 +61,9 @@ print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
 
+run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
+print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
+
 train_samples, valid_samples, out_classes = data_loader(args)
 
 train_files = [
