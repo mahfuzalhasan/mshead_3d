@@ -233,12 +233,14 @@ class mra_b0(MRATransformer):
 
 
 if __name__=="__main__":
-    backbone = mra_b0(img_size=(96, 96, 96),
+    backbone = mra_b0(
+        img_size=(96, 96, 96),
         num_classes=5,
-        embed_dims=[48,96,192,384],
-        depths=[2,2,6,2],
+        embed_dims=[48,96,192,384,768],
+        depths=[2,2,2,2],
         num_heads = [3,6,12,24],
-        drop_path_rate=0)
+        drop_path_rate=0
+    )
     
     # ########print(backbone)
     B = 2
