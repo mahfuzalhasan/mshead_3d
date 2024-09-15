@@ -40,6 +40,7 @@ parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overl
 parser.add_argument('--gpu', type=str, default='0', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into GPUs')
 parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
+parser.add_argument('--fold', type=int, default=0, help='best model from which fold training')
 
 args = parser.parse_args()
 
