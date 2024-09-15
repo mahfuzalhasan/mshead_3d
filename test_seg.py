@@ -31,7 +31,7 @@ parser.add_argument('--dataset', type=str, default='flare', required=False, help
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
-parser.add_argument('--trained_weights', default='/orange/r.forghani/results/07-22-24_1716/model_best.pth', required=False, help='Path of pretrained/fine-tuned weights')
+parser.add_argument('--trained_weights', default='', required=False, help='Path of pretrained/fine-tuned weights')
 parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
 parser.add_argument('--sw_batch_size', type=int, default=4, help='Sliding window batch size for inference')
 parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overlapped percentage')
@@ -40,6 +40,7 @@ parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overl
 parser.add_argument('--gpu', type=str, default='0', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into GPUs')
 parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
+parser.add_argument('--fold', type=int, default=0, help='current running fold')
 
 args = parser.parse_args()
 
@@ -71,8 +72,8 @@ if args.network == 'MSHEAD':
         img_size=(96, 96, 96),
         in_chans=1,
         out_chans=out_classes,
-        depths=[2,2,6,2],
-        feat_size=[48,96,192,384],
+        depths=[2,2,2,2],
+        feat_size=[48,96,192,384,768],
         num_heads = [3,6,12,24],
         use_checkpoint=False,
     ).to(device)
@@ -86,7 +87,18 @@ elif args.network == 'SwinUNETR':
         use_checkpoint=False,
     ).to(device)
 
-print(f'model path:{args.trained_weights}')
+if args.fold == 0:
+    args.trained_weights = '/orange/r.forghani/results/09-09-24_0352/model_best.pth'
+elif args.fold == 1:
+    args.trained_weights = '/orange/r.forghani/results/09-11-24_1811/model_best.pth'
+elif args.fold == 2:
+    args.trained_weights = '/orange/r.forghani/results/09-09-24_1924/model_best.pth'
+elif args.fold == 3:
+    args.trained_weights = '/orange/r.forghani/results/09-09-24_1926/model_best.pth'
+elif args.fold == 4:
+    args.trained_weights = '/orange/r.forghani/results/09-11-24_1805/model_best.pth'
+
+print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
 model.load_state_dict(state_dict['model'])
 model.eval()
