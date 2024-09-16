@@ -50,9 +50,9 @@ def data_loader(args):
         train_samples = {}
         valid_samples = {}
         print(f'#### loading training and validation set ########## \n')
-        print(f'Training on fold:{args.fold}')
+        print(f'$$$$$$$$$ Training on fold:{args.fold} $$$$$$$$$$$$$$ \n')
         
-        val_per_fold = 69
+        val_per_fold = 12
         start_index = val_per_fold * args.fold
         end_index = val_per_fold * args.fold + val_per_fold
         
@@ -65,6 +65,7 @@ def data_loader(args):
 
         valid_img = train_img[start_index:end_index]
         valid_label = train_label[start_index:end_index]
+        print(f'\n valid images: {valid_img}\n valid_labels:{valid_label}\n ')
 
         del train_img[start_index:end_index]
         del train_label[start_index:end_index]
@@ -177,6 +178,7 @@ def data_transforms(args):
                 ToTensord(keys=["image"]),
             ]
         )
+
 
     elif dataset == 'flare':
         train_transforms = Compose(
@@ -381,6 +383,5 @@ def infer_post_transforms(args, test_transforms, out_classes):
     ])
 
     return post_transforms
-
 
 

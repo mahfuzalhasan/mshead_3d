@@ -29,12 +29,12 @@ import datetime
 import argparse
 import time
 
-print(f'########### Running Flare Segmentation ################# \n')
+print(f'########### Running Feta Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='/blue/r.forghani/share/feta', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='feta', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
@@ -46,7 +46,7 @@ parser.add_argument('--crop_sample', type=int, default='2', help='Number of crop
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
-parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
+parser.add_argument('--eval_step', type=int, default=99, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
@@ -210,8 +210,8 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         optimizer.zero_grad()
         epoch_loss_values.append(loss.item())
 
-        # print after every 100 iteration
-        if global_step % 100 == 0:
+        # print after every 99 iteration
+        if global_step % eval_num == 0:
             print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
             num_steps = global_step - previous_step
             time_100 = time.time() - s_time
