@@ -74,6 +74,8 @@ def data_loader(args):
         valid_samples['images'] = valid_img
         valid_samples['labels'] = valid_label
 
+        print(f'valid samples:{valid_img} labels:{valid_label}')
+
         ######################################################################
         # checking split
         # print(f'#### train_img_list ###### \n ')
