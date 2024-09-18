@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=python_train_flare
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/results/wave_wo_split_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/results/wave_wo_split_job.%J.err
+#SBATCH --job-name=python_train_feta
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/results/wave_wo_split_feta_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/results/wave_wo_split_feta_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
