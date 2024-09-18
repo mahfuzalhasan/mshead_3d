@@ -56,6 +56,7 @@ class MSHEAD_ATTN(nn.Module):
         depths=[2, 2, 2, 2],
         feat_size=[48, 96, 192, 384, 768],
         num_heads = [3, 6, 12, 24],
+        local_region_scales = [3, 2, 1, 1],
         drop_path_rate=0,
         layer_scale_init_value=1e-6,
         hidden_size: int = 768,
@@ -104,6 +105,7 @@ class MSHEAD_ATTN(nn.Module):
         self.drop_path_rate = drop_path_rate
         self.feat_size = feat_size
         self.layer_scale_init_value = layer_scale_init_value
+        self.local_region_scales = local_region_scales
         self.out_indice = []
         for i in range(len(self.depths)):
             self.out_indice.append(i)
@@ -116,6 +118,7 @@ class MSHEAD_ATTN(nn.Module):
             embed_dims = self.feat_size,
             depths=self.depths,
             num_heads = self.num_heads,
+            local_region_scales = self.local_region_scales,
             drop_path_rate=self.drop_path_rate,
         )
         self.encoder1 = UnetrBasicBlock(
