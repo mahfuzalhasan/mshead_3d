@@ -52,7 +52,7 @@ class MultiScaleAttention(nn.Module):
             self.dwt_downsamples = []
             for i in range(self.level):
                 ds_wt = WaveletTransform3D(wavelet='haar', level=1)
-                self.dwt_downsample.append(ds_wt)
+                self.dwt_downsamples.append(ds_wt)
                 
             self.dwt_downsamples = nn.ModuleList(self.dwt_downsamples)
 
