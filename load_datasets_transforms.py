@@ -52,7 +52,7 @@ def data_loader(args):
         print(f'#### loading training and validation set ########## \n')
         print(f'Training on fold:{args.fold}')
         
-        val_per_fold = 69
+        val_per_fold = 12
         start_index = val_per_fold * args.fold
         end_index = val_per_fold * args.fold + val_per_fold
         
