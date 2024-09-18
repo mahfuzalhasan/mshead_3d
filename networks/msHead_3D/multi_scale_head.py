@@ -145,7 +145,7 @@ class MultiScaleAttention(nn.Module):
 
 
     def forward(self, x):
-        # print('!!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
+        print('!!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
         A = []
         D, H, W = self.D, self.H, self.W
         B, N, C = x.shape
@@ -154,12 +154,15 @@ class MultiScaleAttention(nn.Module):
         
         attn_fused = 0
         x_local = x.view(B, D, H, W, C)
+        print(f'###################################')
+        print(f'input:{x_local.shape}')
         for i in range(self.n_local_region_scale):
             
             if self.level > 0:
                 x_local = x_local.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
                 x_local = self.dwt_downsamples[i](x_local)
                 x_local = x_local.permute(0, 2, 3, 4, 1).contiguous() #B,D,H,W,C
+            print(f'branch: {i+1} x_local:{x_local.shape}')
             
             output_size = (x_local.shape[1], x_local.shape[2], x_local.shape[3])
             n_region = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
