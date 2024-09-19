@@ -75,6 +75,7 @@ if args.network == 'MSHEAD':
         depths=[2,2,2,2],
         feat_size=[48,96,192,384,768],
         num_heads = [3,6,12,24],
+        local_region_scales = [3, 2, 1, 1],
         use_checkpoint=False,
     ).to(device)
 
@@ -89,14 +90,7 @@ elif args.network == 'SwinUNETR':
 
 if args.fold == 0:
     args.trained_weights = '/orange/r.forghani/results/09-18-24_1644/model_best.pth'
-elif args.fold == 1:
-    args.trained_weights = '/orange/r.forghani/results/09-11-24_1811/model_best.pth'
-elif args.fold == 2:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_1924/model_best.pth'
-elif args.fold == 3:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_1926/model_best.pth'
-elif args.fold == 4:
-    args.trained_weights = '/orange/r.forghani/results/09-11-24_1805/model_best.pth'
+
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
