@@ -104,6 +104,8 @@ def data_loader(args):
         test_samples['images'] = test_img
         test_samples['labels'] = test_label
 
+        print(f'test samples:{test_samples}')
+
         print('Finished loading all inference samples from dataset: {}!'.format(dataset))
 
         return test_samples, out_classes
