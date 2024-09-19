@@ -168,17 +168,34 @@ def data_transforms(args):
             ]
         )
 
+        # test_transforms = Compose(
+        #     [
+        #         LoadImaged(keys=["image"]),
+        #         AddChanneld(keys=["image"]),
+        #         Orientationd(keys=["image"], axcodes="RAS"),
+        #         ScaleIntensityRanged(
+        #             keys=["image"], a_min=0, a_max=1000,
+        #             b_min=0.0, b_max=1.0, clip=True,
+        #         ),
+        #         CropForegroundd(keys=["image"], source_key="image"),
+        #         ToTensord(keys=["image"]),
+        #     ]
+        # )
+
         test_transforms = Compose(
             [
-                LoadImaged(keys=["image"]),
-                AddChanneld(keys=["image"]),
-                Orientationd(keys=["image"], axcodes="RAS"),
+                LoadImaged(keys=["image", "label"]),
+                AddChanneld(keys=["image", "label"]),
+                # Spacingd(keys=["image", "label"], pixdim=(
+                #     1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+                # ResizeWithPadOrCropd(keys=["image"], spatial_size=(168,168,128), mode=("constant")),
+                # Orientationd(keys=["image", "label"], axcodes="RAS"),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=0, a_max=1000,
                     b_min=0.0, b_max=1.0, clip=True,
                 ),
-                CropForegroundd(keys=["image"], source_key="image"),
-                ToTensord(keys=["image"]),
+                CropForegroundd(keys=["image", "label"], source_key="image"),
+                ToTensord(keys=["image", "label"]),
             ]
         )
 
