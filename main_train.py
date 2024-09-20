@@ -32,22 +32,23 @@ import time
 print(f'########### Running Flare Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='/blue/r.forghani/share/amoss22/amos22', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='amos', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
-parser.add_argument('--pretrained_weights', default='', help='Path of pretrained weights')
-parser.add_argument('--batch_size', type=int, default='2', help='Batch size for subject input')
-parser.add_argument('--crop_sample', type=int, default='2', help='Number of cropped sub-volumes for each subject')
+parser.add_argument('--pretrained_weights', default='/orange/r.forghani/results/09-09-24_1924/model_best.pth', help='Path of pretrained weights')
+parser.add_argument('--batch_size', type=int, default='1', help='Batch size for subject input')
+parser.add_argument('--crop_sample', type=int, default='1', help='Number of cropped sub-volumes for each subject')
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
+parser.add_argument('--finetune', default=True, help='resume training from an earlier iteration')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
@@ -121,9 +122,14 @@ elif args.network == 'SwinUNETR':
 
 print('Chosen Network Architecture: {}'.format(args.network))
 
-if args.pretrain == 'True':
-    print('Pretrained weight is found! Start to load weight from: {}'.format(args.pretrained_weights), flush=True)
-    model.load_state_dict(torch.load(args.pretrained_weights))
+# if args.pretrain == 'True':
+#     print('Pretrained weight is found! Start to load weight from: {}'.format(args.pretrained_weights), flush=True)
+#     model.load_state_dict(torch.load(args.pretrained_weights))
+
+if args.finetune:
+    state_dict = torch.load(args.pretrained_weights)
+    model.load_state_dict(state_dict['model'])
+    print(f'########### pretrained weights loaded ###############\n')
 
 ## Define Loss function and optimizer
 loss_function = DiceCELoss(to_onehot_y=True, softmax=True)
@@ -239,15 +245,15 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                         dice_val_best, dice_val
                     )
                 )
-                scheduler.step(dice_val)
+                # scheduler.step(dice_val)
                 # save model if we acheive best dice score at the evaluation
                 
             else:
                 print(
-                    "Not Best Model. Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
+                    "Not Best Model. Current Best Avg. Dice: {} from step:{} Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
                 )
-                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
-                scheduler.step(dice_val)
+                # save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
+                # scheduler.step(dice_val)
 
             # setting model to train mode again
             model.train()
@@ -282,21 +288,6 @@ if args.resume:
     # model_path = '/orange/r.forghani/results/06-26-24_2259/model_36500.pth'
     if args.fold == 0:
         model_path = '/orange/r.forghani/results/07-11-24_2054/model_36500.pth'
-    elif args.fold == 1:
-        model_path = '/orange/r.forghani/results/07-11-24_2121/model_33000.pth'
-    elif args.fold == 2:
-        model_path = '/orange/r.forghani/results/07-22-24_1718/model_32000.pth'
-        # model_path = '/orange/r.forghani/results/07-22-24_1718/model_best.pth'
-        global_step_best = 31500
-    elif args.fold == 3:
-        model_path = '/orange/r.forghani/results/07-22-24_1719/model_30000.pth'
-        # model_path = '/orange/r.forghani/results/07-22-24_1719/model_best.pth'
-        global_step_best = 29000
-    elif args.fold == 4:
-        # model_path = '/orange/r.forghani/results/07-22-24_1716/model_33000.pth'
-        model_path = '/orange/r.forghani/results/07-22-24_1716/model_best.pth'
-        global_step_best = 30000
-
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict['model'])
     optimizer.load_state_dict(state_dict['optimizer'])

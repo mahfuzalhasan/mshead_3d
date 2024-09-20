@@ -52,22 +52,14 @@ def data_loader(args):
         print(f'#### loading training and validation set ########## \n')
         print(f'Training on fold:{args.fold}')
         
-        val_per_fold = 69
-        start_index = val_per_fold * args.fold
-        end_index = val_per_fold * args.fold + val_per_fold
-        
         ## Input training data
         train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
         train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
         
-        if end_index > len(train_label):
-            end_index = len(train_label)
+        valid_img = sorted(glob.glob(os.path.join(root_dir, 'imagesVa', '*.nii.gz')))
+        valid_label = sorted(glob.glob(os.path.join(root_dir, 'labelsVa', '*.nii.gz')))
 
-        valid_img = train_img[start_index:end_index]
-        valid_label = train_label[start_index:end_index]
-
-        del train_img[start_index:end_index]
-        del train_label[start_index:end_index]
+        
 
         train_samples['images'] = train_img
         train_samples['labels'] = train_label
@@ -87,6 +79,7 @@ def data_loader(args):
         # print(valid_label)
         # print(f'----------- {len(valid_img)}, {len(valid_label)}-----------')
         ######################################################################
+        print(f'valid img:{valid_img} label:{valid_label}')
         print('Finished loading all training samples from dataset: {}!'.format(dataset), flush=True)
         print('Number of classes for segmentation: {}'.format(out_classes), flush=True)
 
