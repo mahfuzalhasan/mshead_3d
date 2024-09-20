@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=python_finetune_amos
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/results/wavelet_max_ds_amos_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/results/wavelet_max_ds_amos_job.%J.err
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d/results/wavelet_max_ds_amos_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d/results/wavelet_max_ds_amos_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -13,8 +13,8 @@
 module load conda
 conda activate waveformer
 
-cd /blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d
+cd /blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d
 
 # Execute the Python script
-# srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
-srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
+srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK
+# srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK
