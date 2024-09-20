@@ -133,9 +133,6 @@ class MultiScaleAttention(nn.Module):
         x = (attn @ v)
         return x, attn
     
-
-
-
     def forward(self, x):
         # print('!!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
         A = []

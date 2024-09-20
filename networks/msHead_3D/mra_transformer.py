@@ -92,8 +92,8 @@ class MRATransformer(nn.Module):
             for i in range(depths[3])])             
         self.norm4 = norm_layer(embed_dims[3])
 
-        self.avgpool = nn.AdaptiveAvgPool1d(1)
-        self.head = nn.Linear(embed_dims[3], num_classes) if self.num_classes > 0 else nn.Identity()
+        # self.avgpool = nn.AdaptiveAvgPool1d(1)
+        # self.head = nn.Linear(embed_dims[3], num_classes) if self.num_classes > 0 else nn.Identity()
 
         # cur += depths[3]
 
