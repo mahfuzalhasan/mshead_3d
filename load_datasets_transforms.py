@@ -317,19 +317,35 @@ def data_transforms(args):
 
         test_transforms = Compose(
             [
-                LoadImaged(keys=["image"]),
-                AddChanneld(keys=["image"]),
-                Spacingd(keys=["image"], pixdim=(
-                    1.5, 1.5, 2.0), mode=("bilinear")),
-                Orientationd(keys=["image"], axcodes="RAS"),
+                LoadImaged(keys=["image", "label"]),
+                AddChanneld(keys=["image", "label"]),
+                Spacingd(keys=["image", "label"], pixdim=(
+                    1.5, 1.5, 2.0), mode=("bilinear", "nearest")),
+                Orientationd(keys=["image", "label"], axcodes="RAS"),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-125, a_max=275,
                     b_min=0.0, b_max=1.0, clip=True,
                 ),
-                CropForegroundd(keys=["image"], source_key="image"),
-                ToTensord(keys=["image"]),
+                CropForegroundd(keys=["image", "label"], source_key="image"),
+                ToTensord(keys=["image", "label"]),
             ]
         )
+
+        # test_transforms = Compose(
+        #     [
+        #         LoadImaged(keys=["image"]),
+        #         AddChanneld(keys=["image"]),
+        #         Spacingd(keys=["image"], pixdim=(
+        #             1.5, 1.5, 2.0), mode=("bilinear")),
+        #         Orientationd(keys=["image"], axcodes="RAS"),
+        #         ScaleIntensityRanged(
+        #             keys=["image"], a_min=-125, a_max=275,
+        #             b_min=0.0, b_max=1.0, clip=True,
+        #         ),
+        #         CropForegroundd(keys=["image"], source_key="image"),
+        #         ToTensord(keys=["image"]),
+        #     ]
+        # )
 
 
     if args.mode == 'train':

@@ -16,5 +16,5 @@ conda activate waveformer
 cd /blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d
 
 # Execute the Python script
-srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK
-# srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK
+# srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK
+srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK

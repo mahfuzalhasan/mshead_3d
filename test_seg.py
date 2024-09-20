@@ -25,13 +25,13 @@ import time
 
 parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='/blue/r.forghani/share/amoss22/amos22', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='amos', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
-parser.add_argument('--trained_weights', default='', required=False, help='Path of pretrained/fine-tuned weights')
+parser.add_argument('--trained_weights', default='/orange/r.forghani/results/09-19-24_2225/model_best.pth', required=False, help='Path of pretrained/fine-tuned weights')
 parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
 parser.add_argument('--sw_batch_size', type=int, default=4, help='Sliding window batch size for inference')
 parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overlapped percentage')
@@ -87,18 +87,8 @@ elif args.network == 'SwinUNETR':
         use_checkpoint=False,
     ).to(device)
 
-if args.fold == 0:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_0352/model_best.pth'
-elif args.fold == 1:
-    args.trained_weights = '/orange/r.forghani/results/09-11-24_1811/model_best.pth'
-elif args.fold == 2:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_1924/model_best.pth'
-elif args.fold == 3:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_1926/model_best.pth'
-elif args.fold == 4:
-    args.trained_weights = '/orange/r.forghani/results/09-11-24_1805/model_best.pth'
 
-print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
+print(f'best model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
 model.load_state_dict(state_dict['model'])
 model.eval()
