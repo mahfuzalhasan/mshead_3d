@@ -42,7 +42,7 @@ parser.add_argument('--mode', type=str, default='train', help='Training or testi
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
 parser.add_argument('--pretrained_weights', default='/orange/r.forghani/results/09-09-24_1924/model_best.pth', help='Path of pretrained weights')
 parser.add_argument('--batch_size', type=int, default='1', help='Batch size for subject input')
-parser.add_argument('--crop_sample', type=int, default='1', help='Number of cropped sub-volumes for each subject')
+parser.add_argument('--crop_sample', type=int, default='2', help='Number of cropped sub-volumes for each subject')
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
