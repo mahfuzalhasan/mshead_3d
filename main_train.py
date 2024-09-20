@@ -128,7 +128,7 @@ print('Chosen Network Architecture: {}'.format(args.network))
 
 if args.finetune:
     state_dict = torch.load(args.pretrained_weights)
-    model.load_state_dict(state_dict['model'])
+    model.load_state_dict(state_dict['model'], strict=False)
     print(f'########### pretrained weights loaded ###############\n')
 
 ## Define Loss function and optimizer
