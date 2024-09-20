@@ -128,8 +128,23 @@ print('Chosen Network Architecture: {}'.format(args.network))
 
 if args.finetune:
     state_dict = torch.load(args.pretrained_weights)
-    model.load_state_dict(state_dict['model'], strict=False)
+    pretrained_dict = state_dict['model']
+    
+    model_dict = model.state_dict()
+    # Filter out layers that have a size mismatch
+    pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict and model_dict[k].shape == v.shape}
+    mismatched = {k: v for k, v in pretrained_dict.items() if k in model_dict and model_dict[k].shape != v.shape}
+
+    print(f'mismatched keys:{mismatched.keys()}')
+    print(f'matched keys:{pretrained_dict.keys()}')
+
+    # Update the model with the filtered weights
+    model_dict.update(pretrained_dict)
+    model.load_state_dict(model_dict)
+
+    # model.load_state_dict(state_dict['model'], strict=False)
     print(f'########### pretrained weights loaded ###############\n')
+    exit()
 
 ## Define Loss function and optimizer
 loss_function = DiceCELoss(to_onehot_y=True, softmax=True)
