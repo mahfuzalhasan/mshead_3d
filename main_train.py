@@ -139,7 +139,7 @@ if args.optim == 'AdamW':
 elif args.optim == 'Adam':
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 print('Optimizer for training: {}, learning rate: {}'.format(args.optim, args.lr))
-scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=10)
+# scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=10)
 
 def validation(val_loader):
     # model_feat.eval()
@@ -174,21 +174,20 @@ def validation(val_loader):
     return mean_dice_val
 
 
-def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, global_step_best, save_dir, best=False):
-    s_time = time.time()
+def save_model(model, optimizer, iteration, run_id, dice_score, global_step_best, save_dir, best=False):
+    # s_time = time.time()
     save_file_path = os.path.join(save_dir, 'model_{}.pth'.format(iteration))
     if best:
         save_file_path = os.path.join(save_dir, 'model_best.pth')
 
     save_state = {'model': model.state_dict(),
                   'optimizer': optimizer.state_dict(),
-                  'lr_scheduler': lr_scheduler.state_dict(),
                   'dice_score': dice_score,
                   'global_step': iteration,
                   'global_step_best':global_step_best,
                   'run_id':str(run_id)}
     torch.save(save_state, save_file_path)
-    save_time = time.time() - s_time
+    # save_time = time.time() - s_time
     # print(f"model saved at iteration:{iteration} and took: {datetime.timedelta(seconds=int(save_time))}")
 
 
@@ -239,7 +238,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             if dice_val > dice_val_best:
                 dice_val_best = dice_val
                 global_step_best = global_step
-                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir, best=True)
+                save_model(model, optimizer, global_step, run_id, dice_val_best, global_step_best, root_dir, best=True)
                 print(
                     "Model Was Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
                         dice_val_best, dice_val
@@ -291,7 +290,7 @@ if args.resume:
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict['model'])
     optimizer.load_state_dict(state_dict['optimizer'])
-    scheduler.load_state_dict(state_dict['lr_scheduler'])
+    # scheduler.load_state_dict(state_dict['lr_scheduler'])
     global_step = state_dict['global_step'] + 1
     # global_step_best = state_dict['global_step']
     run_id = state_dict['run_id']
