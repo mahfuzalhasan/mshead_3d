@@ -40,22 +40,22 @@ parser.add_argument('--dataset', type=str, default='amos', required=False, help=
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
-parser.add_argument('--pretrained_weights', default='/orange/r.forghani/results/09-11-24_1805/model_best.pth', help='Path of pretrained weights')
+parser.add_argument('--pretrained_weights', default='/orange/r.forghani/results/09-20-24_0443/model_best.pth', help='Path of pretrained weights')
 parser.add_argument('--batch_size', type=int, default='1', help='Batch size for subject input')
 parser.add_argument('--crop_sample', type=int, default='2', help='Number of cropped sub-volumes for each subject')
-parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
+parser.add_argument('--lr', type=float, default=0.00001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
-parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
-parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
+parser.add_argument('--max_iter', type=int, default=3600, help='Maximum iteration steps for training')
+parser.add_argument('--eval_step', type=int, default=180, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
-parser.add_argument('--finetune', default=True, help='Finetuning on AMOS using best fold model from FLARE')
+parser.add_argument('--finetune', default=True, help='resume training from an earlier iteration')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
 parser.add_argument('--num_workers', type=int, default=8, help='Number of workers')
-parser.add_argument('--start_index', type=int, default=0, help='validation set starts')
-parser.add_argument('--end_index', type=int, default=20, help='validation set ends')
-parser.add_argument('--no_split',  default=False, help='training on whole dataset')
+parser.add_argument('--start_index', type=int, default=0, help='current running fold')
+parser.add_argument('--end_index', type=int, default=20, help='current running fold')
+parser.add_argument('--no_split',  default=True, help='training on whole dataset')
 
 args = parser.parse_args()
 print(f'################################')
@@ -203,16 +203,17 @@ def save_model(model, optimizer, iteration, run_id, dice_score, global_step_best
 def train(global_step, train_loader, dice_val_best, global_step_best):
     s_time = time.time()
     model.train()
-    step = 0
+    # step = 0
     epoch_loss_values = []
-    previous_step = 0
+    # previous_step = 0
     # epoch_iterator = tqdm(
     #     train_loader, desc="Training (X / X Steps) (loss=X.X)", dynamic_ncols=True
     # )
     print(f'######### new epoch started. Global Step:{global_step} ###############')
     # total training data--> 272. Batch 2. This loop will run for 272/2 = 136 times
     for step, batch in enumerate(train_loader):     
-        step += 1
+        # step += 1
+        global_step += 1
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,D,H,W = 2,1,96,96,96. y same
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
@@ -224,13 +225,13 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         optimizer.zero_grad()
         epoch_loss_values.append(loss.item())
 
-        # print after every 100 iteration
-        if global_step % 100 == 0:
-            print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
-            num_steps = global_step - previous_step
-            time_100 = time.time() - s_time
-            print(f"step {num_steps} took: {datetime.timedelta(seconds=int(time_100))} \n ")
-            previous_step = global_step
+        # # print after every 100 iteration
+        # if global_step % 100 == 0:
+        #     print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
+        #     num_steps = global_step - previous_step
+        #     time_100 = time.time() - s_time
+        #     print(f"step {num_steps} took: {datetime.timedelta(seconds=int(time_100))} \n ")
+        #     previous_step = global_step
 
 
         # # saving model after every 500 iteration
@@ -242,14 +243,15 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             # epoch_iterator_val = tqdm(
             #     val_loader, desc="Validate (X / X Steps) (dice=X.X)", dynamic_ncols=True
             # )
+            print(f'step:{global_step} completed Avg Loss:{np.mean(epoch_loss_values)}')
             dice_val = validation(val_loader)
             # metric_values.append(dice_val)
             if dice_val > dice_val_best:
                 dice_val_best = dice_val
                 global_step_best = global_step
-                save_model(model, optimizer, global_step, run_id, dice_val_best, global_step_best, root_dir, best=True)
+                # save_model(model, optimizer, global_step, run_id, dice_val_best, global_step_best, root_dir, best=True)
                 print(
-                    "Model Was Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
+                    "Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
                         dice_val_best, dice_val
                     )
                 )
@@ -258,9 +260,9 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                 
             else:
                 print(
-                    "Not Best Model. Current Best Avg. Dice: {} from step:{} Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
+                    "Not Best Model. Current Best Avg. Dice: {} from step:{} ##### Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
                 )
-                # save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
+                # save_model(model, optimizer, global_step, run_id, dice_val_best, global_step_best, root_dir)
                 # scheduler.step(dice_val)
 
             # setting model to train mode again
@@ -268,7 +270,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         
         # saving loss for every iteration
         writer.add_scalar('Training Loss_Itr', loss.data, global_step)
-        global_step += 1
+        # global_step += 1
     
     train_time = time.time() - s_time
     print(f"train takes {datetime.timedelta(seconds=int(train_time))}")

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=python_finetune_amos
+#SBATCH --job-name=python_finetune_amos_whole_dataset
 #SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d/results/wavelet_max_ds_amos_job.%J.out
 #SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d/results/wavelet_max_ds_amos_job.%J.err
 #SBATCH --nodes=1
@@ -16,6 +16,6 @@ conda activate waveformer
 cd /blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d
 
 # Execute the Python script
-# srun python training_whole_dataset.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --crop_sample $CROP_SAMPLE --pretrained_weights $PRETRAINED_WEIGHTS 
-srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --crop_sample $CROP_SAMPLE --pretrained_weights $PRETRAINED_WEIGHTS --start_index $START --end_index $END
+srun python training_whole_dataset.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --crop_sample $CROP_SAMPLE --pretrained_weights $PRETRAINED_WEIGHTS 
+# srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --crop_sample $CROP_SAMPLE --pretrained_weights $PRETRAINED_WEIGHTS 
 # srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK
