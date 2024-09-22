@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=python_finetune_amos_whole_dataset
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d/results/wavelet_max_ds_amos_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d/results/wavelet_max_ds_amos_job.%J.err
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d/results/wavelet_max_ds_amos_final_tune_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d/results/wavelet_max_ds_amos_final_tune_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
