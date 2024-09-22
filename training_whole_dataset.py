@@ -249,7 +249,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             if dice_val > dice_val_best:
                 dice_val_best = dice_val
                 global_step_best = global_step
-                # save_model(model, optimizer, global_step, run_id, dice_val_best, global_step_best, root_dir, best=True)
+                save_model(model, optimizer, global_step, run_id, dice_val_best, global_step_best, root_dir, best=True)
                 print(
                     "Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
                         dice_val_best, dice_val
