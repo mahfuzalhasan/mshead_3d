@@ -45,7 +45,7 @@ parser.add_argument('--batch_size', type=int, default='1', help='Batch size for 
 parser.add_argument('--crop_sample', type=int, default='2', help='Number of cropped sub-volumes for each subject')
 parser.add_argument('--lr', type=float, default=0.00001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
-parser.add_argument('--max_iter', type=int, default=3600, help='Maximum iteration steps for training')
+parser.add_argument('--max_iter', type=int, default=14400, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=180, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
 parser.add_argument('--finetune', default=True, help='resume training from an earlier iteration')
