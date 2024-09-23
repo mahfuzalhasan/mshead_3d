@@ -129,6 +129,7 @@ print('Chosen Network Architecture: {}'.format(args.network))
 #     model.load_state_dict(torch.load(args.pretrained_weights))
 
 if args.finetune:
+    print(f'############# best model path:{args.pretrained_weights} #################')
     state_dict = torch.load(args.pretrained_weights)
     pretrained_dict = state_dict['model']
     model_dict = model.state_dict()

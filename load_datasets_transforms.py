@@ -238,22 +238,22 @@ def data_transforms(args):
             ]
         )
 
-        # test_transforms = Compose(
-        #     [
-        #         LoadImaged(keys=["image"]),
-        #         AddChanneld(keys=["image"]),
-        #         Spacingd(keys=["image"], pixdim=(
-        #             1.0, 1.0, 1.2), mode=("bilinear")),
-        #         # ResizeWithPadOrCropd(keys=["image"], spatial_size=(168,168,128), mode=("constant")),
-        #         Orientationd(keys=["image"], axcodes="RAS"),
-        #         ScaleIntensityRanged(
-        #             keys=["image"], a_min=-125, a_max=275,
-        #             b_min=0.0, b_max=1.0, clip=True,
-        #         ),
-        #         CropForegroundd(keys=["image"], source_key="image"),
-        #         ToTensord(keys=["image"]),
-        #     ]
-        # )
+        test_transforms_plot = Compose(
+            [
+                LoadImaged(keys=["image"]),
+                AddChanneld(keys=["image"]),
+                Spacingd(keys=["image"], pixdim=(
+                    1.0, 1.0, 1.2), mode=("bilinear")),
+                # ResizeWithPadOrCropd(keys=["image"], spatial_size=(168,168,128), mode=("constant")),
+                Orientationd(keys=["image"], axcodes="RAS"),
+                ScaleIntensityRanged(
+                    keys=["image"], a_min=-125, a_max=275,
+                    b_min=0.0, b_max=1.0, clip=True,
+                ),
+                CropForegroundd(keys=["image"], source_key="image"),
+                ToTensord(keys=["image"]),
+            ]
+        )
 
         test_transforms = Compose(
             [
@@ -343,21 +343,21 @@ def data_transforms(args):
             ]
         )
 
-        # test_transforms = Compose(
-        #     [
-        #         LoadImaged(keys=["image"]),
-        #         AddChanneld(keys=["image"]),
-        #         Spacingd(keys=["image"], pixdim=(
-        #             1.5, 1.5, 2.0), mode=("bilinear")),
-        #         Orientationd(keys=["image"], axcodes="RAS"),
-        #         ScaleIntensityRanged(
-        #             keys=["image"], a_min=-125, a_max=275,
-        #             b_min=0.0, b_max=1.0, clip=True,
-        #         ),
-        #         CropForegroundd(keys=["image"], source_key="image"),
-        #         ToTensord(keys=["image"]),
-        #     ]
-        # )
+        test_transforms_plot = Compose(
+            [
+                LoadImaged(keys=["image"]),
+                AddChanneld(keys=["image"]),
+                Spacingd(keys=["image"], pixdim=(
+                    1.5, 1.5, 2.0), mode=("bilinear")),
+                Orientationd(keys=["image"], axcodes="RAS"),
+                ScaleIntensityRanged(
+                    keys=["image"], a_min=-125, a_max=275,
+                    b_min=0.0, b_max=1.0, clip=True,
+                ),
+                CropForegroundd(keys=["image"], source_key="image"),
+                ToTensord(keys=["image"]),
+            ]
+        )
 
 
     if args.mode == 'train':
@@ -367,10 +367,14 @@ def data_transforms(args):
 
     elif args.mode == 'test':
         print('Performed transformations for all samples!')
+        if args.plot:
+            return test_transforms_plot
         return test_transforms
 
 
-def infer_post_transforms(args, test_transforms, out_classes):
+def infer_post_transforms(args, test_transforms, out_classes, output_dir=None):
+    if output_dir is None:
+        output_dir = args.output
 
     post_transforms = Compose([
         EnsureTyped(keys="pred"),
@@ -397,7 +401,7 @@ def infer_post_transforms(args, test_transforms, out_classes):
         ## If moani version > 0.6.0:
         # AsDiscreted(keys="pred", argmax=True)
         # KeepLargestConnectedComponentd(keys='pred', applied_labels=[1, 3]),
-        SaveImaged(keys="pred", meta_keys="pred_meta_dict", output_dir=args.output,
+        SaveImaged(keys="pred", meta_keys="pred_meta_dict", output_dir=output_dir,
                    output_postfix="seg", output_ext=".nii.gz", resample=True),
     ])
 
