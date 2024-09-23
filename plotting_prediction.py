@@ -60,7 +60,7 @@ splitted_text = args.pretrained_weights[:args.pretrained_weights.rindex('/')]
 run_id = splitted_text[splitted_text.rindex('/')+1:]
 print(f'############## run id of pretrained model: {run_id} ################')
 
-output_seg_dir = os.path.join(args.output_dir, run_id, 'output_seg')
+output_seg_dir = os.path.join(args.output, run_id, 'output_seg')
 if not os.path.exists(output_seg_dir):
     os.makedirs(output_seg_dir)
 
