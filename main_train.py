@@ -55,7 +55,7 @@ parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to c
 parser.add_argument('--num_workers', type=int, default=8, help='Number of workers')
 parser.add_argument('--start_index', type=int, default=0, help='validation set starts')
 parser.add_argument('--end_index', type=int, default=20, help='validation set ends')
-parser.add_argument('--no_split',  default=False, help='training on whole dataset')
+parser.add_argument('--no_split',  default=True, help='training on whole dataset')
 
 args = parser.parse_args()
 print(f'################################')
