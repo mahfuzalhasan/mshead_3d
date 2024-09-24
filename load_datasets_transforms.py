@@ -50,24 +50,28 @@ def data_loader(args):
         train_samples = {}
         valid_samples = {}
         print(f'#### loading training and validation set ########## \n')
-        print(f'Training on fold:{args.fold}')
-        
-        val_per_fold = 69
-        start_index = val_per_fold * args.fold
-        end_index = val_per_fold * args.fold + val_per_fold
+        # print(f'Training on fold:{args.fold}')
+
         
         ## Input training data
         train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
         train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
-        
-        if end_index > len(train_label):
-            end_index = len(train_label)
 
-        valid_img = train_img[start_index:end_index]
-        valid_label = train_label[start_index:end_index]
+        if not args.no_split:
+            start_index = args.start_index
+            end_index = args.end_index
+            if end_index > len(train_label):
+                end_index = len(train_label)
+            valid_img = train_img[start_index:end_index]
+            valid_label = train_label[start_index:end_index]
 
-        del train_img[start_index:end_index]
-        del train_label[start_index:end_index]
+            del train_img[start_index:end_index]
+            del train_label[start_index:end_index]
+
+        else:
+            ## Input inference data
+            valid_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTs', '*.nii.gz')))
+            valid_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTs', '*.nii.gz')))
 
         train_samples['images'] = train_img
         train_samples['labels'] = train_label
@@ -87,6 +91,7 @@ def data_loader(args):
         # print(valid_label)
         # print(f'----------- {len(valid_img)}, {len(valid_label)}-----------')
         ######################################################################
+        print(f'valid img:{valid_img} label:{valid_label}')
         print('Finished loading all training samples from dataset: {}!'.format(dataset), flush=True)
         print('Number of classes for segmentation: {}'.format(out_classes), flush=True)
 
@@ -233,22 +238,22 @@ def data_transforms(args):
             ]
         )
 
-        # test_transforms = Compose(
-        #     [
-        #         LoadImaged(keys=["image"]),
-        #         AddChanneld(keys=["image"]),
-        #         Spacingd(keys=["image"], pixdim=(
-        #             1.0, 1.0, 1.2), mode=("bilinear")),
-        #         # ResizeWithPadOrCropd(keys=["image"], spatial_size=(168,168,128), mode=("constant")),
-        #         Orientationd(keys=["image"], axcodes="RAS"),
-        #         ScaleIntensityRanged(
-        #             keys=["image"], a_min=-125, a_max=275,
-        #             b_min=0.0, b_max=1.0, clip=True,
-        #         ),
-        #         CropForegroundd(keys=["image"], source_key="image"),
-        #         ToTensord(keys=["image"]),
-        #     ]
-        # )
+        test_transforms_plot = Compose(
+            [
+                LoadImaged(keys=["image"]),
+                AddChanneld(keys=["image"]),
+                Spacingd(keys=["image"], pixdim=(
+                    1.0, 1.0, 1.2), mode=("bilinear")),
+                # ResizeWithPadOrCropd(keys=["image"], spatial_size=(168,168,128), mode=("constant")),
+                Orientationd(keys=["image"], axcodes="RAS"),
+                ScaleIntensityRanged(
+                    keys=["image"], a_min=-125, a_max=275,
+                    b_min=0.0, b_max=1.0, clip=True,
+                ),
+                CropForegroundd(keys=["image"], source_key="image"),
+                ToTensord(keys=["image"]),
+            ]
+        )
 
         test_transforms = Compose(
             [
@@ -324,6 +329,22 @@ def data_transforms(args):
 
         test_transforms = Compose(
             [
+                LoadImaged(keys=["image", "label"]),
+                AddChanneld(keys=["image", "label"]),
+                Spacingd(keys=["image", "label"], pixdim=(
+                    1.5, 1.5, 2.0), mode=("bilinear", "nearest")),
+                Orientationd(keys=["image", "label"], axcodes="RAS"),
+                ScaleIntensityRanged(
+                    keys=["image"], a_min=-125, a_max=275,
+                    b_min=0.0, b_max=1.0, clip=True,
+                ),
+                CropForegroundd(keys=["image", "label"], source_key="image"),
+                ToTensord(keys=["image", "label"]),
+            ]
+        )
+
+        test_transforms_plot = Compose(
+            [
                 LoadImaged(keys=["image"]),
                 AddChanneld(keys=["image"]),
                 Spacingd(keys=["image"], pixdim=(
@@ -346,10 +367,14 @@ def data_transforms(args):
 
     elif args.mode == 'test':
         print('Performed transformations for all samples!')
+        if args.plot:
+            return test_transforms_plot
         return test_transforms
 
 
-def infer_post_transforms(args, test_transforms, out_classes):
+def infer_post_transforms(args, test_transforms, out_classes, output_dir=None):
+    if output_dir is None:
+        output_dir = args.output
 
     post_transforms = Compose([
         EnsureTyped(keys="pred"),
@@ -376,11 +401,8 @@ def infer_post_transforms(args, test_transforms, out_classes):
         ## If moani version > 0.6.0:
         # AsDiscreted(keys="pred", argmax=True)
         # KeepLargestConnectedComponentd(keys='pred', applied_labels=[1, 3]),
-        SaveImaged(keys="pred", meta_keys="pred_meta_dict", output_dir=args.output,
+        SaveImaged(keys="pred", meta_keys="pred_meta_dict", output_dir=output_dir,
                    output_postfix="seg", output_ext=".nii.gz", resample=True),
     ])
 
     return post_transforms
-
-
-
