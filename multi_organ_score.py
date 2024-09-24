@@ -15,8 +15,10 @@ import statistics as stat
 
 
 def dice_score_organ(im1, im2):
-    im1 = np.asarray(im1).astype(np.bool)
-    im2 = np.asarray(im2).astype(np.bool)
+    im1 = np.asarray(im1).astype(bool)
+    im2 = np.asarray(im2).astype(bool)
+
+    # im2 = np.asarray(im2).astype(np.bool)
 
 
     if im1.shape != im2.shape:
