@@ -88,15 +88,15 @@ elif args.network == 'SwinUNETR':
     ).to(device)
 
 if args.fold == 0:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_0352/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
 elif args.fold == 1:
-    args.trained_weights = '/orange/r.forghani/results/09-11-24_1811/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
 elif args.fold == 2:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_1924/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
 elif args.fold == 3:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_1926/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
 elif args.fold == 4:
-    args.trained_weights = '/orange/r.forghani/results/09-11-24_1805/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
