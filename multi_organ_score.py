@@ -30,11 +30,13 @@ def dice_score_organ(im1, im2):
 
 
 ## Model Prediction
-pred_dir = os.path.join('/nfs/masi/leeh43/repuxnet/out_FLARE_repuxnet_conv_matrix_alldata_sample_2')
+# pred_dir = os.path.join('/nfs/masi/leeh43/repuxnet/out_FLARE_repuxnet_conv_matrix_alldata_sample_2')
+pred_dir ="/orange/r.forghani/results/09-11-24_1805/output_seg"
 
 
 ## Ground Truth Label
-gt_dir = os.path.join('/nfs/masi/leeh43/FLARE2021/TRAIN_MASK')
+# gt_dir = os.path.join('/nfs/masi/leeh43/FLARE2021/TRAIN_MASK')
+gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
 
 
 
@@ -43,6 +45,7 @@ spleen = []
 kidney = []
 liver = []
 pancreas = []
+
 subject_list = []
 sub_list = []
 all_subjects = []
@@ -138,8 +141,8 @@ all_organs = spleen + kidney + liver + pancreas
 
 print('Mean Spleen DICE: {}'.format(stat.mean(spleen)))
 print('Stdev Spleen DICE: {}'.format(stat.stdev(spleen)))
-print('Mean Right Kidney DICE: {}'.format(stat.mean(rk)))
-print('Stdev Right Kidney DICE: {}'.format(stat.stdev(rk)))
+print('Mean Right Kidney DICE: {}'.format(stat.mean(kidney)))
+print('Stdev Right Kidney DICE: {}'.format(stat.stdev(kidney)))
 print('Mean Liver DICE: {}'.format(stat.mean(liver)))
 print('Stdev Liver DICE: {}'.format(stat.stdev(liver)))
 print('Mean Pancreas DICE: {}'.format(stat.mean(pancreas)))
