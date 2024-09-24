@@ -92,7 +92,8 @@ if args.fold == 0:
 elif args.fold == 1:
     args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
 elif args.fold == 2:
-    args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
+    # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-18-24_2215/model_best.pth'
 elif args.fold == 3:
     args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
 elif args.fold == 4:
