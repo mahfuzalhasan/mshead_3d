@@ -65,8 +65,8 @@ for label in os.listdir(pred_dir):
     gt_nib = nib.load(label_gt)
 
 
-    pred = pred_nib.get_data()
-    gt = gt_nib.get_data()
+    pred = pred_nib.get_fdata()
+    gt = gt_nib.get_fdata()
 
 
     pred = np.transpose(pred, (2, 0, 1))
