@@ -123,20 +123,24 @@ for label in os.listdir(pred_dir):
     pancreas.append(dice_pancreas)
     subject_list.append(dice_pancreas)
 
-
+    avg_dice = (dice_spleen + dice_kidney + dice_liver + dice_pancreas)/4
     count += 1
-    print('[{}] Dataset: {}'.format(count, label))
+    print(f'\n ################ count:{count} --- --- Dataset: {label} ################')
+
     print('Spleen DICE: {}'.format(dice_spleen))
     print('Right Kidney DICE: {}'.format(dice_kidney))
     print('Liver DICE: {}'.format(dice_liver))
     print('Pancreas DICE: {}'.format(dice_pancreas))
+    print('Avg DICE: {}'.format(avg_dice))
 
+    print(f'########################################################################### \n')
 
     all_subjects.append([stat.mean(subject_list), label])
     sub_list.append('All Subjects')
     subject_list = []
-all_organs = spleen + kidney + liver + pancreas
 
+
+all_organs = spleen + kidney + liver + pancreas
 
 # all_organs = pancreas
 
