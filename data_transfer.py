@@ -15,7 +15,7 @@ train_label_destination = "/blue/r.forghani/share/kits2019/labelsTr"
 
 test_img_destination = "/blue/r.forghani/share/kits2019/imagesTs"
 test_label_destination = "/blue/r.forghani/share/kits2019/labelsTs"
-exit()
+# exit()
 
 for i,subj in enumerate(subjects):
     if i==210:
