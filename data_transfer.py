@@ -2,11 +2,11 @@
 import os
 import shutil
 import glob
-
+from natsort import natsorted
 
 
 source_folder= "/blue/r.forghani/mdmahfuzalhasan/scripts/kits19/data"
-subjects = sorted(glob.glob(source_folder))
+subjects = natsorted(os.listdir(source_folder))
 print(f'$$$$$$$$$$$$$$ total data:{len(subjects)} $$$$$$$$$$$$$$$$$$$')
 print(f'#############\n subject list: {subjects} \n ######################\n')
 
@@ -15,6 +15,7 @@ train_label_destination = "/blue/r.forghani/share/kits2019/labelsTr"
 
 test_img_destination = "/blue/r.forghani/share/kits2019/imagesTs"
 test_label_destination = "/blue/r.forghani/share/kits2019/labelsTs"
+exit()
 
 for i,subj in enumerate(subjects):
     if i==210:
