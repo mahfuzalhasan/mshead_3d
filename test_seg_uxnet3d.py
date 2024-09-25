@@ -21,8 +21,8 @@ parser.add_argument('--output', type=str, default='/orange/r.forghani/results', 
 parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
-parser.add_argument('--network', type=str, default='3DUXNET', required=True, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
-parser.add_argument('--pretrained_weights', default='/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/pretrained/uxnet/best_metric_model.pth', required=True, help='Path of pretrained/fine-tuned weights')
+parser.add_argument('--network', type=str, default='3DUXNET', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
+parser.add_argument('--pretrained_weights', default='/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/pretrained/uxnet/best_metric_model.pth', required=False, help='Path of pretrained/fine-tuned weights')
 parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
 parser.add_argument('--sw_batch_size', type=int, default=4, help='Sliding window batch size for inference')
 parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overlapped percentage')
