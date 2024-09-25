@@ -6,7 +6,7 @@ import glob
 
 
 source_folder= "/blue/r.forghani/mdmahfuzalhasan/scripts/kits19/data"
-subjects = sorted(glob.glob(os.listdir(source_folder)))
+subjects = sorted(glob.glob(source_folder))
 print(f'$$$$$$$$$$$$$$ total data:{len(subjects)} $$$$$$$$$$$$$$$$$$$')
 print(f'#############\n subject list: {subjects} \n ######################\n')
 
