@@ -33,12 +33,15 @@ def dice_score_organ(im1, im2):
 
 ## Model Prediction
 # pred_dir = os.path.join('/nfs/masi/leeh43/repuxnet/out_FLARE_repuxnet_conv_matrix_alldata_sample_2')
-pred_dir ="/orange/r.forghani/results/09-11-24_1805/output_seg"
+# pred_dir ="/orange/r.forghani/results/09-11-24_1805/output_seg"
+pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
 
 
 ## Ground Truth Label
 # gt_dir = os.path.join('/nfs/masi/leeh43/FLARE2021/TRAIN_MASK')
 gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
+
+print(f'pred:{pred_dir}')
 
 
 
