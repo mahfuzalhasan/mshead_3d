@@ -32,9 +32,9 @@ import time
 print(f'########### Running Flare Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='/blue/r.forghani/share/kits2019', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='kits', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
@@ -53,6 +53,7 @@ parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
 parser.add_argument('--num_workers', type=int, default=8, help='Number of workers')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
+parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
 
 args = parser.parse_args()
 print(f'################################')
@@ -75,6 +76,8 @@ val_files = [
     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
 ]
 print(f'train files:{len(train_files)} val files:{len(val_files)}')
+print(f'val file list: {val_files}')
+
 
 
 set_determinism(seed=0)
@@ -88,11 +91,6 @@ val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.
 
 train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)
 val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
-#train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
-
-## Valid Pytorch Data Loader and Caching
-#val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
-# val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
 
 
 ## Load Networks
@@ -110,6 +108,7 @@ if args.network == 'MSHEAD':
         num_heads = [3,6,12,24],
         use_checkpoint=False,
     ).to(device)
+
 elif args.network == 'SwinUNETR':
     model = SwinUNETR(
         img_size=(96, 96, 96),
@@ -198,7 +197,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     print(f'######### new epoch started. Global Step:{global_step} ###############')
     # total training data--> 272. Batch 2. This loop will run for 272/2 = 136 times
     for step, batch in enumerate(train_loader):     
-        step += 1
+        # step += 1
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,D,H,W = 2,1,96,96,96. y same
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
@@ -244,7 +243,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                 
             else:
                 print(
-                    "Not Best Model. Current Best Avg. Dice: {} Current Avg. Dice: {}".format(dice_val_best, dice_val)
+                    "Not Best Model. Current Best Avg. Dice: {} from step: {},  Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
                 )
                 save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
                 scheduler.step(dice_val)
@@ -282,20 +281,6 @@ if args.resume:
     # model_path = '/orange/r.forghani/results/06-26-24_2259/model_36500.pth'
     if args.fold == 0:
         model_path = '/orange/r.forghani/results/07-11-24_2054/model_36500.pth'
-    elif args.fold == 1:
-        model_path = '/orange/r.forghani/results/07-11-24_2121/model_33000.pth'
-    elif args.fold == 2:
-        model_path = '/orange/r.forghani/results/07-22-24_1718/model_32000.pth'
-        # model_path = '/orange/r.forghani/results/07-22-24_1718/model_best.pth'
-        global_step_best = 31500
-    elif args.fold == 3:
-        model_path = '/orange/r.forghani/results/07-22-24_1719/model_30000.pth'
-        # model_path = '/orange/r.forghani/results/07-22-24_1719/model_best.pth'
-        global_step_best = 29000
-    elif args.fold == 4:
-        # model_path = '/orange/r.forghani/results/07-22-24_1716/model_33000.pth'
-        model_path = '/orange/r.forghani/results/07-22-24_1716/model_best.pth'
-        global_step_best = 30000
 
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict['model'])
