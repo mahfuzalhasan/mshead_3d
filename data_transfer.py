@@ -8,6 +8,7 @@ import glob
 source_folder= "/blue/r.forghani/mdmahfuzalhasan/scripts/kits19/data"
 subjects = sorted(glob.glob(os.listdir(source_folder)))
 print(f'$$$$$$$$$$$$$$ total data:{len(subjects)} $$$$$$$$$$$$$$$$$$$')
+print(f'#############\n subject list: {subjects} \n ######################\n')
 
 train_img_destination = "/blue/r.forghani/share/kits2019/imagesTr"
 train_label_destination = "/blue/r.forghani/share/kits2019/labelsTr"
