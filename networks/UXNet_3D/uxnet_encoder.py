@@ -142,12 +142,12 @@ class uxnet_conv(nn.Module):
     def forward_features(self, x):
         outs = []
         for i in range(4):
-            print(f'######## stage:{i} ##########')
-            print(x.size())
+            # print(f'######## stage:{i} ##########')
+            # print(x.size())
             x = self.downsample_layers[i](x)
-            print(f'ds:{x.shape}')
+            # print(f'ds:{x.shape}')
             x = self.stages[i](x)
-            print(f'stage:{i} output :{x.shape}')
+            # print(f'stage:{i} output :{x.shape}')
             # exit()
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
