@@ -130,7 +130,7 @@ class MSHEAD_ATTN(nn.Module):
         self.encoder2 = UnetrBasicBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[0],
-            out_channels=self.feat_size[1],
+            out_channels=self.feat_size[0],
             kernel_size=3,
             stride=1,
             norm_name=norm_name,
@@ -139,7 +139,7 @@ class MSHEAD_ATTN(nn.Module):
         self.encoder3 = UnetrBasicBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[1],
-            out_channels=self.feat_size[2],
+            out_channels=self.feat_size[1],
             kernel_size=3,
             stride=1,
             norm_name=norm_name,
@@ -148,7 +148,7 @@ class MSHEAD_ATTN(nn.Module):
         self.encoder4 = UnetrBasicBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[2],
-            out_channels=self.feat_size[3],
+            out_channels=self.feat_size[2],
             kernel_size=3,
             stride=1,
             norm_name=norm_name,
