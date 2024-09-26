@@ -224,35 +224,35 @@ class MSHEAD_ATTN(nn.Module):
     def forward(self, x_in):
         outs = self.multiscale_transformer(x_in)
         
-        print(f'output from ms transformer: \n')
-        for i,out in enumerate(outs):
-            print(f'{i}:{out.shape}')
+        #print(f'output from ms transformer: \n')
+        # for i,out in enumerate(outs):
+            #print(f'{i}:{out.shape}')
 
         enc0 = self.encoder1(x_in)
-        print(f'enc0 input:{x_in.shape} output:{enc0.size()}')
+        #print(f'enc0 input:{x_in.shape} output:{enc0.size()}')
 
         enc1 = self.encoder2(outs[0])
-        print(f'enc1 input:{outs[0].shape} output:{enc1.size()}')
+        #print(f'enc1 input:{outs[0].shape} output:{enc1.size()}')
 
         enc2 = self.encoder3(outs[1])
-        print(f'enc2:input:{outs[1].shape} output:{enc2.size()}')
+        #print(f'enc2:input:{outs[1].shape} output:{enc2.size()}')
 
         enc3 = self.encoder4(outs[2])
-        print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
+        #print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
 
         dec4 = self.encoder10(outs[3])
-        print(f'bottleneck:input:{outs[3].shape} output:{dec4.size()}')
+        #print(f'bottleneck:input:{outs[3].shape} output:{dec4.size()}')
         
         dec3 = self.decoder5(dec4, outs[3])
-        print(f'dec3: {dec3.shape}')
+        #print(f'dec3: {dec3.shape}')
         dec2 = self.decoder4(dec3, enc3)
-        print(f'dec2: {dec2.shape}')
+        #print(f'dec2: {dec2.shape}')
         dec1 = self.decoder3(dec2, enc2)
-        print(f'dec1: {dec1.shape}')
+        #print(f'dec1: {dec1.shape}')
         dec0 = self.decoder2(dec1, enc1)
-        print(f'dec0: {dec0.shape}')
+        #print(f'dec0: {dec0.shape}')
         out = self.decoder1(dec0, enc0)
-        print(f'out: {out.shape}')
+        #print(f'out: {out.shape}')
         
         return self.out(out)
     
