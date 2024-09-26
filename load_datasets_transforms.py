@@ -58,8 +58,9 @@ def data_loader(args):
         train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
 
         if not args.no_split:
-            start_index = args.start_index
-            end_index = args.end_index
+            validation_per_fold = 69
+            start_index = validation_per_fold * args.fold
+            end_index = validation_per_fold * args.fold + validation_per_fold
             if end_index > len(train_label):
                 end_index = len(train_label)
             valid_img = train_img[start_index:end_index]
@@ -91,7 +92,7 @@ def data_loader(args):
         # print(valid_label)
         # print(f'----------- {len(valid_img)}, {len(valid_label)}-----------')
         ######################################################################
-        print(f'valid img:{valid_img} label:{valid_label}')
+        # print(f'valid img:{valid_img} label:{valid_label}')
         print('Finished loading all training samples from dataset: {}!'.format(dataset), flush=True)
         print('Number of classes for segmentation: {}'.format(out_classes), flush=True)
 
