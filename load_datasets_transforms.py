@@ -246,7 +246,7 @@ def data_transforms(args):
                 scale_range=(0.1, 0.1, 0.1)),
             ToTensord(keys=["image", "label"]),
 
-            ]
+        ]
         )
 
         val_transforms = Compose(
