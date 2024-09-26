@@ -107,7 +107,7 @@ if args.network == 'MSHEAD':
         in_chans=1,
         out_chans=out_classes,
         depths=[2,2,2,2],
-        feat_size=[48,96,192,384,768],
+        feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
         use_checkpoint=False,
     ).to(device)
