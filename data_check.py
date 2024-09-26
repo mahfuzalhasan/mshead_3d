@@ -11,7 +11,8 @@ import nibabel as nib
 # print(f'$$$$$$$$$$$$$$ total data:{len(subjects)} $$$$$$$$$$$$$$$$$$$')
 # print(f'#############\n subject list: {subjects} \n ######################\n')
 
-train_img_destination = "/blue/r.forghani/share/kits2019/imagesTr"
+# train_img_destination = "/blue/r.forghani/share/kits2019/imagesTr"
+train_img_destination = "/blue/r.forghani/share/flare_data/imagesTr"
 train_label_destination = "/blue/r.forghani/share/kits2019/labelsTr"
 
 test_img_destination = "/blue/r.forghani/share/kits2019/imagesTs"
