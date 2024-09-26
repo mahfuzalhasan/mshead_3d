@@ -229,16 +229,16 @@ class MSHEAD_ATTN(nn.Module):
             print(f'{i}:{out.shape}')
 
         enc0 = self.encoder1(x_in)
-        print(f'enc1 input:{x_in.shape} output:{enc0.size()}')
+        print(f'enc0 input:{x_in.shape} output:{enc0.size()}')
 
         enc1 = self.encoder2(outs[0])
-        print(f'enc2 input:{outs[0].shape} output:{enc1.size()}')
+        print(f'enc1 input:{outs[0].shape} output:{enc1.size()}')
 
         enc2 = self.encoder3(outs[1])
-        print(f'enc3:input:{outs[1].shape} output:{enc2.size()}')
+        print(f'enc2:input:{outs[1].shape} output:{enc2.size()}')
 
         enc3 = self.encoder4(outs[2])
-        print(f'enc4:input:{outs[2].shape} output:{enc3.size()}')
+        print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
 
         dec4 = self.encoder10(outs[3])
         print(f'bottleneck:input:{outs[3].shape} output:{dec4.size()}')
