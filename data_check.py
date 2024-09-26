@@ -17,8 +17,8 @@ train_label_destination = "/blue/r.forghani/share/kits2019/labelsTr"
 test_img_destination = "/blue/r.forghani/share/kits2019/imagesTs"
 test_label_destination = "/blue/r.forghani/share/kits2019/labelsTs"
 
-for i, image in enumerate(os.listdir(train_img_destination)):
-    image_path = os.path.join(train_img_destination, image)
+for i, image in enumerate(os.listdir(train_label_destination)):
+    image_path = os.path.join(train_label_destination, image)
     vol = nib.load(image_path)
     print(f'case:{image} volume: {vol.shape}')
 # exit()
