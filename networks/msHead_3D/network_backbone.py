@@ -241,7 +241,7 @@ class MSHEAD_ATTN(nn.Module):
         print(f'enc4:input:{outs[2].shape} output:{enc3.size()}')
 
         dec4 = self.encoder10(outs[3])
-        print(f'bottleneck:input:{outs[4].shape} output:{dec4.size()}')
+        print(f'bottleneck:input:{outs[3].shape} output:{dec4.size()}')
         
         dec3 = self.decoder5(dec4, outs[3])
         print(f'dec5: {dec3.shape}')
