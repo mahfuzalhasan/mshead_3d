@@ -283,20 +283,6 @@ if args.resume:
     # model_path = '/orange/r.forghani/results/06-26-24_2259/model_36500.pth'
     if args.fold == 0:
         model_path = '/orange/r.forghani/results/07-11-24_2054/model_36500.pth'
-    elif args.fold == 1:
-        model_path = '/orange/r.forghani/results/07-11-24_2121/model_33000.pth'
-    elif args.fold == 2:
-        model_path = '/orange/r.forghani/results/07-22-24_1718/model_32000.pth'
-        # model_path = '/orange/r.forghani/results/07-22-24_1718/model_best.pth'
-        global_step_best = 31500
-    elif args.fold == 3:
-        model_path = '/orange/r.forghani/results/07-22-24_1719/model_30000.pth'
-        # model_path = '/orange/r.forghani/results/07-22-24_1719/model_best.pth'
-        global_step_best = 29000
-    elif args.fold == 4:
-        # model_path = '/orange/r.forghani/results/07-22-24_1716/model_33000.pth'
-        model_path = '/orange/r.forghani/results/07-22-24_1716/model_best.pth'
-        global_step_best = 30000
 
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict['model'])
