@@ -50,7 +50,7 @@ def data_loader(args):
         train_samples = {}
         valid_samples = {}
         print(f'#### loading training and validation set ########## \n')
-        # print(f'Training on fold:{args.fold}')
+        print(f'Training on fold:{args.fold}')
 
         
         ## Input training data
