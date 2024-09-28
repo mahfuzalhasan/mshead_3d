@@ -82,6 +82,7 @@ for label in os.listdir(pred_dir):
     
     # Cyst
     idx_pred = np.where(pred == 3)
+    print(f'index with cyst: {len(idx_pred)}')
     pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
     idx_gt = np.where(gt == 3)
     gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
