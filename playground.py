@@ -76,6 +76,7 @@ model_1 = UNETR(
     ).to(device)
 
 data = torch.randn(2, 1, 96, 96, 96)  # Example tensor with B=1, C=3, D=64, H=64, W=64
+data = data.to(device)
 y = model_1(data)
 print(f'y from UNETR: {y.shape}')
 
