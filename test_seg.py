@@ -42,6 +42,7 @@ parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to c
 parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
 parser.add_argument('--plot', default=False, help='plotting the prediction as nii.gz file')
+parser.add_argument('--no_split',  default=False, help='training on whole dataset')
 
 args = parser.parse_args()
 
@@ -81,7 +82,7 @@ if args.network == 'MSHEAD':
         in_chans=1,
         out_chans=out_classes,
         depths=[2,2,2,2],
-        feat_size=[48,96,192,384,768],
+        feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
         use_checkpoint=False,
     ).to(device)
