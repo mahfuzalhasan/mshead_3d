@@ -9,13 +9,14 @@ Created on Sat Jul  3 11:06:19 2021
 from monai.utils import set_determinism
 from monai.transforms import AsDiscrete
 from networks.UXNet_3D.network_backbone import UXNET
+from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from monai.networks.nets import UNETR, SwinUNETR
-from networks.nnFormer.nnFormer_seg import nnFormer
-from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
+# from networks.nnFormer.nnFormer_seg import nnFormer
+# from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from monai.metrics import DiceMetric
 from monai.losses import DiceCELoss
 from monai.inferers import sliding_window_inference
-from monai.data import CacheDataset, DataLoader, decollate_batch
+from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -24,20 +25,23 @@ from load_datasets_transforms import data_loader, data_transforms
 import os
 import numpy as np
 from tqdm import tqdm
+import datetime
 import argparse
+import time
 
-parser = argparse.ArgumentParser(description='3D UX-Net hyperparameters for medical image segmentation')
+print(f'########### Running KITS Segmentation ################# \n')
+parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='', required=True, help='Root folder of all your images and labels')
-parser.add_argument('--output', type=str, default='', required=True, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='flare', required=True, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--root', type=str, default='/blue/r.forghani/share/kits2019', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
+parser.add_argument('--dataset', type=str, default='kits', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='3DUXNET', help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
 parser.add_argument('--pretrained_weights', default='', help='Path of pretrained weights')
-parser.add_argument('--batch_size', type=int, default='1', help='Batch size for subject input')
+parser.add_argument('--batch_size', type=int, default='2', help='Batch size for subject input')
 parser.add_argument('--crop_sample', type=int, default='2', help='Number of cropped sub-volumes for each subject')
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
@@ -48,12 +52,19 @@ parser.add_argument('--eval_step', type=int, default=500, help='Per steps to per
 parser.add_argument('--gpu', type=str, default='0', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=0.1, help='Cache rate to cache your dataset into GPUs')
 parser.add_argument('--num_workers', type=int, default=2, help='Number of workers')
+parser.add_argument('--fold', type=int, default=0, help='current running fold')
+parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
 
 
 args = parser.parse_args()
-
-os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+print(f'################################')
+print(f'args:{args}')
+print('#################################')
+# os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
+
+run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
+print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
 
 train_samples, valid_samples, out_classes = data_loader(args)
 
@@ -61,11 +72,13 @@ train_files = [
     {"image": image_name, "label": label_name}
     for image_name, label_name in zip(train_samples['images'], train_samples['labels'])
 ]
-
 val_files = [
     {"image": image_name, "label": label_name}
     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
 ]
+print(f'train files:{len(train_files)} val files:{len(val_files)}')
+print(f'val file list: {val_files}')
+
 
 
 set_determinism(seed=0)
@@ -74,19 +87,18 @@ train_transforms, val_transforms = data_transforms(args)
 
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
-train_ds = CacheDataset(
-    data=train_files, transform=train_transforms,
-    cache_rate=args.cache_rate, num_workers=args.num_workers)
-train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
+val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
 
-## Valid Pytorch Data Loader and Caching
-val_ds = CacheDataset(
-    data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
-val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
+train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)
+val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
 
 
 ## Load Networks
-device = torch.device("cuda:0")
+device = torch.device("cuda")
+print(f'--- device:{device} ---')
+
+
 if args.network == '3DUXNET':
     model = UXNET(
         in_chans=1,
