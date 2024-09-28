@@ -54,13 +54,13 @@ test_files = [
     {"image": image_name, "label": label_name}
     for image_name, label_name in zip(test_samples['images'], test_samples['labels'])
 ]
-
+print(f'### test files:{test_files} ###\n')
 set_determinism(seed=0)
 ### extracting run_id of testing model
 splitted_text = args.trained_weights[:args.trained_weights.rindex('/')]
 run_id = splitted_text[splitted_text.rindex('/')+1:]
 
-output_seg_dir = os.path.join(args.output_dir, run_id, 'output_seg')
+output_seg_dir = os.path.join(args.output, run_id, 'output_seg')
 if not os.path.exists(output_seg_dir):
     os.makedirs(output_seg_dir)
 
