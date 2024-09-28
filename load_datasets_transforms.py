@@ -284,7 +284,7 @@ def data_transforms(args):
             [
                 LoadImaged(keys=["image"]),
                 AddChanneld(keys=["image"]),
-                Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+                Spacingd(keys=["image"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
                 Orientationd(keys=["image"], axcodes="RAS"),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-125, a_max=275,

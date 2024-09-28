@@ -70,10 +70,14 @@ if not os.path.exists(output_seg_dir):
 test_transforms = data_transforms(args)
 post_transforms = infer_post_transforms(args, test_transforms, out_classes, output_seg_dir)
 
+print(f'transforms:{post_transforms} ')
+
 ## Inference Pytorch Data Loader and Caching
+
 test_ds = CacheDataset(
     data=test_files, transform=test_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
 test_loader = ThreadDataLoader(test_ds, batch_size=1, num_workers=0)
+
 
 ## Load Networks
 device = torch.device("cuda")
