@@ -23,15 +23,16 @@ import datetime
 import argparse
 import time
 
-parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
+print(f'########### Running KITS Segmentation PLOTTING ################# \n')
+parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='/blue/r.forghani/share/kits2019', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='kits', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
-parser.add_argument('--pretrained_weights', default='', required=True, help='Path of pretrained/fine-tuned weights')
+parser.add_argument('--pretrained_weights', default='', required=False, help='Path of pretrained/fine-tuned weights')
 parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
 parser.add_argument('--sw_batch_size', type=int, default=4, help='Sliding window batch size for inference')
 parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overlapped percentage')
@@ -40,7 +41,9 @@ parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overl
 parser.add_argument('--gpu', type=str, default='0', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into GPUs')
 parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
-parser.add_argument('--plot', default=True, help='plotting the prediction as nii.gz file')
+parser.add_argument('--fold', type=int, default=0, help='current running fold')
+parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
+parser.add_argument('--plot', default=True, help='Plotting prediction or Not')
 
 
 args = parser.parse_args()
