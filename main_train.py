@@ -53,9 +53,9 @@ parser.add_argument('--finetune', default=True, help='Finetuning on AMOS using b
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
 parser.add_argument('--num_workers', type=int, default=8, help='Number of workers')
-parser.add_argument('--start_index', type=int, default=0, help='validation set starts')
-parser.add_argument('--end_index', type=int, default=20, help='validation set ends')
-parser.add_argument('--no_split',  default=True, help='training on whole dataset')
+parser.add_argument('--start_index', type=int, default=160, help='validation set starts')
+parser.add_argument('--end_index', type=int, default=180, help='validation set ends')
+parser.add_argument('--no_split',  default=False, help='training on whole dataset')
 
 args = parser.parse_args()
 print(f'################################')
@@ -109,7 +109,7 @@ if args.network == 'MSHEAD':
         in_chans=1,
         out_chans=out_classes,
         depths=[2,2,2,2],
-        feat_size=[48,96,192,384,768],
+        feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
         use_checkpoint=False,
     ).to(device)

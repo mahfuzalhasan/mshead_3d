@@ -17,7 +17,7 @@ cd /blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d
 
 # Execute the Python script
 # srun python training_whole_dataset.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --crop_sample $CROP_SAMPLE --pretrained_weights $PRETRAINED_WEIGHTS 
-# srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --crop_sample $CROP_SAMPLE --pretrained_weights $PRETRAINED_WEIGHTS --start_index $START --end_index $END
+srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --pretrained_weights $PRETRAINED_WEIGHTS --start_index $START --end_index $END
 # finetuning on whole trainset
-srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --crop_sample $CROP_SAMPLE --pretrained_weights $PRETRAINED_WEIGHTS
+# srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --crop_sample $CROP_SAMPLE --pretrained_weights $PRETRAINED_WEIGHTS
 # srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK
