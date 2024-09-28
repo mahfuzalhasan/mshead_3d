@@ -41,6 +41,8 @@ parser.add_argument('--gpu', type=str, default='0', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into GPUs')
 parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
+parser.add_argument('--plot', default=False, help='plotting the prediction as nii.gz file')
+parser.add_argument('--no_split', default=False, help='No splitting into train and validation')
 
 args = parser.parse_args()
 
@@ -88,15 +90,15 @@ elif args.network == 'SwinUNETR':
     ).to(device)
 
 if args.fold == 0:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_0352/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0418/model_best.pth'
 elif args.fold == 1:
-    args.trained_weights = '/orange/r.forghani/results/09-11-24_1811/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0428/model_best.pth'
 elif args.fold == 2:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_1924/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0432/model_best.pth'
 elif args.fold == 3:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_1926/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0441/model_best.pth'
 elif args.fold == 4:
-    args.trained_weights = '/orange/r.forghani/results/09-11-24_1805/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_1909/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
