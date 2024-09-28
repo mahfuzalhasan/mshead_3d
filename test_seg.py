@@ -23,11 +23,12 @@ import datetime
 import argparse
 import time
 
-parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
+print(f'########### Running KITS Segmentation ################# \n')
+parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='/blue/r.forghani/share/kits2019', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='kits', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
@@ -41,6 +42,8 @@ parser.add_argument('--gpu', type=str, default='0', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into GPUs')
 parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
+parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
+parser.add_argument('--plot', default=False, help='Plotting prediction or Not')
 
 args = parser.parse_args()
 
@@ -88,15 +91,15 @@ elif args.network == 'SwinUNETR':
     ).to(device)
 
 if args.fold == 0:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_0352/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-25-24_2042/model_best.pth'
 elif args.fold == 1:
-    args.trained_weights = '/orange/r.forghani/results/09-11-24_1811/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0255/model_best.pth'
 elif args.fold == 2:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_1924/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0310/model_best.pth'
 elif args.fold == 3:
-    args.trained_weights = '/orange/r.forghani/results/09-09-24_1926/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_1538/model_best.pth'
 elif args.fold == 4:
-    args.trained_weights = '/orange/r.forghani/results/09-11-24_1805/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_1903/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)

@@ -266,6 +266,22 @@ def data_transforms(args):
 
         test_transforms = Compose(
             [
+                LoadImaged(keys=["image", "label"]),
+                AddChanneld(keys=["image", "label"]),
+                Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+                Orientationd(keys=["image", "label"], axcodes="RAS"),
+                ScaleIntensityRanged(
+                    keys=["image"], a_min=-125, a_max=275,
+                    b_min=0.0, b_max=1.0, clip=True,
+                ),
+                CropForegroundd(keys=["image", "label"], source_key="image"),
+                ToTensord(keys=["image", "label"]),
+            ]
+        )
+
+
+        test_transforms_plot = Compose(
+            [
                 LoadImaged(keys=["image"]),
                 AddChanneld(keys=["image"]),
                 Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),

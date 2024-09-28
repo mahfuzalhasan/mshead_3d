@@ -29,7 +29,7 @@ import datetime
 import argparse
 import time
 
-print(f'########### Running Flare Segmentation ################# \n')
+print(f'########### Running KITS Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='/blue/r.forghani/share/kits2019', required=False, help='Root folder of all your images and labels')
