@@ -52,7 +52,7 @@ parser.add_argument('--eval_step', type=int, default=500, help='Per steps to per
 parser.add_argument('--gpu', type=str, default='0', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=0.1, help='Cache rate to cache your dataset into GPUs')
 parser.add_argument('--num_workers', type=int, default=2, help='Number of workers')
-parser.add_argument('--fold', type=int, default=1, help='current running fold')
+parser.add_argument('--fold', type=int, default=2, help='current running fold')
 parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
 
 
@@ -97,6 +97,8 @@ val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
 ## Load Networks
 device = torch.device("cuda")
 print(f'--- device:{device} ---')
+
+print(f'\n *********** training model: {args.network} *********** \n')
 
 
 if args.network == '3DUXNET':
@@ -192,7 +194,7 @@ def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, gl
     s_time = time.time()
     save_file_path = os.path.join(save_dir, 'model_{}.pth'.format(iteration))
     if best:
-        save_file_path = os.path.join(save_dir, 'model_best.pth')
+        save_file_path = os.path.join(save_dir, f'model_best_{global_step_best}.pth')
 
     save_state = {'model': model.state_dict(),
                   'optimizer': optimizer.state_dict(),
@@ -260,6 +262,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                         dice_val_best, global_step_best, dice_val
                     )
                 )
+                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
                 scheduler.step(dice_val)
             # setting model to train mode again
             model.train()
