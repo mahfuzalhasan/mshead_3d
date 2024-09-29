@@ -120,9 +120,9 @@ elif args.network == 'UNETR':
 
 if args.network == "SwinUNETR":
     args.trained_weights = '/orange/r.forghani/results/09-28-24_2310/model_best.pth'
-elif args.fold == "UNETR":
+elif args.network == "UNETR":
     args.trained_weights = '/orange/r.forghani/results/09-29-24_0147/model_best.pth'
-elif args.fold == "3DUXNET":
+elif args.network == "3DUXNET":
     args.trained_weights = '/orange/r.forghani/results/09-28-24_2226/model_best.pth'
 
 print(f'best model from:{args.network} model path:{args.trained_weights}')
