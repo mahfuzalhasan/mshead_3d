@@ -142,7 +142,7 @@ class MultiScaleAttention(nn.Module):
 
 
     def forward(self, x):
-        print('\n !!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
+        # print('\n !!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
         A = []
         D, H, W = self.D, self.H, self.W
         B, N, C = x.shape
@@ -152,7 +152,7 @@ class MultiScaleAttention(nn.Module):
         attn_fused = 0
         x_local = x.view(B, D, H, W, C)
         # print(f'###################################')
-        print(f'input:{x_local.shape}')
+        # print(f'input:{x_local.shape}')
         for i in range(self.n_local_region_scale):
             up_required = False
             ############################# Wavelet Decomposition
@@ -160,7 +160,7 @@ class MultiScaleAttention(nn.Module):
                 x_local = self.decomposition(x_local)
                 up_required = True
 
-            print(f'branch: {i+1} x_local:{x_local.shape}')
+            # print(f'branch: {i+1} x_local:{x_local.shape}')
             
             output_size = (x_local.shape[1], x_local.shape[2], x_local.shape[3])
             n_region = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
