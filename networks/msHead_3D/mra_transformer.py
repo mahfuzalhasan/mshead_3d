@@ -30,7 +30,7 @@ from functools import partial
 
 # How to apply multihead multiscale
 class MRATransformer(nn.Module):
-    def __init__(self, img_size=(96, 96, 96), patch_size=2, in_chans=1, num_classes=5, embed_dims=[48, 96, 192, 384, 768], 
+    def __init__(self, img_size=(96, 96, 96), patch_size=2, in_chans=1, num_classes=5, embed_dims=[48, 96, 192, 384], 
                  num_heads=[3, 6, 12, 24], mlp_ratios=[4, 4, 4, 4], local_region_scales = [3, 2, 1, 1], 
                  qkv_bias=False, qk_scale=None, drop_rate=0., attn_drop_rate=0., drop_path_rate=0., norm_layer=nn.LayerNorm, 
                  depths=[2, 2, 2, 2]):
