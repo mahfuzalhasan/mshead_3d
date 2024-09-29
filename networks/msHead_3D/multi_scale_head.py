@@ -30,7 +30,7 @@ class WaveletTransform3D(torch.nn.Module):
 
 class MultiScaleAttention(nn.Module):
     def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., 
-                    proj_drop=0., window_size=6, n_local_region_scale=3, img_size=(48, 48, 48)):
+                    proj_drop=0., window_size=6, n_local_region_scale=3, dwt_layer_1=True, img_size=(48, 48, 48)):
         super().__init__()
         assert dim % num_heads == 0, f"dim {dim} should be divided by num_heads {num_heads}."
 
@@ -48,18 +48,10 @@ class MultiScaleAttention(nn.Module):
         self.factor = int(self.H//self.window_size)
         self.level = int(math.log2(self.factor))
 
-        if self.level > 0:
-            self.dwt_downsamples = []
-            for i in range(self.level):
-                ds_wt = WaveletTransform3D(wavelet='haar', level=1)
-                self.dwt_downsamples.append(ds_wt)
-                
-            self.dwt_downsamples = nn.ModuleList(self.dwt_downsamples)
+        self.dwt_layer_1 = dwt_layer_1
 
-        # if self.level > 0:
-        #     self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=self.level)
+        self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=1)
 
-        # assert self.num_heads%n_local_region_scale == 0
         # Linear embedding
         self.qkv_proj = nn.Linear(dim, dim*3, bias=qkv_bias) 
         # self.kv = nn.Linear(dim, dim * 2, bias=qkv_bias)
@@ -142,6 +134,11 @@ class MultiScaleAttention(nn.Module):
         return x, attn
     
 
+    def decomposition(self, x_local):
+        x_local = x_local.permute(0, 4, 1, 2, 3).contiguous()   #B, C, D, H, W
+        x_local = self.dwt_downsamples(x_local)
+        x_local = x_local.permute(0, 2, 3, 4, 1).contiguous()   #B, D, H, W, C
+        return x_local
 
 
     def forward(self, x):
@@ -157,11 +154,12 @@ class MultiScaleAttention(nn.Module):
         # print(f'###################################')
         # print(f'input:{x_local.shape}')
         for i in range(self.n_local_region_scale):
-            
-            if self.level > 0:
-                x_local = x_local.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
-                x_local = self.dwt_downsamples[i](x_local)
-                x_local = x_local.permute(0, 2, 3, 4, 1).contiguous() #B,D,H,W,C
+            up_required = False
+            ############################# Wavelet Decomposition
+            if self.dwt_layer_1 or i>0:
+                x_local = self.decomposition(x_local)
+                up_required = True
+
             # print(f'branch: {i+1} x_local:{x_local.shape}')
             
             output_size = (x_local.shape[1], x_local.shape[2], x_local.shape[3])
@@ -185,7 +183,7 @@ class MultiScaleAttention(nn.Module):
             # B, num_head, Ch, num_region_6x6, Nr
             y = y.reshape(B, n_region, self.num_heads, Nr, self.head_dim).permute(0, 2, 4, 1, 3).contiguous()
             y = y.reshape(B, C, output_size[0], output_size[1], output_size[2])
-            if self.level>0:
+            if up_required:
                 y = F.interpolate(y, size=(self.D, self.H, self.W), mode='trilinear')
 
             y = y.view(B, self.num_heads, self.head_dim, self.D, self.H, self.W).permute(0, 1, 3, 4, 5, 2).contiguous()

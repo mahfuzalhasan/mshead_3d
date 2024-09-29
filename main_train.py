@@ -53,6 +53,8 @@ parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
 parser.add_argument('--num_workers', type=int, default=8, help='Number of workers')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
+parser.add_argument('--no_split', default=False, help='No splitting into train and validation')
+parser.add_argument('--plot', default=False, help='plotting prediction or not')
 
 args = parser.parse_args()
 print(f'################################')
@@ -106,7 +108,7 @@ if args.network == 'MSHEAD':
         in_chans=1,
         out_chans=out_classes,
         depths=[2,2,2,2],
-        feat_size=[48,96,192,384,768],
+        feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
         local_region_scales = [3, 2, 1, 1],
         use_checkpoint=False,
@@ -283,20 +285,6 @@ if args.resume:
     # model_path = '/orange/r.forghani/results/06-26-24_2259/model_36500.pth'
     if args.fold == 0:
         model_path = '/orange/r.forghani/results/07-11-24_2054/model_36500.pth'
-    elif args.fold == 1:
-        model_path = '/orange/r.forghani/results/07-11-24_2121/model_33000.pth'
-    elif args.fold == 2:
-        model_path = '/orange/r.forghani/results/07-22-24_1718/model_32000.pth'
-        # model_path = '/orange/r.forghani/results/07-22-24_1718/model_best.pth'
-        global_step_best = 31500
-    elif args.fold == 3:
-        model_path = '/orange/r.forghani/results/07-22-24_1719/model_30000.pth'
-        # model_path = '/orange/r.forghani/results/07-22-24_1719/model_best.pth'
-        global_step_best = 29000
-    elif args.fold == 4:
-        # model_path = '/orange/r.forghani/results/07-22-24_1716/model_33000.pth'
-        model_path = '/orange/r.forghani/results/07-22-24_1716/model_best.pth'
-        global_step_best = 30000
 
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict['model'])
