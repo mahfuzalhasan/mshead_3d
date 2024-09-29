@@ -194,7 +194,7 @@ def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, gl
     s_time = time.time()
     save_file_path = os.path.join(save_dir, 'model_{}.pth'.format(iteration))
     if best:
-        save_file_path = os.path.join(save_dir, f'model_best_{global_step_best}.pth')
+        save_file_path = os.path.join(save_dir, f'model_best_{iteration}.pth')
 
     save_state = {'model': model.state_dict(),
                   'optimizer': optimizer.state_dict(),
