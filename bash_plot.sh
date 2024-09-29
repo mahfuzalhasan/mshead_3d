@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=python_plot_flare
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/results/wavelet_max_ds_plot_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/results/wavelet_max_ds_plot_job.%J.err
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/results/wavelet_max_ds_plot_v2_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis/mshead_3d/results/wavelet_max_ds_plot_v2_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
