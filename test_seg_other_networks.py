@@ -125,7 +125,7 @@ elif args.fold == "UNETR":
 elif args.fold == "3DUXNET":
     args.trained_weights = '/orange/r.forghani/results/09-28-24_2226/model_best.pth'
 
-print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
+print(f'best model from:{args.network} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
 model.load_state_dict(state_dict['model'])
 model.eval()

@@ -17,4 +17,4 @@ cd /blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d
 
 # Execute the Python script
 # srun python main_train_other_networks.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --network $NETWORK
-srun python test_seg_other_networks.py.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --network $NETWORK
+srun python test_seg_other_networks.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --network $NETWORK
