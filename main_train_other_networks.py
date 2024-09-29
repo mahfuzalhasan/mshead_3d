@@ -211,29 +211,32 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     # model_feat.eval()
     s_time = time.time()
     model.train()
-    epoch_loss = 0
-    step = 0
+    # epoch_loss = 0
+    previous_step = 0
+    epoch_loss_values = []
+    # step = 0
     # epoch_iterator = tqdm(
     #     train_loader, desc="Training (X / X Steps) (loss=X.X)", dynamic_ncols=True
     # )
     for step, batch in enumerate(train_loader):    
-        step += 1
+        # step += 1
         x, y = (batch["image"].cuda(), batch["label"].cuda())
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
         logit_map = model(x)
         loss = loss_function(logit_map, y)
         loss.backward()
-        epoch_loss += loss.item()
+        # epoch_loss += loss.item()
         optimizer.step()
         optimizer.zero_grad()
+        epoch_loss_values.append(loss.item())
 
-        # print after every 100 iteration
+        # print after every 500 iteration
         if global_step % eval_num == 0:
             print(f'step:{global_step} completed. Avg Loss:{np.mean(epoch_loss_values)}')
             num_steps = global_step - previous_step
-            time_100 = time.time() - s_time
-            print(f"step {num_steps} took: {datetime.timedelta(seconds=int(time_100))} \n ")
+            time_500 = time.time() - s_time
+            print(f"step {num_steps} took: {datetime.timedelta(seconds=int(time_500))} \n ")
             previous_step = global_step
         
         if (
@@ -243,9 +246,8 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             #     val_loader, desc="Validate (X / X Steps) (dice=X.X)", dynamic_ncols=True
             # )
             dice_val = validation(val_loader)
-            epoch_loss /= step
-            epoch_loss_values.append(epoch_loss)
-            metric_values.append(dice_val)
+            # epoch_loss /= step
+            # metric_values.append(dice_val)
             if dice_val > dice_val_best:
                 dice_val_best = dice_val
                 global_step_best = global_step
@@ -269,6 +271,9 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         
         writer.add_scalar('Training Segmentation Loss', loss.data, global_step)
         global_step += 1
+        
+    train_time = time.time() - s_time
+    print(f"train takes {datetime.timedelta(seconds=int(train_time))}")
     return global_step, dice_val_best, global_step_best
 
 
@@ -290,8 +295,8 @@ dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans
 global_step = 0
 dice_val_best = 0.0
 global_step_best = 0
-epoch_loss_values = []
-metric_values = []
+
+# metric_values = []
 while global_step < max_iterations:
     global_step, dice_val_best, global_step_best = train(
         global_step, train_loader, dice_val_best, global_step_best
