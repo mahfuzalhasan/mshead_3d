@@ -58,11 +58,18 @@ def data_loader(args):
         train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
 
         if not args.no_split:
-            validation_per_fold = 69
-            start_index = validation_per_fold * args.fold
-            end_index = validation_per_fold * args.fold + validation_per_fold
+            if args.dataset == "flare":
+                validation_per_fold = 69
+                start_index = validation_per_fold * args.fold
+                end_index = validation_per_fold * args.fold + validation_per_fold
+            elif args.dataset == "amos":
+                start_index = args.start_index
+                end_index = args.end_index
+
             if end_index > len(train_label):
                 end_index = len(train_label)
+
+            
             valid_img = train_img[start_index:end_index]
             valid_label = train_label[start_index:end_index]
 

@@ -56,6 +56,7 @@ parser.add_argument('--num_workers', type=int, default=8, help='Number of worker
 parser.add_argument('--start_index', type=int, default=160, help='validation set starts')
 parser.add_argument('--end_index', type=int, default=180, help='validation set ends')
 parser.add_argument('--no_split',  default=False, help='training on whole dataset')
+parser.add_argument('--plot', default=False, help='plotting prediction or not')
 
 args = parser.parse_args()
 print(f'################################')
