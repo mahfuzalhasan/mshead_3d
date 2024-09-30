@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=python_plot_flare_wavlet-wo-split
-#SBATCH --output=cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/mshead_3d/results/wavlet_wo_split_plot_job.%J.out
-#SBATCH --error=cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/mshead_3d/results/wavlet_wo_split_plot_job.%J.err
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/mshead_3d/results/wavlet_wo_split_plot_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/mshead_3d/results/wavlet_wo_split_plot_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
