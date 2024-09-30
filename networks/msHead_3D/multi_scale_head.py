@@ -52,6 +52,23 @@ class MultiScaleAttention(nn.Module):
 
         self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=1)
 
+        if self.level > 0:                  # 48--> level=3,   24--> level=2,  12--> level=1
+            self.dwt_downsample = []
+            if self.level > 1:
+                ds_wt = WaveletTransform3D(J=1, wave='db1', mode='symmetric')   #DWT_l=1=2-->24,  DWT_l = 1 = 24--> 12
+                self.dwt_downsample.append(ds_wt)
+                ds_wt = WaveletTransform3D(J=self.level-1, wave='db1', mode='symmetric')#DWT_l=3-1=24-->6, #DWT_l=1--> 12 to 6
+                self.dwt_downsample.append(ds_wt)
+            else:
+                if not self.dwt_layer_1:            # 2,2,2,1  otherwise 2,2,1,1
+                    ds_wt = nn.Identity()
+                    self.self.dwt_downsample.append(ds_wt)
+                
+                ds_wt = WaveletTransform3D(J=1, wave='db1', mode='symmetric')  # DWT_l=1--> 12 to 6
+                self.dwt_downsample.append(ds_wt)
+            
+            self.dwt_downsample = nn.ModuleList(self.dwt_downsample)
+
         # Linear embedding
         self.qkv_proj = nn.Linear(dim, dim*3, bias=qkv_bias) 
         # self.kv = nn.Linear(dim, dim * 2, bias=qkv_bias)
@@ -134,9 +151,9 @@ class MultiScaleAttention(nn.Module):
         return x, attn
     
 
-    def decomposition(self, x_local):
+    def decomposition(self, x_local, ind):
         x_local = x_local.permute(0, 4, 1, 2, 3).contiguous()   #B, C, D, H, W
-        x_local = self.dwt_downsamples(x_local)
+        x_local = self.dwt_downsamples[ind](x_local)
         x_local = x_local.permute(0, 2, 3, 4, 1).contiguous()   #B, D, H, W, C
         return x_local
 
@@ -157,7 +174,7 @@ class MultiScaleAttention(nn.Module):
             up_required = False
             ############################# Wavelet Decomposition
             if self.dwt_layer_1 or i>0:
-                x_local = self.decomposition(x_local)
+                x_local = self.decomposition(x_local, i)
                 up_required = True
 
             # print(f'branch: {i+1} x_local:{x_local.shape}')
