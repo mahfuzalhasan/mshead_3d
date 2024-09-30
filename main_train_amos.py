@@ -57,6 +57,7 @@ parser.add_argument('--start_index', type=int, default=160, help='validation set
 parser.add_argument('--end_index', type=int, default=180, help='validation set ends')
 parser.add_argument('--no_split',  default=False, help='training on whole dataset')
 parser.add_argument('--plot', default=False, help='plotting prediction or not')
+parser.add_argument('--fold', type=int, default=0, help='current running fold')
 
 args = parser.parse_args()
 print(f'################################')

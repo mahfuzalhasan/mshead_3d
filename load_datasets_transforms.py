@@ -50,7 +50,7 @@ def data_loader(args):
         train_samples = {}
         valid_samples = {}
         print(f'#### loading training and validation set ########## \n')
-        print(f'Training on fold:{args.fold}')
+        
 
         
         ## Input training data
@@ -59,6 +59,7 @@ def data_loader(args):
 
         if not args.no_split:
             if args.dataset == "flare":
+                print(f'Training on fold:{args.fold}')
                 validation_per_fold = 69
                 start_index = validation_per_fold * args.fold
                 end_index = validation_per_fold * args.fold + validation_per_fold
