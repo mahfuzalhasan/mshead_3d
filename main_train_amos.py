@@ -112,6 +112,7 @@ if args.network == 'MSHEAD':
         depths=[2,2,2,2],
         feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
+        local_region_scales = [3, 2, 1, 1],
         use_checkpoint=False,
     ).to(device)
 elif args.network == 'SwinUNETR':
@@ -132,13 +133,14 @@ print('Chosen Network Architecture: {}'.format(args.network))
 if args.finetune:
     state_dict = torch.load(args.pretrained_weights)
     pretrained_dict = state_dict['model']
-    model_dict = model.state_dict()
-    # Filter out layers that have a size mismatch
-    pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict and model_dict[k].shape == v.shape}
-    # Update the model with the filtered weights
-    model_dict.update(pretrained_dict)
-    model.load_state_dict(model_dict)
-    # model.load_state_dict(state_dict['model'], strict=False
+    model.load_state_dict(pretrained_dict)
+    # model_dict = model.state_dict()
+    # # Filter out layers that have a size mismatch
+    # pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict and model_dict[k].shape == v.shape}
+    # # Update the model with the filtered weights
+    # model_dict.update(pretrained_dict)
+    # model.load_state_dict(model_dict)
+    # # model.load_state_dict(state_dict['model'], strict=False
     print(f'########### pretrained weights loaded ###############\n')
 
 ## Define Loss function and optimizer
