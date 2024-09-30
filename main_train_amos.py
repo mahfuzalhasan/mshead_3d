@@ -134,14 +134,13 @@ print('Chosen Network Architecture: {}'.format(args.network))
 if args.finetune:
     state_dict = torch.load(args.pretrained_weights)
     pretrained_dict = state_dict['model']
-    model.load_state_dict(pretrained_dict)
-    # model_dict = model.state_dict()
-    # # Filter out layers that have a size mismatch
-    # pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict and model_dict[k].shape == v.shape}
-    # # Update the model with the filtered weights
-    # model_dict.update(pretrained_dict)
-    # model.load_state_dict(model_dict)
-    # # model.load_state_dict(state_dict['model'], strict=False
+    model_dict = model.state_dict()
+    # Filter out layers that have a size mismatch
+    pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict and model_dict[k].shape == v.shape}
+    # Update the model with the filtered weights
+    model_dict.update(pretrained_dict)
+    model.load_state_dict(model_dict)
+    # model.load_state_dict(state_dict['model'], strict=False
     print(f'########### pretrained weights loaded ###############\n')
 
 ## Define Loss function and optimizer
