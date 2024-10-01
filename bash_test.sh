@@ -4,11 +4,11 @@
 #SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-wo-split-v2/mshead_3d/results/wave-wo-split-v2_test_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=128GB
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=50GB
 #SBATCH --partition=hpg-ai
 #SBATCH --gpus=a100:1
-#SBATCH --time=36:00:00
+#SBATCH --time=1:00:00
 
 module load conda
 conda activate waveformer
