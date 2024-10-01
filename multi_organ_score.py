@@ -12,6 +12,7 @@ import os
 import nibabel as nib
 import numpy as np
 import statistics as stat
+from natsort import natsorted
 
 
 def dice_score_organ(im1, im2):
@@ -45,7 +46,6 @@ print(f'pred:{pred_dir}')
 
 
 
-
 spleen = []
 kidney = []
 liver = []
@@ -57,7 +57,7 @@ all_subjects = []
 count = 0
 
 
-for label in os.listdir(pred_dir):
+for label in natsorted(os.listdir(pred_dir)):
     subj = label
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
 
