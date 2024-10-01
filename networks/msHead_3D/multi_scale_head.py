@@ -50,21 +50,19 @@ class MultiScaleAttention(nn.Module):
 
         self.dwt_layer_1 = dwt_layer_1
 
-        self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=1)
-
         if self.level > 0:                  # 48--> level=3,   24--> level=2,  12--> level=1
             self.dwt_downsample = []
             if self.level > 1:
-                ds_wt = WaveletTransform3D(J=1, wave='db1', mode='symmetric')   #DWT_l=1=2-->24,  DWT_l = 1 = 24--> 12
+                ds_wt = WaveletTransform3D(wavelet='haar', level=1)   #DWT_l=1=2-->24,  DWT_l = 1 = 24--> 12
                 self.dwt_downsample.append(ds_wt)
-                ds_wt = WaveletTransform3D(J=self.level-1, wave='db1', mode='symmetric')#DWT_l=3-1=24-->6, #DWT_l=1--> 12 to 6
+                ds_wt = WaveletTransform3D(wavelet='haar', level=self.level-1)#DWT_l=3-1=2=24-->6, #DWT_l=1--> 12 to 6
                 self.dwt_downsample.append(ds_wt)
             else:
                 if not self.dwt_layer_1:            # 2,2,2,1  otherwise 2,2,1,1
                     ds_wt = nn.Identity()
                     self.self.dwt_downsample.append(ds_wt)
                 
-                ds_wt = WaveletTransform3D(J=1, wave='db1', mode='symmetric')  # DWT_l=1--> 12 to 6
+                ds_wt = WaveletTransform3D(wavelet='haar', level=1)  # DWT_l=1--> 12 to 6
                 self.dwt_downsample.append(ds_wt)
             
             self.dwt_downsample = nn.ModuleList(self.dwt_downsample)
@@ -159,7 +157,7 @@ class MultiScaleAttention(nn.Module):
 
 
     def forward(self, x):
-        # print('\n !!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
+        print('\n !!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
         A = []
         D, H, W = self.D, self.H, self.W
         B, N, C = x.shape
@@ -168,8 +166,8 @@ class MultiScaleAttention(nn.Module):
         
         attn_fused = 0
         x_local = x.view(B, D, H, W, C)
-        # print(f'###################################')
-        # print(f'input:{x_local.shape}')
+        print(f'###################################')
+        print(f'input:{x_local.shape}')
         for i in range(self.n_local_region_scale):
             up_required = False
             ############################# Wavelet Decomposition
@@ -177,7 +175,7 @@ class MultiScaleAttention(nn.Module):
                 x_local = self.decomposition(x_local, i)
                 up_required = True
 
-            # print(f'branch: {i+1} x_local:{x_local.shape}')
+            print(f'branch: {i+1} x_local:{x_local.shape}')
             
             output_size = (x_local.shape[1], x_local.shape[2], x_local.shape[3])
             n_region = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
