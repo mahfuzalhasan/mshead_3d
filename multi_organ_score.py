@@ -34,7 +34,7 @@ def dice_score_organ(im1, im2):
 
 ## Model Prediction
 # pred_dir = os.path.join('/nfs/masi/leeh43/repuxnet/out_FLARE_repuxnet_conv_matrix_alldata_sample_2')
-pred_dir ="/orange/r.forghani/results/09-30-24_2213/output_seg"
+pred_dir ="/orange/r.forghani/results/09-30-24_2239/output_seg"
 # pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
 
 
