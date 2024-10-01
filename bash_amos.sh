@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=python_ablation_wavelet-wo-split_amos
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet_without_split/mshead_3d/results/ablation_wavelet-wo-split_amos_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet_without_split/mshead_3d/results/ablation_wavelet-wo-split_amos_job.%J.err
+#SBATCH --job-name=python_ablation_wavelet-2-branch_amos
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet-two-branch/mshead_3d/results/ablation_wavelet-2-branch_amos_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet-two-branch/mshead_3d/results/ablation_wavelet-2-branch_amos_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -13,7 +13,7 @@
 module load conda
 conda activate waveformer
 
-cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet_without_split/mshead_3d
+cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet-two-branch/mshead_3d
 
 # Execute the Python script
 # srun python training_whole_dataset.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --crop_sample $CROP_SAMPLE --pretrained_weights $PRETRAINED_WEIGHTS 
