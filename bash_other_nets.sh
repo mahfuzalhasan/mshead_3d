@@ -4,11 +4,11 @@
 #SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d/results/wavelet_max_ds_kits_other_nets_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=128GB
+#SBATCH --cpus-per-task=10
+#SBATCH --mem=100GB
 #SBATCH --partition=hpg-ai
 #SBATCH --gpus=a100:1
-#SBATCH --time=36:00:00
+#SBATCH --time=20:00:00
 
 module load conda
 conda activate waveformer
