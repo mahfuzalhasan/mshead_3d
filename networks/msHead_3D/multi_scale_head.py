@@ -151,7 +151,7 @@ class MultiScaleAttention(nn.Module):
 
     def decomposition(self, x_local, ind):
         x_local = x_local.permute(0, 4, 1, 2, 3).contiguous()   #B, C, D, H, W
-        x_local = self.dwt_downsamples[ind](x_local)
+        x_local = self.dwt_downsample[ind](x_local)
         x_local = x_local.permute(0, 2, 3, 4, 1).contiguous()   #B, D, H, W, C
         return x_local
 
