@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=python_test_kits_other_networks
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d/results/wavelet_max_ds_kits_test_other_nets_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d/results/wavelet_max_ds_kits_test_other_nets_job.%J.err
+#SBATCH --job-name=python_kits_other_networks
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d/results/wavelet_max_ds_kits_other_nets_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d/results/wavelet_max_ds_kits_other_nets_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -16,5 +16,5 @@ conda activate waveformer
 cd /blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d
 
 # Execute the Python script
-# srun python main_train_other_networks.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --network $NETWORK
-srun python test_seg_other_networks.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --network $NETWORK
+srun python main_train_other_networks.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --network $NETWORK
+# srun python test_seg_other_networks.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --network $NETWORK
