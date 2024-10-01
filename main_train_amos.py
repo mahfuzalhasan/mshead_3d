@@ -141,7 +141,7 @@ if args.finetune:
     model_dict.update(pretrained_dict)
     model.load_state_dict(model_dict)
     # model.load_state_dict(state_dict['model'], strict=False
-    print(f'########### pretrained weights loaded ###############\n')
+    print(f'########### pretrained weights loaded:{args.pretrained_weights} ###############\n')
 
 ## Define Loss function and optimizer
 loss_function = DiceCELoss(to_onehot_y=True, softmax=True)
