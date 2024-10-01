@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=python_flare_wave_2_branch_ablation
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d/results/wave_2_branch_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d/results/wave_2_branch_split_job.%J.err
+#SBATCH --job-name=python_flare_wave_2_branch_v2_ablation
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wave-two-branch-v2/mshead_3d/results/wave_2_branch_v2_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wave-two-branch-v2/mshead_3d/results/wave_2_branch_v2_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -13,7 +13,7 @@
 module load conda
 conda activate waveformer
 
-cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d
+cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wave-two-branch-v2/mshead_3d
 
 # Execute the Python script
 srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
