@@ -119,7 +119,7 @@ elif args.network == 'UNETR':
     ).to(device)
 
 if args.network == "SwinUNETR":
-    args.trained_weights = '/orange/r.forghani/results/09-28-24_2310/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/10-01-24_0423/model_best.pth'
 elif args.network == "UNETR":
     args.trained_weights = '/orange/r.forghani/results/09-29-24_0147/model_best.pth'
 elif args.network == "3DUXNET":
