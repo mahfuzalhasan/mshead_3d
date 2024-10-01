@@ -52,7 +52,7 @@ parser.add_argument('--eval_step', type=int, default=500, help='Per steps to per
 parser.add_argument('--gpu', type=str, default='0', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=0.1, help='Cache rate to cache your dataset into GPUs')
 parser.add_argument('--num_workers', type=int, default=2, help='Number of workers')
-parser.add_argument('--fold', type=int, default=2, help='current running fold')
+parser.add_argument('--fold', type=int, default=3, help='current running fold')
 parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
 
 
