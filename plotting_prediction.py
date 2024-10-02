@@ -141,11 +141,11 @@ if args.network=='MSHEAD':
         args.pretrained_weights = ""
     elif args.fold == 4:
         args.pretrained_weights = "/orange/r.forghani/results/09-29-24_2050/model_best.pth"
-        
+
 elif args.network=='SwinUNETR':
     args.pretrained_weights = "/orange/r.forghani/results/10-01-24_0423/model_best.pth"
-elif args.network=='UNETR':
-    args.pretrained_weights = "/orange/r.forghani/results/09-29-24_0147/model_best.pth"
+elif args.network=='3DUXNET':
+    args.pretrained_weights = "/orange/r.forghani/results/10-01-24_1504/model_best.pth"
 elif args.network=='UNETR':
     args.pretrained_weights = "/orange/r.forghani/results/09-29-24_0147/model_best.pth"
 
