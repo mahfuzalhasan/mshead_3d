@@ -28,7 +28,22 @@ class WaveletTransform3D(nn.Module):
         return Yl
 
 # Custom function to compute the FLOPs for WaveletTransform3D
-def wavelet_transform_flops(input_shape, wavelet, level):
+def wavelet_transform_flops_wf_1111(input_shape, wavelet, level):
+    # Assuming a cubic wavelet filter (e.g., 2x2x2 for `db1`)
+    filter_size = 2  # For 'db1', this is a 2-point filter
+    C, D, H, W = input_shape
+
+    # Total FLOPs for wavelet transform = #channels * depth * height * width * (filter_size ^ 3)
+    total_flops = 0
+    for i in range(1, level+1):
+        current_d, current_h, current_w = D // (2**i), H // (2**i), W // (2**i)
+        flops_per_level = C * current_d * current_h * current_w * (filter_size**3)
+        total_flops += flops_per_level
+
+    return total_flops
+
+# Custom function to compute the FLOPs for WaveletTransform3D
+def wavelet_transform_flops_wf_3221(input_shape, wavelet, level):
     # Assuming a cubic wavelet filter (e.g., 2x2x2 for `db1`)
     filter_size = 2  # For 'db1', this is a 2-point filter
     C, D, H, W = input_shape
@@ -44,17 +59,17 @@ def wavelet_transform_flops(input_shape, wavelet, level):
 
 # Example Input Shape: (Channels, Depth, Height, Width)
 input_shape = (48, 48, 48, 48)
-flops = wavelet_transform_flops(input_shape, 'db1', 3)
+flops = wavelet_transform_flops_wf_1111(input_shape, 'db1', 3)
 print(f"Approximate FLOPs for WaveletTransform3D: {flops}")
 layer_1 = flops * 2
 
 input_shape = (96, 24, 24, 24)
-flops = wavelet_transform_flops(input_shape, 'db1', 2)
+flops = wavelet_transform_flops_wf_1111(input_shape, 'db1', 2)
 print(f"Approximate FLOPs for WaveletTransform3D: {flops}")
 layer_2 = flops * 2
 
 input_shape = (192, 12, 12, 12)
-flops = wavelet_transform_flops(input_shape, 'db1', 1)
+flops = wavelet_transform_flops_wf_1111(input_shape, 'db1', 1)
 print(f"Approximate FLOPs for WaveletTransform3D: {flops}")
 layer_3 = flops * 2
 
