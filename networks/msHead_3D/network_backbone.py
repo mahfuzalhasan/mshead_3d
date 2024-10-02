@@ -24,7 +24,7 @@ from ptflops import get_model_complexity_info
 from lib.models.tools.module_helper import ModuleHelper
 # from networks.UXNet_3D.uxnet_encoder import uxnet_conv
 from networks.msHead_3D.mra_transformer import mra_b0
-from torchsummary import summary
+from torchinfo import summary
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
