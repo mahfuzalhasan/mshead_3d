@@ -68,8 +68,8 @@ def dice_score_organ(im1, im2):
     return (2. * intersection.sum() + 1e-7) / (im1.sum() + im2.sum() + 1e-7)
 
 # Model Prediction and Ground Truth Directories
-pred_dir = "/orange/r.forghani/results/09-30-24_1350/output_seg"
-gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
+pred_dir = "/orange/r.forghani/results/10-01-24_1437/output_seg"
+gt_dir = "/blue/r.forghani/share/amoss22/amos22/labelsTs"
 
 print(f'Prediction Directory: {pred_dir}')
 print(f'Ground Truth Directory: {gt_dir}')
@@ -82,7 +82,7 @@ count = 0
 for label in os.listdir(pred_dir):
     subj = label
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
-    label_gt = os.path.join(gt_dir, label.split('_0000')[0] + '.nii.gz')
+    label_gt = os.path.join(gt_dir, subj, subj + '.nii.gz')
 
     # Load the prediction and ground truth volumes
     pred_nib = nib.load(label_pred)
