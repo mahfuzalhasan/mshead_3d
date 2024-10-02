@@ -7,30 +7,6 @@ Created on Sun Oct  4 13:18:55 2020
 """
 
 
-
-
-
-## Model Prediction
-# pred_dir = os.path.join('/nfs/masi/leeh43/repuxnet/out_FLARE_repuxnet_conv_matrix_alldata_sample_2')
-pred_dir ="/orange/r.forghani/results/09-30-24_1350/output_seg"
-# pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
-
-
-## Ground Truth Label
-# gt_dir = os.path.join('/nfs/masi/leeh43/FLARE2021/TRAIN_MASK')
-gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
-
-print(f'pred:{pred_dir}')
-
-
-
-
-
-
-
-
-
-
 import pandas as pd
 import os
 import nibabel as nib
@@ -68,8 +44,8 @@ def dice_score_organ(im1, im2):
     return (2. * intersection.sum() + 1e-7) / (im1.sum() + im2.sum() + 1e-7)
 
 # Model Prediction and Ground Truth Directories
-pred_dir = "/orange/r.forghani/results/09-30-24_1350/output_seg"
-gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
+pred_dir = "/orange/r.forghani/results/10-01-24_1336/output_seg"
+gt_dir = "/blue/r.forghani/share/amoss22/amos22/labelsTs"
 
 print(f'Prediction Directory: {pred_dir}')
 print(f'Ground Truth Directory: {gt_dir}')
@@ -82,7 +58,7 @@ count = 0
 for label in os.listdir(pred_dir):
     subj = label
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
-    label_gt = os.path.join(gt_dir, label.split('_0000')[0] + '.nii.gz')
+    label_gt = os.path.join(gt_dir, subj + '.nii.gz')
 
     # Load the prediction and ground truth volumes
     pred_nib = nib.load(label_pred)
