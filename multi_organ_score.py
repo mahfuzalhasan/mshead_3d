@@ -80,15 +80,15 @@ for label in os.listdir(pred_dir):
     pred_mat = np.zeros((1, pred.shape[0], pred.shape[1], pred.shape[2]))
     gt_mat = np.zeros((1, pred.shape[0], pred.shape[1], pred.shape[2]))
     
-    # Cyst
-    idx_pred = np.where(pred == 3)
-    print(f'index with cyst: {len(idx_pred)} {idx_pred}')
-    pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 3)
-    gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
-    dice_cyst = dice_score_organ(pred_mat, gt_mat)
-    cyst.append(dice_cyst)
-    subject_list.append(dice_cyst)
+    # # Cyst
+    # idx_pred = np.where(pred == 3)
+    # print(f'index with cyst: {len(idx_pred)} {idx_pred}')
+    # pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
+    # idx_gt = np.where(gt == 3)
+    # gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
+    # dice_cyst = dice_score_organ(pred_mat, gt_mat)
+    # cyst.append(dice_cyst)
+    # subject_list.append(dice_cyst)
 
 
     # Tumor
@@ -98,6 +98,7 @@ for label in os.listdir(pred_dir):
     pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
     idx_gt = np.where(gt == 2)
     gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
+    
     dice_tumor = dice_score_organ(pred_mat, gt_mat)
     tumor.append(dice_tumor)
     subject_list.append(dice_tumor)
@@ -114,11 +115,11 @@ for label in os.listdir(pred_dir):
     kidney.append(dice_kidney)
     subject_list.append(dice_kidney)
 
-    avg_dice = (dice_cyst + dice_tumor + dice_kidney)/3
+    avg_dice = (dice_tumor + dice_kidney)/2
     count += 1
     print(f'\n ################ count:{count} --- --- Dataset: {label} ################')
 
-    print('cyst DICE: {}'.format(dice_cyst))
+    # print('cyst DICE: {}'.format(dice_cyst))
     print('Right tumor DICE: {}'.format(dice_tumor))
     print('kidney DICE: {}'.format(dice_kidney))
     print('Avg DICE: {}'.format(avg_dice))
@@ -130,13 +131,13 @@ for label in os.listdir(pred_dir):
     subject_list = []
 
 
-all_organs = cyst + tumor + kidney
+all_organs =  tumor + kidney
 
 # all_organs = pancreas
 
 
-print('Mean cyst DICE: {}'.format(stat.mean(cyst)))
-print('Stdev cyst DICE: {}'.format(stat.stdev(cyst)))
+# print('Mean cyst DICE: {}'.format(stat.mean(cyst)))
+# print('Stdev cyst DICE: {}'.format(stat.stdev(cyst)))
 print('Mean Right tumor DICE: {}'.format(stat.mean(tumor)))
 print('Stdev Right tumor DICE: {}'.format(stat.stdev(tumor)))
 print('Mean kidney DICE: {}'.format(stat.mean(kidney)))
