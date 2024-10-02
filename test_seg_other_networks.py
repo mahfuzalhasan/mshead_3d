@@ -123,7 +123,7 @@ if args.network == "SwinUNETR":
 elif args.network == "UNETR":
     args.trained_weights = '/orange/r.forghani/results/09-29-24_0147/model_best.pth'
 elif args.network == "3DUXNET":
-    args.trained_weights = '/orange/r.forghani/results/09-28-24_2226/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/10-01-24_1504/model_best.pth'
 
 print(f'best model from:{args.network} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
