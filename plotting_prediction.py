@@ -110,7 +110,7 @@ elif args.network=="3DUXNET":
 
 print(f'best model path:{args.pretrained_weights}')
 state_dict = torch.load(args.pretrained_weights)
-model.load_state_dict(state_dict['model'])
+model.load_state_dict(state_dict)
 model.eval()
 
 
