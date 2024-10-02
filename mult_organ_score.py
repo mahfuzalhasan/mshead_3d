@@ -44,7 +44,7 @@ def dice_score_organ(im1, im2):
     return (2. * intersection.sum() + 1e-7) / (im1.sum() + im2.sum() + 1e-7)
 
 # Model Prediction and Ground Truth Directories
-pred_dir = "/orange/r.forghani/results/09-28-24_0628/output_seg"
+pred_dir = "/orange/r.forghani/results/UXNET_AMOS/output_seg"
 gt_dir = "/blue/r.forghani/share/amoss22/amos22/labelsTs"
 
 print(f'Prediction Directory: {pred_dir}')
