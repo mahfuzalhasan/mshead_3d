@@ -63,17 +63,17 @@ def wavelet_transform_flops_wf_3221(input_shape, wavelet, level):
 
 # Example Input Shape: (Channels, Depth, Height, Width)
 input_shape = (48, 48, 48, 48)
-flops = wavelet_transform_flops_wf_1111(input_shape, 'db1', 3)
+flops = wavelet_transform_flops_wf_3221(input_shape, 'db1', 3)
 print(f"Approximate FLOPs for WaveletTransform3D: {flops}")
 layer_1 = flops * 2
 
 input_shape = (96, 24, 24, 24)
-flops = wavelet_transform_flops_wf_1111(input_shape, 'db1', 2)
+flops = wavelet_transform_flops_wf_3221(input_shape, 'db1', 2)
 print(f"Approximate FLOPs for WaveletTransform3D: {flops}")
 layer_2 = flops * 2
 
 input_shape = (192, 12, 12, 12)
-flops = wavelet_transform_flops_wf_1111(input_shape, 'db1', 1)
+flops = wavelet_transform_flops_wf_3221(input_shape, 'db1', 1)
 print(f"Approximate FLOPs for WaveletTransform3D: {flops}")
 layer_3 = flops * 2
 
