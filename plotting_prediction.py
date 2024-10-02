@@ -60,7 +60,7 @@ test_files = [
 set_determinism(seed=0)
 if args.network=='MSHEAD':
     if args.fold == 0:
-        args.pretrained_weights = "/orange/r.forghani/results/09-28-24_0628/model_best.pth"
+        args.pretrained_weights = "/orange/r.forghani/results/09-29-24_1523/model_best.pth"
     elif args.fold == 1:
         args.pretrained_weights = ""
     elif args.fold == 2:
@@ -76,7 +76,7 @@ elif args.network=='3DUXNET':
     args.pretrained_weights = "/orange/r.forghani/results/10-01-24_1504/model_best.pth"
 elif args.network=='UNETR':
     args.pretrained_weights = "/orange/r.forghani/results/09-29-24_0147/model_best.pth"
-    
+
 ### extracting run_id of testing model
 splitted_text = args.pretrained_weights[:args.pretrained_weights.rindex('/')]
 run_id = splitted_text[splitted_text.rindex('/')+1:]
