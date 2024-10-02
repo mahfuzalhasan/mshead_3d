@@ -24,6 +24,7 @@ from ptflops import get_model_complexity_info
 from lib.models.tools.module_helper import ModuleHelper
 # from networks.UXNet_3D.uxnet_encoder import uxnet_conv
 from networks.msHead_3D.mra_transformer import mra_b0
+from torchsummary import summary
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -291,3 +292,6 @@ if __name__=="__main__":
     macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
     print('{:<30}  {:<8}'.format('Computational complexity ptflops: ', macs))
     print('{:<30}  {:<8}'.format('Number of parameters from ptflops: ', params))
+
+
+    print("$$$$$$$$$$$$$$ summary: ",summary(model, input_size=(C, D, H, W)))
