@@ -48,10 +48,14 @@ def wavelet_transform_flops_wf_3221(input_shape, wavelet, level):
     filter_size = 2  # For 'db1', this is a 2-point filter
     C, D, H, W = input_shape
 
+    current_d = D
+    current_h = H
+    current_w = W
     # Total FLOPs for wavelet transform = #channels * depth * height * width * (filter_size ^ 3)
     total_flops = 0
-    for i in range(level):
-        current_d, current_h, current_w = D // (2**i), H // (2**i), W // (2**i)
+    for i in range(1, level+1):
+        current_d, current_h, current_w = current_d // (2), current_h // (2), current_w // (2)
+
         flops_per_level = C * current_d * current_h * current_w * (filter_size**3)
         total_flops += flops_per_level
 
