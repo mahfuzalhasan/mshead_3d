@@ -30,8 +30,8 @@ parser.add_argument('--output', type=str, default='/orange/r.forghani/results', 
 parser.add_argument('--dataset', type=str, default='amos', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
-parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
-parser.add_argument('--pretrained_weights', default='/orange/r.forghani/results/09-22-24_1724/model_best.pth', required=False, help='Path of pretrained/fine-tuned weights')
+parser.add_argument('--network', type=str, default='3DUXNET', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
+parser.add_argument('--pretrained_weights', default='/orange/r.forghani/results/UXNET_AMOS/amos_uxnet.pth', required=False, help='Path of pretrained/fine-tuned weights')
 parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
 parser.add_argument('--sw_batch_size', type=int, default=4, help='Sliding window batch size for inference')
 parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overlapped percentage')
@@ -56,11 +56,11 @@ test_files = [
 
 set_determinism(seed=0)
 ### extracting run_id of testing model
-splitted_text = args.pretrained_weights[:args.pretrained_weights.rindex('/')]
-run_id = splitted_text[splitted_text.rindex('/')+1:]
-print(f'############## run id of pretrained model: {run_id} ################')
+# splitted_text = args.pretrained_weights[:args.pretrained_weights.rindex('/')]
+# run_id = splitted_text[splitted_text.rindex('/')+1:]
+# print(f'############## run id of pretrained model: {run_id} ################')
 
-output_seg_dir = os.path.join(args.output, run_id, 'output_seg')
+output_seg_dir = os.path.join(args.output, "UXNET_AMOS", 'output_seg')
 if not os.path.exists(output_seg_dir):
     os.makedirs(output_seg_dir)
 
@@ -94,6 +94,17 @@ elif args.network == 'SwinUNETR':
         out_channels=out_classes,
         feature_size=48,
         use_checkpoint=False,
+    ).to(device)
+
+elif args.network=="3DUXNET":
+    model = UXNET(
+        in_chans=1,
+        out_chans=out_classes,
+        depths=[2, 2, 2, 2],
+        feat_size=[48, 96, 192, 384],
+        drop_path_rate=0,
+        layer_scale_init_value=1e-6,
+        spatial_dims=3,
     ).to(device)
 
 

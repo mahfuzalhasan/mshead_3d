@@ -16,4 +16,4 @@ conda activate waveformer
 cd /blue/r.forghani/mdmahfuzalhasan/project_analysis_amos/mshead_3d
 
 # Execute the Python script
-srun python plotting_prediction.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --pretrained_weights $PRETRAINED_WEIGHTS
+srun python plotting_prediction.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK
