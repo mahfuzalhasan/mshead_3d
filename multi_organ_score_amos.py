@@ -7,30 +7,6 @@ Created on Sun Oct  4 13:18:55 2020
 """
 
 
-
-
-
-## Model Prediction
-# pred_dir = os.path.join('/nfs/masi/leeh43/repuxnet/out_FLARE_repuxnet_conv_matrix_alldata_sample_2')
-pred_dir ="/orange/r.forghani/results/09-30-24_1350/output_seg"
-# pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
-
-
-## Ground Truth Label
-# gt_dir = os.path.join('/nfs/masi/leeh43/FLARE2021/TRAIN_MASK')
-gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
-
-print(f'pred:{pred_dir}')
-
-
-
-
-
-
-
-
-
-
 import pandas as pd
 import os
 import nibabel as nib
@@ -82,7 +58,7 @@ count = 0
 for label in os.listdir(pred_dir):
     subj = label
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
-    label_gt = os.path.join(gt_dir, subj, subj + '.nii.gz')
+    label_gt = os.path.join(gt_dir, subj + '.nii.gz')
 
     # Load the prediction and ground truth volumes
     pred_nib = nib.load(label_pred)
