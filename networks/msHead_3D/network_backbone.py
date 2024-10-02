@@ -294,4 +294,4 @@ if __name__=="__main__":
     print('{:<30}  {:<8}'.format('Number of parameters from ptflops: ', params))
 
 
-    print("$$$$$$$$$$$$$$ summary: ",summary(model, input_size=(C, D, H, W)))
+    print("$$$$$$$$$$$$$$ summary: ",summary(model, input_size=(1, C, D, H, W)))
