@@ -13,136 +13,103 @@ import nibabel as nib
 import numpy as np
 import statistics as stat
 
+# Define a dictionary to map class indices to organ names
+ORGAN_CLASSES = {
+    1: "Spleen",
+    2: "Right Kidney",
+    3: "Left Kidney",
+    4: "Gall Bladder",
+    5: "Esophagus",
+    6: "Liver",
+    7: "Stomach",
+    8: "Aorta",
+    9: "Inferior Vena Cava",
+    10: "Pancreas",
+    11: "Right Adrenal Gland",
+    12: "Left Adrenal Gland",
+    13: "Duodenum",
+    14: "Bladder",
+    15: "Prostate"
+}
 
+# Function to calculate DICE score for a given organ
 def dice_score_organ(im1, im2):
-    im1 = np.asarray(im1).astype(np.bool)
-    im2 = np.asarray(im2).astype(np.bool)
-
+    im1 = np.asarray(im1).astype(bool)
+    im2 = np.asarray(im2).astype(bool)
 
     if im1.shape != im2.shape:
         raise ValueError('Shape mismatch: im1 and im2 must have the same shape')
 
+    intersection = np.logical_and(im1, im2)
+    return (2. * intersection.sum() + 1e-7) / (im1.sum() + im2.sum() + 1e-7)
 
-    intersection = np.logical_and(im1 , im2)
+# Model Prediction and Ground Truth Directories
+pred_dir = "/orange/r.forghani/results/09-28-24_0628/output_seg"
+gt_dir = "/blue/r.forghani/share/amoss22/amos22/labelsTs"
 
+print(f'Prediction Directory: {pred_dir}')
+print(f'Ground Truth Directory: {gt_dir}')
 
-    return (2. * intersection.sum() + 0.0000001) / (im1.sum() + im2.sum() + 0.0000001)
-
-
-## Model Prediction
-pred_dir = os.path.join('/nfs/masi/leeh43/repuxnet/out_FLARE_repuxnet_conv_matrix_alldata_sample_2')
-
-
-## Ground Truth Label
-gt_dir = os.path.join('/nfs/masi/leeh43/FLARE2021/TRAIN_MASK')
-
-
-
-
-spleen = []
-kidney = []
-liver = []
-pancreas = []
-subject_list = []
-sub_list = []
-all_subjects = []
+# Initialize dictionaries to store DICE scores for each class
+dice_scores = {organ: [] for organ in ORGAN_CLASSES.values()}
 count = 0
 
-
+# Iterate over each predicted label file in the directory
 for label in os.listdir(pred_dir):
     subj = label
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
+    label_gt = os.path.join(gt_dir, subj + '.nii.gz')
 
-
-    label_gt = os.path.join(gt_dir, label.split('_0000')[0] + '.nii.gz')
-
-
-    # label_gt = gt_file
+    # Load the prediction and ground truth volumes
     pred_nib = nib.load(label_pred)
     gt_nib = nib.load(label_gt)
+    pred = pred_nib.get_fdata()
+    gt = gt_nib.get_fdata()
 
-
-    pred = pred_nib.get_data()
-    gt = gt_nib.get_data()
-
-
+    # Transpose volumes to match the expected orientation
     pred = np.transpose(pred, (2, 0, 1))
     gt = np.transpose(gt, (2, 0, 1))
 
-
+    # Initialize matrices for prediction and ground truth
     pred_mat = np.zeros((1, pred.shape[0], pred.shape[1], pred.shape[2]))
     gt_mat = np.zeros((1, pred.shape[0], pred.shape[1], pred.shape[2]))
-    
-    # Spleen
-    idx_pred = np.where(pred == 3)
-    pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 3)
-    gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
-    dice_spleen = dice_score_organ(pred_mat, gt_mat)
-    spleen.append(dice_spleen)
-    subject_list.append(dice_spleen)
 
+    print(f'\n ################ Count: {count+1} --- Dataset: {label} ################')
 
-    # Kidney
-    idx_pred = np.where(pred == 2)
-    pred_mat[pred_mat != 0] = 0
-    gt_mat[gt_mat != 0] = 0
-    pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 2)
-    gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
-    dice_kidney = dice_score_organ(pred_mat, gt_mat)
-    kidney.append(dice_kidney)
-    subject_list.append(dice_kidney)
+    # Calculate DICE scores for each class separately
+    for class_idx, organ_name in ORGAN_CLASSES.items():
+        # Extract the specific organ region from both prediction and ground truth
+        idx_pred = np.where(pred == class_idx)
+        pred_mat[pred_mat != 0] = 0
+        gt_mat[gt_mat != 0] = 0
+        pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
 
+        idx_gt = np.where(gt == class_idx)
+        gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
 
-    # Liver
-    idx_pred = np.where(pred == 1)
-    pred_mat[pred_mat != 0] = 0
-    gt_mat[gt_mat != 0] = 0
-    pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 1)
-    gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
-    dice_liver = dice_score_organ(pred_mat, gt_mat)
-    liver.append(dice_liver)
-    subject_list.append(dice_liver)
+        # Skip calculation if organ is not present in both GT and prediction
+        if gt_mat.sum() == 0:
+            print(f'{organ_name} is not present in the ground truth for this case.')
+            continue
 
+        # Calculate DICE score for the current organ
+        dice_score = dice_score_organ(pred_mat, gt_mat)
+        dice_scores[organ_name].append(dice_score)
 
-    # Pancreas
-    idx_pred = np.where(pred == 4)
-    pred_mat[pred_mat != 0] = 0
-    gt_mat[gt_mat != 0] = 0
-    pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 4)
-    gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
-    dice_pancreas = dice_score_organ(pred_mat, gt_mat)
-    pancreas.append(dice_pancreas)
-    subject_list.append(dice_pancreas)
-
+        # Print the DICE score for the current organ
+        print(f'{organ_name} DICE: {dice_score:.4f}')
 
     count += 1
-    print('[{}] Dataset: {}'.format(count, label))
-    print('Spleen DICE: {}'.format(dice_spleen))
-    print('Right Kidney DICE: {}'.format(dice_kidney))
-    print('Liver DICE: {}'.format(dice_liver))
-    print('Pancreas DICE: {}'.format(dice_pancreas))
+    print(f'########################################################################### \n')
 
+# Calculate and print summary statistics for each organ
+for organ, scores in dice_scores.items():
+    if scores:  # Check if the organ has been evaluated
+        print(f'\nMean {organ} DICE: {stat.mean(scores):.4f}')
+        print(f'Stdev {organ} DICE: {stat.stdev(scores) if len(scores) > 1 else 0:.4f}')
 
-    all_subjects.append([stat.mean(subject_list), label])
-    sub_list.append('All Subjects')
-    subject_list = []
-all_organs = spleen + kidney + liver + pancreas
+# Calculate overall statistics
+all_organs = [score for scores in dice_scores.values() for score in scores]
 
-
-# all_organs = pancreas
-
-
-print('Mean Spleen DICE: {}'.format(stat.mean(spleen)))
-print('Stdev Spleen DICE: {}'.format(stat.stdev(spleen)))
-print('Mean Right Kidney DICE: {}'.format(stat.mean(rk)))
-print('Stdev Right Kidney DICE: {}'.format(stat.stdev(rk)))
-print('Mean Liver DICE: {}'.format(stat.mean(liver)))
-print('Stdev Liver DICE: {}'.format(stat.stdev(liver)))
-print('Mean Pancreas DICE: {}'.format(stat.mean(pancreas)))
-print('Stdev pancreas DICE: {}'.format(stat.stdev(pancreas)))
-print('All Organ Mean DICE: {} /n'.format(stat.mean(all_organs)))
-print('All Organ Stdev DICE: {} /n'.format(stat.stdev(all_organs)))
+print(f'\nAll Organ Mean DICE: {stat.mean(all_organs):.4f}')
+print(f'All Organ Stdev DICE: {stat.stdev(all_organs):.4f}')
