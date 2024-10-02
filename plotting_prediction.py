@@ -103,6 +103,52 @@ elif args.network == 'SwinUNETR':
         use_checkpoint=False,
     ).to(device)
 
+elif args.network == '3DUXNET':
+    model = UXNET(
+        in_chans=1,
+        out_chans=out_classes,
+        depths=[2, 2, 2, 2],
+        feat_size=[48, 96, 192, 384],
+        drop_path_rate=0,
+        layer_scale_init_value=1e-6,
+        spatial_dims=3,
+    ).to(device)
+
+elif args.network == 'UNETR':
+    model = UNETR(
+        in_channels=1,
+        out_channels=out_classes,
+        img_size=(96, 96, 96),
+        feature_size=16,
+        hidden_size=768,
+        mlp_dim=3072,
+        num_heads=12,
+        pos_embed="perceptron",
+        norm_name="instance",
+        res_block=True,
+        dropout_rate=0.0,
+    ).to(device)
+
+
+if args.network=='MSHEAD':
+    if args.fold == 0:
+        args.pretrained_weights = "/orange/r.forghani/results/09-28-24_0628/model_best.pth"
+    elif args.fold == 1:
+        args.pretrained_weights = ""
+    elif args.fold == 2:
+        args.pretrained_weights = "/orange/r.forghani/results/09-29-24_1615/model_best.pth"
+    elif args.fold == 3:
+        args.pretrained_weights = ""
+    elif args.fold == 4:
+        args.pretrained_weights = "/orange/r.forghani/results/09-29-24_2050/model_best.pth"
+        
+elif args.network=='SwinUNETR':
+    args.pretrained_weights = "/orange/r.forghani/results/10-01-24_0423/model_best.pth"
+elif args.network=='UNETR':
+    args.pretrained_weights = "/orange/r.forghani/results/09-29-24_0147/model_best.pth"
+elif args.network=='UNETR':
+    args.pretrained_weights = "/orange/r.forghani/results/09-29-24_0147/model_best.pth"
+
 
 print(f'best model path:{args.pretrained_weights}')
 state_dict = torch.load(args.pretrained_weights)
