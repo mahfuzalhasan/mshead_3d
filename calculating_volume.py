@@ -39,7 +39,7 @@ parser.add_argument('--dataset', type=str, default='amos', required=False, help=
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
-parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
+parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
 parser.add_argument('--pretrained_weights', default='/orange/r.forghani/results/09-11-24_1805/model_best.pth', help='Path of pretrained weights')
 parser.add_argument('--batch_size', type=int, default='1', help='Batch size for subject input')
@@ -57,6 +57,8 @@ parser.add_argument('--num_workers', type=int, default=8, help='Number of worker
 parser.add_argument('--start_index', type=int, default=160, help='validation set starts')
 parser.add_argument('--end_index', type=int, default=180, help='validation set ends')
 parser.add_argument('--no_split',  default=False, help='training on whole dataset')
+parser.add_argument('--plot',  default=False, help='plotting prediction or not')
+
 
 args = parser.parse_args()
 print(f'################################')
@@ -65,44 +67,42 @@ print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
 
-run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
-print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
+if args.dataset == 'amos':
+    ORGAN_CLASSES = {1: "Spleen", 2: "Right Kidney", 3: "Left Kidney", 4: "Gall Bladder", 5: "Esophagus",6: "Liver",
+        7: "Stomach", 8: "Aorta", 9: "Inferior Vena Cava", 10: "Pancreas", 11: "Right Adrenal Gland", 
+        12: "Left Adrenal Gland", 13: "Duodenum", 14: "Bladder", 15: "Prostate"
+    }
+elif args.dataset == 'flare':
+    ORGAN_CLASSES = {1: "Liver", 2: "Kidney", 3: "Spleen", 4: "Pancreas"}
+elif args.dataset == 'kits':
+    ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
 
-train_samples, valid_samples, out_classes = data_loader(args)
 
-train_files = [
+test_samples, out_classes = data_loader(args)
+test_files = [
     {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(train_samples['images'], train_samples['labels'])
+    for image_name, label_name in zip(test_samples['images'], test_samples['labels'])
 ]
-val_files = [
-    {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
-]
-print(f'train files:{len(train_files)} val files:{len(val_files)}')
-
+print(f'test files:{len(test_files)}')
 
 set_determinism(seed=0)
-
-train_transforms, val_transforms = data_transforms(args)
-
-## Train Pytorch Data Loader and Caching
+test_transforms = data_transforms(args)
 print('Start caching datasets!')
-# train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
-val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
-
-# train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)
-val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
+test_ds = CacheDataset( data=test_files, transform=test_transforms, 
+                       cache_rate=args.cache_rate, num_workers=args.num_workers)
+test_loader = ThreadDataLoader(test_ds, batch_size=1, num_workers=0)
 
 
 
 ## Load Networks
+### set device according to your local machine
 device = torch.device("cuda")
 print(f'--- device:{device} ---')
 
 
-for i, batch in enumerate(val_loader):
-    val_inputs, val_labels = (batch["image"].to(device), batch["label"].to(device))
-    print(f'input: {val_inputs.shape} labels:{val_labels.shape}')       # B,C,D,H,W format: D slices in each CT data
+for step, batch in enumerate(test_loader):
+    test_inputs, test_labels = (batch["image"].to(device), batch["label"].to(device))
+    print(f'input: {test_inputs.shape} labels:{test_labels.shape}')     # B,C,D,H,W format: D slices in each CT data
                                                                         #each slice has 1 channel-> C = 1
                                                                         # for validation loader B = 1 too.
                                                                         # So, 1,1,D,H,W
@@ -112,7 +112,18 @@ for i, batch in enumerate(val_loader):
                                                                         # to calculate volume for each organ.
                                                                         # To calculate volume we can use labels from
                                                                         # val_labels. How? That's where I need help
-                                                                    
+    test_labels = test_labels.numpy()
+    test_labels = test_labels[0, 0, :, :, :]
+    unique_labels = np.unique(test_labels)
+    print(f'unique labels: {unique_labels}')
+    for label in unique_labels:
+        dummy = np.zeros(shape=test_labels.shape, dtype='uint8')
+        dummy[test_labels==label] = 1
+        N_voxel = np.count_nonzero(dummy)
+        volume = N_voxel * 1.5 * 1.5 * 2    # in mm^3
+        volume = volume/1000                # in cm^3
+        print(f'Class: {ORGAN_CLASSES[label]} volume: {volume}')
+
     ############# For Visualization. Do u have to do it? No. For understanding, you can.
 
     ############ 

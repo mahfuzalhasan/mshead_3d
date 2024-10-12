@@ -39,8 +39,8 @@ def data_loader(args):
 
     print('Start to load data from directory: {}'.format(root_dir), flush=True)
 
-    if dataset == 'feta':
-        out_classes = 8
+    if dataset == 'kits':
+        out_classes = 3
     elif dataset == 'flare':
         out_classes = 5
     elif dataset == 'amos':
@@ -56,6 +56,9 @@ def data_loader(args):
         ## Input training data
         train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
         train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
+
+        valid_img = sorted(glob.glob(os.path.join(root_dir, 'imagesVa', '*.nii.gz')))
+        valid_label = sorted(glob.glob(os.path.join(root_dir, 'labelsVa', '*.nii.gz')))
 
         if not args.no_split:
             start_index = args.start_index
@@ -119,71 +122,7 @@ def data_transforms(args):
     else:
         crop_samples = None
 
-    if dataset == 'feta':
-        train_transforms = Compose(
-            [
-                LoadImaged(keys=["image", "label"]),
-                AddChanneld(keys=["image", "label"]),
-                Orientationd(keys=["image", "label"], axcodes="RAS"),
-                ScaleIntensityRanged(
-                    keys=["image"], a_min=0, a_max=1000,
-                    b_min=0.0, b_max=1.0, clip=True,
-                ),
-                CropForegroundd(keys=["image", "label"], source_key="image"),
-                RandCropByPosNegLabeld(
-                    keys=["image", "label"],
-                    label_key="label",
-                    spatial_size=(96, 96, 96),
-                    pos=1,
-                    neg=1,
-                    num_samples=crop_samples,
-                    image_key="image",
-                    image_threshold=0,
-                ),
-                RandShiftIntensityd(
-                    keys=["image"],
-                    offsets=0.10,
-                    prob=0.50,
-                ),
-                RandAffined(
-                    keys=['image', 'label'],
-                    mode=('bilinear', 'nearest'),
-                    prob=1.0, spatial_size=(96, 96, 96),
-                    rotate_range=(0, 0, np.pi / 15),
-                    scale_range=(0.1, 0.1, 0.1)),
-                ToTensord(keys=["image", "label"]),
-            ]
-        )
-
-        val_transforms = Compose(
-            [
-                LoadImaged(keys=["image", "label"]),
-                AddChanneld(keys=["image", "label"]),
-                Orientationd(keys=["image", "label"], axcodes="RAS"),
-                ScaleIntensityRanged(
-                    keys=["image"], a_min=0, a_max=1000,
-                    b_min=0.0, b_max=1.0, clip=True,
-                ),
-                CropForegroundd(keys=["image", "label"], source_key="image"),
-                ToTensord(keys=["image", "label"]),
-            ]
-        )
-
-        test_transforms = Compose(
-            [
-                LoadImaged(keys=["image"]),
-                AddChanneld(keys=["image"]),
-                Orientationd(keys=["image"], axcodes="RAS"),
-                ScaleIntensityRanged(
-                    keys=["image"], a_min=0, a_max=1000,
-                    b_min=0.0, b_max=1.0, clip=True,
-                ),
-                CropForegroundd(keys=["image"], source_key="image"),
-                ToTensord(keys=["image"]),
-            ]
-        )
-
-    elif dataset == 'flare':
+    if dataset == 'flare':
         train_transforms = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
