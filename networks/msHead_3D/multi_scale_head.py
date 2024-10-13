@@ -68,8 +68,12 @@ class MultiScaleAttention(nn.Module):
             self.dwt_downsample = nn.ModuleList(self.dwt_downsample)
 
         # Linear embedding
-        self.qkv_proj = nn.Linear(dim, dim*3, bias=qkv_bias) 
-        # self.kv = nn.Linear(dim, dim * 2, bias=qkv_bias)
+        self.qkv_proj_list = []
+        for i in range(self.n_local_region_scale):
+            self.qkv_proj_list.append(nn.Linear(dim, dim*3, bias=qkv_bias))
+        self.qkv_proj_list = nn.ModuleList(self.qkv_proj_list)
+        
+        # self.qkv_proj = nn.Linear(dim, dim*3, bias=qkv_bias) 
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
@@ -187,7 +191,9 @@ class MultiScaleAttention(nn.Module):
             B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
             
             ######## Attention
-            qkv = self.qkv_proj(x_windows).reshape(B_, Nr, 3, C).permute(2, 0, 1, 3)   # temp--> 3, B_, Nr, C
+            # qkv = self.qkv_proj(x_windows).reshape(B_, Nr, 3, C).permute(2, 0, 1, 3)   # temp--> 3, B_, Nr, C
+            qkv = self.qkv_proj_list[i](x_windows).reshape(B_, Nr, 3, C).permute(2, 0, 1, 3)   # temp--> 3, B_, Nr, C
+            
             # 3, B*num_region_7x7, num_head, Nr, head_dim
             qkv = qkv.reshape(3, B_, Nr, self.num_heads, self.head_dim).permute(0, 1, 3, 2, 4).contiguous() 
             q,k,v = qkv[0], qkv[1], qkv[2]      #B_, h, Nr, Ch

@@ -152,6 +152,7 @@ with torch.no_grad():
         #     "Validate (%d / %d Steps) (dice=%2.5f)" % (global_step, 10.0, dice)
         # )
     dice_metric.reset()
+    
 mean_dice_test = np.mean(dice_vals)
 
 test_time = time.time() - s_time
