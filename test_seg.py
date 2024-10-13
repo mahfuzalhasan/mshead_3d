@@ -101,18 +101,10 @@ elif args.fold == 4:
     args.trained_weights = '/orange/r.forghani/results/09-26-24_1909/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
+
 state_dict = torch.load(args.trained_weights)
 model.load_state_dict(state_dict['model'])
 model.eval()
-# with torch.no_grad():
-#     for i, test_data in enumerate(test_loader):
-#         images = test_data["image"].to(device)
-#         roi_size = (96, 96, 96)
-#         test_data['pred'] = sliding_window_inference(
-#             images, roi_size, args.sw_batch_size, model, overlap=args.overlap
-#         )
-#         test_data = [post_transforms(i) for i in decollate_batch(test_data)]
-
 
 post_label = AsDiscrete(to_onehot=out_classes)
 post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
