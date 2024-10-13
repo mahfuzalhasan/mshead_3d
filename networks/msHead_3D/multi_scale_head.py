@@ -138,10 +138,10 @@ class MultiScaleAttention(nn.Module):
         return windows
 
 
-    def attention(self, q, k, v, branch):
+    def attention(self, q, k, v, relative_position_bias_table):
         q = q * self.scale
         attn = (q @ k.transpose(-2, -1))  # scaling needs to be fixed
-        relative_position_bias = self.relative_position_bias_tables[branch][self.relative_position_index.view(-1)].view(
+        relative_position_bias = relative_position_bias_table[self.relative_position_index.view(-1)].view(
             self.window_size*self.window_size*self.window_size, self.window_size*self.window_size*self.window_size, -1)  # Wh*Ww,Wh*Ww,nH
         relative_position_bias = relative_position_bias.permute(2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
         attn = attn + relative_position_bias.unsqueeze(0)
@@ -196,7 +196,7 @@ class MultiScaleAttention(nn.Module):
             qkv = qkv.reshape(3, B_, Nr, self.num_heads, self.head_dim).permute(0, 1, 3, 2, 4).contiguous() 
             q,k,v = qkv[0], qkv[1], qkv[2]      #B_, h, Nr, Ch
             #B_, h, Nr, Ch 
-            y, attn = self.attention(q, k, v, i)
+            y, attn = self.attention(q, k, v, self.relative_position_bias_tables[i])
             #######################
 
             # B, num_head, Ch, num_region_6x6, Nr
