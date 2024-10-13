@@ -80,21 +80,28 @@ class MultiScaleAttention(nn.Module):
         
         # define a parameter table of relative position bias
         self.relative_position_bias_tables = nn.ParameterList([
-            nn.Parameter(torch.zeros((2 * self.window_size - 1) * (2 * self.window_size - 1), self.num_heads))
+            torch.zeros((2 * self.window_size - 1) * (2 * self.window_size - 1) * (2 * self.window_size - 1),
+                        self.num_heads)
             for _ in range(self.n_local_region_scale)
         ])
         # get pair-wise relative position index for each token inside the window
+        coords_s = torch.arange(self.window_size)
         coords_h = torch.arange(self.window_size)
         coords_w = torch.arange(self.window_size)
-        coords = torch.stack(torch.meshgrid([coords_h, coords_w]))  # 2, Wh, Ww
-        coords_flatten = torch.flatten(coords, 1)  # 2, Wh*Ww
-        relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]  # 2, Wh*Ww, Wh*Ww
-        relative_coords = relative_coords.permute(1, 2, 0).contiguous()  # Wh*Ww, Wh*Ww, 2
+        coords = torch.stack(torch.meshgrid([coords_s, coords_h, coords_w])) 
+        coords_flatten = torch.flatten(coords, 1) 
+        relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]  
+        relative_coords = relative_coords.permute(1, 2, 0).contiguous() 
         relative_coords[:, :, 0] += self.window_size - 1  # shift to start from 0
         relative_coords[:, :, 1] += self.window_size - 1
-        relative_coords[:, :, 0] *= 2 * self.window_size - 1
+        relative_coords[:, :, 2] += self.window_size - 1
+
+        relative_coords[:, :, 0] *= 3 * self.window_size - 1
+        relative_coords[:, :, 1] *= 2 * self.window_size - 1
+
         relative_position_index = relative_coords.sum(-1)  # Wh*Ww, Wh*Ww
         self.register_buffer("relative_position_index", relative_position_index)
+        
         for relative_position_bias_table in self.relative_position_bias_tables:
             trunc_normal_(relative_position_bias_table, std=.02)
         # trunc_normal_(self.relative_position_bias_table, std=.02)
