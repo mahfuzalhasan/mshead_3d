@@ -79,28 +79,26 @@ class MultiScaleAttention(nn.Module):
         self.proj_drop = nn.Dropout(proj_drop)
         
         # define a parameter table of relative position bias
-        self.relative_position_bias_table = nn.Parameter(
-            torch.zeros((2 * self.window_size - 1) * (2 * self.window_size - 1) * (2 * self.window_size - 1),
-                        self.num_heads))  
-
+        self.relative_position_bias_tables = nn.ParameterList([
+            nn.Parameter(torch.zeros((2 * self.window_size - 1) * (2 * self.window_size - 1), self.num_heads))
+            for _ in range(self.n_local_region_scale)
+        ])
         # get pair-wise relative position index for each token inside the window
-        coords_s = torch.arange(self.window_size)
         coords_h = torch.arange(self.window_size)
         coords_w = torch.arange(self.window_size)
-        coords = torch.stack(torch.meshgrid([coords_s, coords_h, coords_w])) 
-        coords_flatten = torch.flatten(coords, 1) 
-        relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]  
-        relative_coords = relative_coords.permute(1, 2, 0).contiguous() 
+        coords = torch.stack(torch.meshgrid([coords_h, coords_w]))  # 2, Wh, Ww
+        coords_flatten = torch.flatten(coords, 1)  # 2, Wh*Ww
+        relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]  # 2, Wh*Ww, Wh*Ww
+        relative_coords = relative_coords.permute(1, 2, 0).contiguous()  # Wh*Ww, Wh*Ww, 2
         relative_coords[:, :, 0] += self.window_size - 1  # shift to start from 0
         relative_coords[:, :, 1] += self.window_size - 1
-        relative_coords[:, :, 2] += self.window_size - 1
-
-        relative_coords[:, :, 0] *= 3 * self.window_size - 1
-        relative_coords[:, :, 1] *= 2 * self.window_size - 1
-
-        relative_position_index = relative_coords.sum(-1)  
+        relative_coords[:, :, 0] *= 2 * self.window_size - 1
+        relative_position_index = relative_coords.sum(-1)  # Wh*Ww, Wh*Ww
         self.register_buffer("relative_position_index", relative_position_index)
-        trunc_normal_(self.relative_position_bias_table, std=.02)
+        for relative_position_bias_table in self.relative_position_bias_tables:
+            trunc_normal_(relative_position_bias_table, std=.02)
+        # trunc_normal_(self.relative_position_bias_table, std=.02)
+        #####################################
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
@@ -140,10 +138,10 @@ class MultiScaleAttention(nn.Module):
         return windows
 
 
-    def attention(self, q, k, v):
+    def attention(self, q, k, v, branch):
         q = q * self.scale
         attn = (q @ k.transpose(-2, -1))  # scaling needs to be fixed
-        relative_position_bias = self.relative_position_bias_table[self.relative_position_index.view(-1)].view(
+        relative_position_bias = self.relative_position_bias_tables[branch][self.relative_position_index.view(-1)].view(
             self.window_size*self.window_size*self.window_size, self.window_size*self.window_size*self.window_size, -1)  # Wh*Ww,Wh*Ww,nH
         relative_position_bias = relative_position_bias.permute(2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
         attn = attn + relative_position_bias.unsqueeze(0)
@@ -198,7 +196,7 @@ class MultiScaleAttention(nn.Module):
             qkv = qkv.reshape(3, B_, Nr, self.num_heads, self.head_dim).permute(0, 1, 3, 2, 4).contiguous() 
             q,k,v = qkv[0], qkv[1], qkv[2]      #B_, h, Nr, Ch
             #B_, h, Nr, Ch 
-            y, attn = self.attention(q, k, v)
+            y, attn = self.attention(q, k, v, i)
             #######################
 
             # B, num_head, Ch, num_region_6x6, Nr
