@@ -73,6 +73,8 @@ SMALL = 1
 MEDIUM = 2
 LARGE = 3
 
+
+
 test_samples, out_classes = data_loader(args)
 test_files = [
     {"image": image_name, "label": label_name}
@@ -168,7 +170,8 @@ with torch.no_grad():
         print(f'unique labels: {unique_labels}')
 
         size_labels = torch.zeros_like(test_labels, dtype=torch.uint8)
-        count_small, count_medium, count_large = 0, 0, 0 
+        count_small, count_medium, count_large = 0, 0, 0
+        ORGAN_SCALE ={SMALL:0, MEDIUM:0, LARGE:0}
         for label in unique_labels:
             if label == 0:
                 continue
@@ -180,13 +183,16 @@ with torch.no_grad():
             print(f'Class: {ORGAN_CLASSES[label.item()]} volume: {volume}')
             if volume < 1000:
                 size_labels[test_labels==label] = SMALL
-                count_small+=1
+                # count_small+=1
+                ORGAN_SCALE[SMALL] += 1
             elif volume >= 1000 and volume < 3000:
                 size_labels[test_labels==label] = MEDIUM
-                count_medium+=1
+                # count_medium+=1
+                ORGAN_SCALE[MEDIUM] += 1
             elif volume >= 3000:
                 size_labels[test_labels==label] = LARGE
-                count_large+=1
+                # count_large+=1
+                ORGAN_SCALE[LARGE] += 1
 
         print(f'organs small:{count_small} medium:{count_medium} large:{count_large}')
         roi_size = (96, 96, 96)
@@ -196,7 +202,12 @@ with torch.no_grad():
         # print(f'test outputs:{test_outputs.shape}')
         dices = []
         # size_labels = size_labels[0 ,0, :, :, :]
+        
         for scale in range(1, 4):
+
+            if ORGAN_SCALE[scale] == 0:
+                continue
+
             test_labels_size = copy.deepcopy(test_labels)
             test_outputs_size = copy.deepcopy(test_outputs)
 
