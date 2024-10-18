@@ -46,7 +46,7 @@ parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overl
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=str, default='0', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into GPUs')
-parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
+parser.add_argument('--num_workers', type=int, default=8, help='Number of workers')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
 parser.add_argument('--no_split', default=False, help='No splitting into train and validation')
 parser.add_argument('--plot', default=False, help='plotting prediction or not')
@@ -210,6 +210,7 @@ with torch.no_grad():
         dice_metric(y_pred=test_output_convert, y=test_labels_convert)
         dice = dice_metric.aggregate().item()
         dice_vals.append(dice)
+        # exit()
 
     dice_metric.reset()
 
