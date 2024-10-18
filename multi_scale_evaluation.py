@@ -229,15 +229,16 @@ with torch.no_grad():
 
     dice_metric.reset()
 
+size_wise_dice_vals = torch.tensor(size_wise_dice_vals)
 size_wise_mean = torch.mean(size_wise_dice_vals, dim=0) # Calculate the mean across each elem of sublist (along axis 1)
 patient_wise_dice = torch.mean(size_wise_dice_vals, dim=1) # Calculate the mean of each sublist (along axis 1)
 mean_dice_test = torch.mean(patient_wise_dice)
 # mean_dice_test = np.mean(dice_vals)
 test_time = time.time() - s_time
 
+print(f'#######################################')
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
 print(f'patient wise dice: {patient_wise_dice}')
-print(f'#######################################')
 print(f'size wise dice:{size_wise_mean}')
 print(f'mean test dice: {mean_dice_test}')
 print(f'########################################')    
