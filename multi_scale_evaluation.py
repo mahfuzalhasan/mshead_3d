@@ -138,7 +138,7 @@ model.eval()
 
 post_label = AsDiscrete(to_onehot=out_classes)
 post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
-dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
+dice_metric = DiceMetric(include_background=False, reduction="mean", get_not_nans=False)
 
 dice_vals = list()
 size_wise_dice_vals = []
@@ -199,6 +199,9 @@ with torch.no_grad():
             test_labels_size = copy.deepcopy(test_labels)
             test_outputs_size = copy.deepcopy(test_outputs)
 
+            # test_labels_size = test_labels_size[0, 0, :, :, : ]
+            # test_outputs_size = test_outputs_size[0, 0, :, :, : ]
+
             test_labels_size[size_labels!=scale] = 0
             expanded_size_labels = size_labels.expand(-1, test_outputs_size.size(1), -1, -1, -1)
             test_outputs_size[expanded_size_labels!=scale] = 0
@@ -218,10 +221,11 @@ with torch.no_grad():
             dice = dice_metric.aggregate().item()
             dices.append(dice)
             # dice_vals.append(dice)
+            dice_metric.reset()
         size_wise_dice_vals.append(dices)
         print(f'############# image:{step} done ##################')
 
-    dice_metric.reset()
+    
 
 size_wise_dice_vals = torch.tensor(size_wise_dice_vals)
 size_wise_mean = torch.mean(size_wise_dice_vals, dim=0) # Calculate the mean across each elem of sublist (along axis 1)

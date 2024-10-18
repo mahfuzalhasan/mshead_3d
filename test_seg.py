@@ -41,8 +41,8 @@ parser.add_argument('--gpu', type=str, default='0', help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into GPUs')
 parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
-parser.add_argument('--plot', default=False, help='plotting the prediction as nii.gz file')
 parser.add_argument('--no_split', default=False, help='No splitting into train and validation')
+parser.add_argument('--plot', default=False, help='plotting prediction or not')
 
 args = parser.parse_args()
 
@@ -75,8 +75,9 @@ if args.network == 'MSHEAD':
         in_chans=1,
         out_chans=out_classes,
         depths=[2,2,2,2],
-        feat_size=[48,96,192,384,768],
+        feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
+        local_region_scales = [2, 2, 1, 1],
         use_checkpoint=False,
     ).to(device)
 
@@ -90,21 +91,34 @@ elif args.network == 'SwinUNETR':
     ).to(device)
 
 if args.fold == 0:
-    args.trained_weights = '/orange/r.forghani/results/09-26-24_0418/model_best.pth'
+    # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/10-14-24_1411/model_best.pth'
 elif args.fold == 1:
-    args.trained_weights = '/orange/r.forghani/results/09-26-24_0428/model_best.pth'
+    # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/10-14-24_1437/model_best.pth'
 elif args.fold == 2:
-    args.trained_weights = '/orange/r.forghani/results/09-26-24_0432/model_best.pth'
+    # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/10-14-24_1536/model_best.pth'
 elif args.fold == 3:
-    args.trained_weights = '/orange/r.forghani/results/09-26-24_0441/model_best.pth'
+    # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/10-13-24_0325/model_best.pth'
 elif args.fold == 4:
-    args.trained_weights = '/orange/r.forghani/results/09-26-24_1909/model_best.pth'
+    # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/10-14-24_1624/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
-
 state_dict = torch.load(args.trained_weights)
 model.load_state_dict(state_dict['model'])
 model.eval()
+# with torch.no_grad():
+#     for i, test_data in enumerate(test_loader):
+#         images = test_data["image"].to(device)
+#         roi_size = (96, 96, 96)
+#         test_data['pred'] = sliding_window_inference(
+#             images, roi_size, args.sw_batch_size, model, overlap=args.overlap
+#         )
+#         test_data = [post_transforms(i) for i in decollate_batch(test_data)]
+
 
 post_label = AsDiscrete(to_onehot=out_classes)
 post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
@@ -138,6 +152,7 @@ with torch.no_grad():
         #     "Validate (%d / %d Steps) (dice=%2.5f)" % (global_step, 10.0, dice)
         # )
     dice_metric.reset()
+    
 mean_dice_test = np.mean(dice_vals)
 
 test_time = time.time() - s_time
