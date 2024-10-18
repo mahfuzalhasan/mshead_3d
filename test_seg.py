@@ -153,7 +153,8 @@ with torch.no_grad():
 
         # --- Individual mean (across class) Dice score per sample ---
         for pred, label in zip(test_output_convert, test_labels_convert):
-            individual_dice_scores = DiceMetric(include_background=True, reduction="none")(pred.unsqueeze(0), label.unsqueeze(0)).item()
+            # print(f'pred:{pred.shape} label:{label.shape}')
+            individual_dice_scores = DiceMetric(include_background=True, reduction="none")(pred.unsqueeze(0), label.unsqueeze(0))
             individual_dice_score = torch.mean(individual_dice_scores).item()
             dice_vals_individual.append(individual_dice_score)
         
