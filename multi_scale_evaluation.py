@@ -200,13 +200,14 @@ with torch.no_grad():
         )
         # print(f'test outputs:{test_outputs.shape}')
         dices = []
-        size_labels = size_labels[0 ,0, :, :, :]
+        # size_labels = size_labels[0 ,0, :, :, :]
         for scale in range(1, 3):
             test_labels_size = copy.deepcopy(test_labels)
             test_outputs_size = copy.deepcopy(test_outputs)
 
             test_labels_size[size_labels!=scale] = 0
-            test_outputs_size[size_labels!=scale] = 0
+            expanded_size_labels = size_labels.expand(-1, test_outputs_size.size(1), -1, -1, -1)
+            test_outputs_size[expanded_size_labels!=scale] = 0
             
             test_labels_list = decollate_batch(test_labels_size)
             test_labels_convert = [
