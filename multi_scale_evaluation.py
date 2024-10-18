@@ -143,7 +143,7 @@ post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
 dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
 
 dice_vals = list()
-size_wise_dice_vals = []
+patient_wise_dice_vals = {i:{SMALL:0, MEDIUM:0, LARGE:0} for i in range(20)}
 s_time = time.time()
 
 ## Load Networks
@@ -151,6 +151,7 @@ s_time = time.time()
 device = torch.device("cuda")
 print(f'--- device:{device} ---')
 output_scale = {SMALL:[], MEDIUM:[], LARGE:[]}
+patient_wise_scores = []
 with torch.no_grad():
     for step, batch in enumerate(test_loader):
         print(f'########## image:{step} ######################')
@@ -200,12 +201,13 @@ with torch.no_grad():
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
         # print(f'test outputs:{test_outputs.shape}')
-        dices = []
+        
         # size_labels = size_labels[0 ,0, :, :, :]
-
+        patient_wise_dice = {SMALL:0, MEDIUM:0, LARGE:0}
         for scale in range(1, 4):
             if ORGAN_SCALE[scale] == 0:
-                output_scale[scale].append(0)
+                output_scale[scale].append(None)
+                patient_wise_dice[scale] = None
                 continue
             test_labels_size = copy.deepcopy(test_labels)
             test_outputs_size = copy.deepcopy(test_outputs)
@@ -232,29 +234,30 @@ with torch.no_grad():
             dice = dice_metric.aggregate().item()
             # dices.append(dice)
             output_scale[scale].append(dice)
+            patient_wise_dice[scale] = dice
             # dice_vals.append(dice)
             dice_metric.reset()
             
-        size_wise_dice_vals.append(dices)
+        patient_wise_scores.append(patient_wise_dice)
         print(f'############# image:{step} done ##################')
 
     
 
-size_wise_dice_vals = torch.tensor(size_wise_dice_vals)
-size_wise_mean = torch.mean(size_wise_dice_vals, dim=0) # Calculate the mean across each elem of sublist (along axis 1)
-patient_wise_dice = torch.mean(size_wise_dice_vals, dim=1) # Calculate the mean of each sublist (along axis 1)
-mean_dice_test = torch.mean(patient_wise_dice)
-# mean_dice_test = np.mean(dice_vals)
+# patient_wise_dice_vals = torch.tensor(patient_wise_dice_vals)
+# size_wise_mean = torch.mean(size_wise_dice_vals, dim=0) # Calculate the mean across each elem of sublist (along axis 1)
+# patient_wise_dice = torch.mean(size_wise_dice_vals, dim=1) # Calculate the mean of each sublist (along axis 1)
+# mean_dice_test = torch.mean(patient_wise_dice)
+# # mean_dice_test = np.mean(dice_vals)
 test_time = time.time() - s_time
 
 print(f'#######################################')
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
-print(f'dice score subject wise: {size_wise_dice_vals}\n')
+print(f'dice score subject wise: {patient_wise_scores}\n')
 
-print(f'patient wise mean dice: {patient_wise_dice}\n')
+# print(f'patient wise mean dice: {patient_wise_dice}\n')
 
-print(f'size wise mean dice:{size_wise_mean}')
-print(f'mean test dice: {mean_dice_test}')
+print(f'size wise dice:{output_scale}')
+# print(f'mean test dice: {mean_dice_test}')
 print(f'########################################')
     
 
