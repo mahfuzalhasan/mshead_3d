@@ -259,6 +259,22 @@ print(f'dice score subject wise: {patient_wise_scores}\n')
 print(f'size wise dice:{output_scale}')
 # print(f'mean test dice: {mean_dice_test}')
 print(f'########################################')
+
+# print(f'mean patient-wise')
+
+# def calculate_patient_mean(data):
+means = []
+for patient in patient_wise_scores:
+    values = [v for v in patient.values() if v is not None]  # Filter out None values
+    means.append(np.mean(values))  # Calculate mean
+print(f'\n mean dice score subject wise: {means}')
+
+means = []
+for key, values in output_scale.items:
+    filtered_values = [v for v in values if v is not None]
+    means.append(np.mean(filtered_values))
+print(f'\n mean dice score size wise: {means}')
+
     
 
 
