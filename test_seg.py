@@ -163,8 +163,8 @@ with torch.no_grad():
         dice = dice_metric.aggregate().item()  # This gives cumulative average Dice score so far
         dice_vals_aggregated.append(dice)
 
-    # Reset the metric after evaluation
-    dice_metric.reset()
+        # Reset the metric after evaluation
+        dice_metric.reset()
 
 # Final average Dice score for the entire dataset using the aggregated metric
 final_aggregated_dice = dice_vals_aggregated[-1]
