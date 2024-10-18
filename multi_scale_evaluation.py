@@ -221,11 +221,11 @@ with torch.no_grad():
             dice = dice_metric.aggregate().item()
             dices.append(dice)
             # dice_vals.append(dice)
-            dice_metric.reset()
+            
         size_wise_dice_vals.append(dices)
         print(f'############# image:{step} done ##################')
 
-    
+    dice_metric.reset()
 
 size_wise_dice_vals = torch.tensor(size_wise_dice_vals)
 size_wise_mean = torch.mean(size_wise_dice_vals, dim=0) # Calculate the mean across each elem of sublist (along axis 1)
