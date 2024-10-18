@@ -90,21 +90,32 @@ elif args.network == 'SwinUNETR':
         use_checkpoint=False,
     ).to(device)
 
+# if args.fold == 0:
+#     # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
+#     args.trained_weights = '/orange/r.forghani/results/10-14-24_1411/model_best.pth'
+# elif args.fold == 1:
+#     # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
+#     args.trained_weights = '/orange/r.forghani/results/10-14-24_1437/model_best.pth'
+# elif args.fold == 2:
+#     # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
+#     args.trained_weights = '/orange/r.forghani/results/10-14-24_1536/model_best.pth'
+# elif args.fold == 3:
+#     # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
+#     args.trained_weights = '/orange/r.forghani/results/10-13-24_0325/model_best.pth'
+# elif args.fold == 4:
+#     # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
+#     args.trained_weights = '/orange/r.forghani/results/10-14-24_1624/model_best.pth'
+
 if args.fold == 0:
-    # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/10-14-24_1411/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0418/model_best.pth'
 elif args.fold == 1:
-    # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/10-14-24_1437/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0428/model_best.pth'
 elif args.fold == 2:
-    # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/10-14-24_1536/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0432/model_best.pth'
 elif args.fold == 3:
-    # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/10-13-24_0325/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0441/model_best.pth'
 elif args.fold == 4:
-    # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/10-14-24_1624/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_1909/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
