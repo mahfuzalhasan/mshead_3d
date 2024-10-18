@@ -198,13 +198,13 @@ with torch.no_grad():
         )
 
         test_labels_list = decollate_batch(test_labels)
-        print(f'test label list: {test_labels_list.shape}')
+        # print(f'test label list: {test_labels_list.shape}')
         test_labels_convert = [
             post_label(test_label_tensor) for test_label_tensor in test_labels_list
         ]
 
         test_outputs_list = decollate_batch(test_outputs)
-        print(f'test outputs list: {test_outputs_list.shape}')
+        # print(f'test outputs list: {test_outputs_list.shape}')
         test_output_convert = [
             post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
         ]
