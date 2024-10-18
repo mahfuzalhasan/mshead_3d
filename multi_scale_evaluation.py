@@ -238,6 +238,7 @@ test_time = time.time() - s_time
 
 print(f'#######################################')
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
+print(f'dice score subject wise: {size_wise_dice_vals}')
 print(f'patient wise dice: {patient_wise_dice}')
 print(f'size wise dice:{size_wise_mean}')
 print(f'mean test dice: {mean_dice_test}')
