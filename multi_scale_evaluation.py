@@ -157,6 +157,7 @@ print(f'--- device:{device} ---')
 
 with torch.no_grad():
     for step, batch in enumerate(test_loader):
+        print(f'########## image:{step} ######################')
         test_inputs, test_labels = (batch["image"].to(device), batch["label"].to(device))
         print(f'input: {test_inputs.shape} labels:{test_labels.shape}')     # B,C,D,H,W format: D slices in each CT data
                                                                             #each slice has 1 channel-> C = 1
@@ -222,6 +223,7 @@ with torch.no_grad():
             dices.append(dice)
             # dice_vals.append(dice)
         size_wise_dice_vals.append(dices)
+        print(f'############# image:{step} done ##################')
 
     dice_metric.reset()
 
