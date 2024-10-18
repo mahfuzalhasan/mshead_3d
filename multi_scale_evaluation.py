@@ -138,7 +138,7 @@ model.eval()
 
 post_label = AsDiscrete(to_onehot=out_classes)
 post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
-dice_metric = DiceMetric(include_background=False, reduction="mean", get_not_nans=False)
+dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
 
 dice_vals = list()
 size_wise_dice_vals = []
@@ -187,7 +187,7 @@ with torch.no_grad():
             elif volume >= 3000:
                 size_labels[test_labels==label] = LARGE
                 count_large+=1
-                
+
         print(f'organs small:{count_small} medium:{count_medium} large:{count_large}')
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
