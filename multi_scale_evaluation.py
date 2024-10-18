@@ -150,7 +150,7 @@ s_time = time.time()
 ### set device according to your local machine
 device = torch.device("cuda")
 print(f'--- device:{device} ---')
-
+output_scale = {SMALL:[], MEDIUM:[], LARGE:[]}
 with torch.no_grad():
     for step, batch in enumerate(test_loader):
         print(f'########## image:{step} ######################')
@@ -202,12 +202,11 @@ with torch.no_grad():
         # print(f'test outputs:{test_outputs.shape}')
         dices = []
         # size_labels = size_labels[0 ,0, :, :, :]
-        
+
         for scale in range(1, 4):
-
             if ORGAN_SCALE[scale] == 0:
+                output_scale[scale].append(0)
                 continue
-
             test_labels_size = copy.deepcopy(test_labels)
             test_outputs_size = copy.deepcopy(test_outputs)
 
@@ -231,7 +230,8 @@ with torch.no_grad():
             # print(f'test output convert:{test_output_convert[0].shape} and length:{len(test_output_convert)}, test labels convert:{test_labels_convert.shape}')
             dice_metric(y_pred=test_output_convert, y=test_labels_convert)
             dice = dice_metric.aggregate().item()
-            dices.append(dice)
+            # dices.append(dice)
+            output_scale[scale].append(dice)
             # dice_vals.append(dice)
             dice_metric.reset()
             

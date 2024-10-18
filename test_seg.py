@@ -136,39 +136,45 @@ dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans
 
 dice_vals = list()
 s_time = time.time()
+dice_vals_individual = []
+dice_vals_aggregated = []
 with torch.no_grad():
     for step, batch in enumerate(test_loader):
-        test_inputs, test_labels = (batch["image"].to(device), batch["label"].to(device))
-        # val_outputs = model(val_inputs)
-        roi_size = (96, 96, 96)
-        test_outputs = sliding_window_inference(
-            test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
-        )
+        test_inputs, test_labels = batch["image"].to(device), batch["label"].to(device)
 
+        test_outputs = sliding_window_inference(test_inputs, (96, 96, 96), args.sw_batch_size, model)
+
+        # Decollate and convert labels and outputs
         test_labels_list = decollate_batch(test_labels)
-        test_labels_convert = [
-            post_label(test_label_tensor) for test_label_tensor in test_labels_list
-        ]
-
+        test_labels_convert = [post_label(test_label_tensor) for test_label_tensor in test_labels_list]
+        
         test_outputs_list = decollate_batch(test_outputs)
-        test_output_convert = [
-            post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
-        ]
+        test_output_convert = [post_pred(test_pred_tensor) for test_pred_tensor in test_outputs_list]
 
-        dice_metric(y_pred=test_output_convert, y=test_labels_convert)
-        dice = dice_metric.aggregate().item()
-        print(f'step:{step} dice:{dice}')           # Last step dice should be the average
-        dice_vals.append(dice)
-        # epoch_iterator_val.set_description(
-        #     "Validate (%d / %d Steps) (dice=%2.5f)" % (global_step, 10.0, dice)
-        # )
-    # dice = dice_metric.aggregate().item()     # This should reflect the average dice
+        # --- Individual mean (across class) Dice score per sample ---
+        for pred, label in zip(test_output_convert, test_labels_convert):
+            individual_dice_score = DiceMetric(include_background=True, reduction="mean")(pred.unsqueeze(0), label.unsqueeze(0)).item()
+            dice_vals_individual.append(individual_dice_score)
+        
+        # --- Aggregated Dice score ---
+        dice_metric(y_pred=test_output_convert, y=test_labels_convert)  # Update Dice metric for this batch
+        dice = dice_metric.aggregate().item()  # This gives cumulative average Dice score so far
+        dice_vals_aggregated.append(dice)
+
+    # Reset the metric after evaluation
     dice_metric.reset()
-    # print(f'mean test dice: {dice}')
+
+# Final average Dice score for the entire dataset using the aggregated metric
+final_aggregated_dice = dice_vals_aggregated[-1]
+print(f"Final aggregated Dice score (over all batches): {final_aggregated_dice}")
+
+# Print or analyze individual Dice scores
+print(f"Individual Dice scores: {dice_vals_individual}\n")
+print(f"Cumulative Avg Dice: {dice_vals_aggregated}")
 
 mean_dice_test = np.mean(dice_vals)
 
 test_time = time.time() - s_time
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
-print(f'mean test dice: {dice}')
+# print(f'mean test dice: {mean_dice_test}')
 
