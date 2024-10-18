@@ -161,7 +161,7 @@ with torch.no_grad():
         # epoch_iterator_val.set_description(
         #     "Validate (%d / %d Steps) (dice=%2.5f)" % (global_step, 10.0, dice)
         # )
-    dice_metric.reset()
+        dice_metric.reset()
     
 mean_dice_test = np.mean(dice_vals)
 
