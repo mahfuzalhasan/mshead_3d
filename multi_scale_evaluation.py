@@ -29,7 +29,7 @@ from tqdm import tqdm
 import datetime
 import argparse
 import time
-
+import copy
 parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
@@ -147,6 +147,7 @@ post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
 dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
 
 dice_vals = list()
+size_wise_dice_vals = []
 s_time = time.time()
 
 ## Load Networks
@@ -196,38 +197,46 @@ with torch.no_grad():
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
-        print(f'test outputs:{test_outputs.shape}')
-        
-        test_labels_list = decollate_batch(test_labels)
-        print(f'test label list: {len(test_labels_list)}')
-        test_labels_convert = [
-            post_label(test_label_tensor) for test_label_tensor in test_labels_list
-        ]
-        for t_labels in test_labels_convert:
-            print(f'labels inside list: {t_labels.shape}')
+        # print(f'test outputs:{test_outputs.shape}')
+        dices = []
+        for scale in range(1, 3):
+            test_labels_size = copy.deepcopy(test_labels)
+            test_outputs_size = copy.deepcopy(test_outputs)
 
-        test_outputs_list = decollate_batch(test_outputs)
-        # print(f'test outputs list: {test_outputs_list.shape}')
-        test_output_convert = [
-            post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
-        ]
-        for out_labels in test_output_convert:
-            print(f'out inside list: {out_labels.shape}')
+            test_labels_size[size_labels!=scale] = 0
+            test_outputs_size[size_labels!=scale] = 0
+            
+            test_labels_list = decollate_batch(test_labels_size)
+            test_labels_convert = [
+                post_label(test_label_tensor) for test_label_tensor in test_labels_list
+            ]
 
-        print(f'test output convert:{test_output_convert[0].shape} and length:{len(test_output_convert)}, test labels convert:{test_labels_convert.shape}')
-        dice_metric(y_pred=test_output_convert, y=test_labels_convert)
-        dice = dice_metric.aggregate().item()
-        dice_vals.append(dice)
-        # exit()
+            test_outputs_list = decollate_batch(test_outputs_size)
+            test_output_convert = [
+                post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
+            ]
+
+            # print(f'test output convert:{test_output_convert[0].shape} and length:{len(test_output_convert)}, test labels convert:{test_labels_convert.shape}')
+            dice_metric(y_pred=test_output_convert, y=test_labels_convert)
+            dice = dice_metric.aggregate().item()
+            dices.append(dice)
+            # dice_vals.append(dice)
+        size_wise_dice_vals.append(dices)
 
     dice_metric.reset()
 
-
-mean_dice_test = np.mean(dice_vals)
+size_wise_mean = torch.mean(size_wise_dice_vals, dim=0)
+patient_wise_dice = torch.mean(size_wise_dice_vals, dim=1) # Calculate the mean of each sublist (along axis 1)
+mean_dice_test = torch.mean(patient_wise_dice)
+# mean_dice_test = np.mean(dice_vals)
 test_time = time.time() - s_time
+
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
+print(f'patient wise dice: {patient_wise_dice}')
+print(f'#######################################')
+print(f'size wise dice:{size_wise_mean}')
 print(f'mean test dice: {mean_dice_test}')
-    
+print(f'########################################')    
     
 
 
