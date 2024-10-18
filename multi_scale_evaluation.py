@@ -205,7 +205,7 @@ with torch.no_grad():
             test_outputs_size = copy.deepcopy(test_outputs)
 
             test_labels_size[size_labels!=scale] = 0
-            test_outputs_size[size_labels!=scale] = 0
+            test_outputs_size[:,:,size_labels!=scale] = 0
             
             test_labels_list = decollate_batch(test_labels_size)
             test_labels_convert = [
