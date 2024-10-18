@@ -83,7 +83,7 @@ print(f'test files:{len(test_files)}')
 set_determinism(seed=0)
 test_transforms = data_transforms(args)
 print('Start caching datasets!')
-test_ds = CacheDataset( data=test_files[:5], transform=test_transforms, 
+test_ds = CacheDataset( data=test_files, transform=test_transforms, 
                        cache_rate=args.cache_rate, num_workers=args.num_workers)
 test_loader = ThreadDataLoader(test_ds, batch_size=1, num_workers=0)
 
@@ -201,7 +201,7 @@ with torch.no_grad():
         # print(f'test outputs:{test_outputs.shape}')
         dices = []
         # size_labels = size_labels[0 ,0, :, :, :]
-        for scale in range(1, 3):
+        for scale in range(1, 4):
             test_labels_size = copy.deepcopy(test_labels)
             test_outputs_size = copy.deepcopy(test_outputs)
 
