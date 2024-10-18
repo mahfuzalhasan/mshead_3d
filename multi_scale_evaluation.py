@@ -83,7 +83,7 @@ print(f'test files:{len(test_files)}')
 set_determinism(seed=0)
 test_transforms = data_transforms(args)
 print('Start caching datasets!')
-test_ds = CacheDataset( data=test_files, transform=test_transforms, 
+test_ds = CacheDataset( data=test_files[:5], transform=test_transforms, 
                        cache_rate=args.cache_rate, num_workers=args.num_workers)
 test_loader = ThreadDataLoader(test_ds, batch_size=1, num_workers=0)
 
@@ -196,18 +196,24 @@ with torch.no_grad():
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
-
+        print(f'test outputs:{test_outputs.shape}')
+        
         test_labels_list = decollate_batch(test_labels)
-        # print(f'test label list: {test_labels_list.shape}')
+        print(f'test label list: {len(test_labels_list)}')
         test_labels_convert = [
             post_label(test_label_tensor) for test_label_tensor in test_labels_list
         ]
+        for t_labels in test_labels_convert:
+            print(f'labels inside list: {t_labels.shape}')
 
         test_outputs_list = decollate_batch(test_outputs)
         # print(f'test outputs list: {test_outputs_list.shape}')
         test_output_convert = [
             post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
         ]
+        for out_labels in test_output_convert:
+            print(f'out inside list: {out_labels.shape}')
+
         print(f'test output convert:{test_output_convert[0].shape} and length:{len(test_output_convert)}, test labels convert:{test_labels_convert.shape}')
         dice_metric(y_pred=test_output_convert, y=test_labels_convert)
         dice = dice_metric.aggregate().item()
