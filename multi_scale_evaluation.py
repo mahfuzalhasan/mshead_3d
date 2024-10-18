@@ -174,6 +174,8 @@ with torch.no_grad():
         size_labels = torch.zeros_like(test_labels, dtype=torch.uint8)
         count_small, count_medium, count_large = 0, 0, 0 
         for label in unique_labels:
+            if label == 0:
+                continue
             dummy = torch.zeros_like(test_labels, dtype=torch.uint8)
             dummy[test_labels == label] = 1
             N_voxel = torch.count_nonzero(dummy)
