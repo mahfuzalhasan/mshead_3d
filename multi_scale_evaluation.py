@@ -225,7 +225,7 @@ with torch.no_grad():
 
     dice_metric.reset()
 
-size_wise_mean = torch.mean(size_wise_dice_vals, dim=0)
+size_wise_mean = torch.mean(size_wise_dice_vals, dim=0) # Calculate the mean across each elem of sublist (along axis 1)
 patient_wise_dice = torch.mean(size_wise_dice_vals, dim=1) # Calculate the mean of each sublist (along axis 1)
 mean_dice_test = torch.mean(patient_wise_dice)
 # mean_dice_test = np.mean(dice_vals)
