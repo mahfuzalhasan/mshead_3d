@@ -140,7 +140,7 @@ model.eval()
 
 post_label = AsDiscrete(to_onehot=out_classes)
 post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
-dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
+dice_metric = DiceMetric(include_background=False, reduction="mean", get_not_nans=False)
 
 dice_vals = list()
 patient_wise_dice_vals = {i:{SMALL:0, MEDIUM:0, LARGE:0} for i in range(20)}
@@ -268,6 +268,7 @@ for patient in patient_wise_scores:
     values = [v for v in patient.values() if v is not None]  # Filter out None values
     means.append(np.mean(values))  # Calculate mean
 print(f'\n mean dice score subject wise: {means}')
+print(f'\n overall mean dice score: {np.mean(means)}')
 
 means = []
 for key, values in output_scale.items():
