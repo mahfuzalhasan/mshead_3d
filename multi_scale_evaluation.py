@@ -208,7 +208,7 @@ with torch.no_grad():
         test_output_convert = [
             post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
         ]
-        print(f'test output convert:{test_output_convert.shape} test labels convert:{test_labels_convert.shape}')
+        print(f'test output convert:{test_output_convert[0].shape} and length:{len(test_output_convert)}, test labels convert:{test_labels_convert.shape}')
         dice_metric(y_pred=test_output_convert, y=test_labels_convert)
         dice = dice_metric.aggregate().item()
         dice_vals.append(dice)
