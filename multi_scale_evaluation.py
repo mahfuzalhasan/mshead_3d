@@ -195,7 +195,7 @@ with torch.no_grad():
                 # count_large+=1
                 ORGAN_SCALE[LARGE] += 1
 
-        print(f'organs small:{count_small} medium:{count_medium} large:{count_large}')
+        print(f'organs small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
@@ -248,8 +248,8 @@ with torch.no_grad():
 # patient_wise_dice = torch.mean(size_wise_dice_vals, dim=1) # Calculate the mean of each sublist (along axis 1)
 # mean_dice_test = torch.mean(patient_wise_dice)
 # # mean_dice_test = np.mean(dice_vals)
-test_time = time.time() - s_time
 
+test_time = time.time() - s_time
 print(f'#######################################')
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
 print(f'dice score subject wise: {patient_wise_scores}\n')
@@ -270,7 +270,7 @@ for patient in patient_wise_scores:
 print(f'\n mean dice score subject wise: {means}')
 
 means = []
-for key, values in output_scale.items:
+for key, values in output_scale.items():
     filtered_values = [v for v in values if v is not None]
     means.append(np.mean(filtered_values))
 print(f'\n mean dice score size wise: {means}')
