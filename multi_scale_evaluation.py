@@ -187,7 +187,8 @@ with torch.no_grad():
             elif volume >= 3000:
                 size_labels[test_labels==label] = LARGE
                 count_large+=1
-
+                
+        print(f'organs small:{count_small} medium:{count_medium} large:{count_large}')
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
