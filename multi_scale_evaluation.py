@@ -207,8 +207,8 @@ with torch.no_grad():
         
         for scale in range(1, 4):       # SMALL to LARGE
             if ORGAN_SCALE[scale] == 0:
-                output_scale[scale].append(None)
-                patient_wise_dice[scale] = None
+                output_scale[scale].append(0)
+                patient_wise_dice[scale] = 0
                 continue
             test_labels_size = copy.deepcopy(test_labels)
             test_outputs_size = copy.deepcopy(test_outputs)
