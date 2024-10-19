@@ -134,7 +134,7 @@ post_label = AsDiscrete(to_onehot=out_classes)
 post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
 dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
 
-dice_vals = list()
+# dice_vals = list()
 s_time = time.time()
 dice_vals_individual = []
 dice_vals_aggregated = []
@@ -163,8 +163,8 @@ with torch.no_grad():
         dice = dice_metric.aggregate().item()  # This gives cumulative average Dice score so far
         dice_vals_aggregated.append(dice)
 
-        # Reset the metric after evaluation
-        dice_metric.reset()
+    # Reset the metric after evaluation
+    dice_metric.reset()
 
 # Final average Dice score for the entire dataset using the aggregated metric
 final_aggregated_dice = dice_vals_aggregated[-1]
@@ -172,9 +172,8 @@ print(f"Final aggregated Dice score (over all batches): {final_aggregated_dice}"
 
 # Print or analyze individual Dice scores
 print(f"Individual Dice scores: {dice_vals_individual}\n")
-print(f"Cumulative Avg Dice: {dice_vals_aggregated}")
-
-mean_dice_test = np.mean(dice_vals)
+print(f"mean dice score from individual calculation: {np.mean(dice_vals_individual)}")
+print(f"\n Cumulative Avg Dice: {dice_vals_aggregated}")
 
 test_time = time.time() - s_time
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
