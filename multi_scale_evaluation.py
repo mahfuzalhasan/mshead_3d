@@ -204,7 +204,8 @@ with torch.no_grad():
         
         # size_labels = size_labels[0 ,0, :, :, :]
         patient_wise_dice = {SMALL:0, MEDIUM:0, LARGE:0}
-        for scale in range(1, 4):
+        
+        for scale in range(1, 4):       # SMALL to LARGE
             if ORGAN_SCALE[scale] == 0:
                 output_scale[scale].append(None)
                 patient_wise_dice[scale] = None

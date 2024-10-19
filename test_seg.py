@@ -156,7 +156,7 @@ with torch.no_grad():
             # print(f'pred:{pred.shape} label:{label.shape}')
             individual_dice_scores = DiceMetric(include_background=False, reduction="none")(pred.unsqueeze(0), label.unsqueeze(0))
             individual_dice_score = torch.mean(individual_dice_scores).item()
-            dice_vals_individual.append(individual_dice_score)
+            dice_vals_individual.append(individual_dice_score)      # per sample mean dice score
         
         # --- Aggregated Dice score ---
         dice_metric(y_pred=test_output_convert, y=test_labels_convert)  # Update Dice metric for this batch
