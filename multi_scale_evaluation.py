@@ -214,6 +214,7 @@ with torch.no_grad():
             
         patient_wise_scores.append(patient_wise_dice)
         print(f'############# image:{step} done ##################')
+        exit()
 
     
 
