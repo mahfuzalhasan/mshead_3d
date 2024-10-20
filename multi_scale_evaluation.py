@@ -181,7 +181,7 @@ with torch.no_grad():
         print(f'########## Scale Wise Labels for Prediction #################')
         print(f'\n test output: {test_outputs.shape}')
         size_labels_prediction, ORGAN_SCALE_PREDICTION = scale_wise_organ_filtration(test_outputs, ORGAN_CLASSES, prediction=True)
-        print(f'Scales In Prediction::: small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
+        print(f'Scales In Prediction::: small:{ORGAN_SCALE_PREDICTION[SMALL]} medium:{ORGAN_SCALE_PREDICTION[MEDIUM]} large:{ORGAN_SCALE_PREDICTION[LARGE]}')
         print(f'scale-wise label for prediction: {size_labels_prediction.shape}')
         print(f'#############################################################')
         

@@ -31,13 +31,13 @@ def scale_wise_organ_filtration(arr, ORGAN_CLASSES, prediction = False):
         volume = volume / 1000                     # in cm^3
         print(f'Class: {ORGAN_CLASSES[label.item()]} volume: {volume}')
         if volume < 1000:
-            size_labels[arr==label] = SMALL         # 10
+            size_labels[arr==label] = SMALL         # 1
             ORGAN_SCALE[SMALL] += 1
         elif volume >= 1000 and volume < 3000:
-            size_labels[arr==label] = MEDIUM        # 11
+            size_labels[arr==label] = MEDIUM        # 2
             ORGAN_SCALE[MEDIUM] += 1
         elif volume >= 3000:
-            size_labels[arr==label] = LARGE         # 12
+            size_labels[arr==label] = LARGE         # 3
             ORGAN_SCALE[LARGE] += 1
 
     return size_labels, ORGAN_SCALE
