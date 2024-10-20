@@ -168,18 +168,22 @@ with torch.no_grad():
                                                                             # To calculate volume we can use labels from
                                                                             # val_labels. How? That's where I need help
         
+        print(f'########## Scale Wise Labels for GT #################')
         size_labels_target, ORGAN_SCALE = scale_wise_organ_filtration(test_labels, ORGAN_CLASSES)
         print(f'Scales In GT::: small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
         print(f'scale-wise label: {size_labels_target.shape}')
+        print(f'####################################################')
         
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
+        print(f'########## Scale Wise Labels for Prediction #################')
         print(f'\n test output: {test_outputs.shape}')
         size_labels_prediction, ORGAN_SCALE_PREDICTION = scale_wise_organ_filtration(test_outputs, ORGAN_CLASSES, prediction=True)
         print(f'Scales In Prediction::: small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
         print(f'scale-wise label for prediction: {size_labels_prediction.shape}')
+        print(f'#############################################################')
         
         patient_wise_dice = {SMALL:0, MEDIUM:0, LARGE:0}
         for scale in range(1, 4):       # SMALL to LARGE
@@ -196,11 +200,11 @@ with torch.no_grad():
             expanded_size_labels = size_labels_prediction.expand(-1, test_outputs_size.size(1), -1, -1, -1)
             test_outputs_size[expanded_size_labels!=scale] = 0
             
+            #### No need for decollate batch if we have only 1 sample/batch i.e. batch_size = 1
             test_labels_list = decollate_batch(test_labels_size)
             test_labels_convert = [
                 post_label(test_label_tensor) for test_label_tensor in test_labels_list
             ]
-
             test_outputs_list = decollate_batch(test_outputs_size)
             test_output_convert = [
                 post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
@@ -215,7 +219,7 @@ with torch.no_grad():
             
         patient_wise_scores.append(patient_wise_dice)
         print(f'############# image:{step} done ##################')
-        exit()
+        # exit()
 
     
 
