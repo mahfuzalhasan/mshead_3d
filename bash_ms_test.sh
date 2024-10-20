@@ -17,4 +17,4 @@ cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-wo-s
 
 # Execute the Python script
 # srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
-srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
+srun python multi_scale_evaluation.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
