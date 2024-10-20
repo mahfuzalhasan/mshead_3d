@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=python_test_flare_ablation_wf3221_ms_test
+#SBATCH --job-name=flare_wf3221_ms_test
 #SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-wo-split-v2/mshead_3d/results/wf3221_ms_test_job.%J.out
 #SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-wo-split-v2/mshead_3d/results/wf3221_ms_test_job.%J.err
 #SBATCH --nodes=1
