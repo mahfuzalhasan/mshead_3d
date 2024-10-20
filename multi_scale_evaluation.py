@@ -140,7 +140,7 @@ model.eval()
 
 post_label = AsDiscrete(to_onehot=out_classes)
 post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
-dice_metric = DiceMetric(include_background=False, reduction="mean", get_not_nans=False)
+dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
 
 dice_vals = list()
 patient_wise_dice_vals = {i:{SMALL:0, MEDIUM:0, LARGE:0} for i in range(20)}
@@ -173,6 +173,7 @@ with torch.no_grad():
         size_labels = torch.zeros_like(test_labels, dtype=torch.uint8)
         count_small, count_medium, count_large = 0, 0, 0
         ORGAN_SCALE ={SMALL:0, MEDIUM:0, LARGE:0}
+        # Filtering of Small, Medium and Large
         for label in unique_labels:
             if label == 0:
                 continue
@@ -183,16 +184,13 @@ with torch.no_grad():
             volume = volume / 1000                     # in cm^3
             print(f'Class: {ORGAN_CLASSES[label.item()]} volume: {volume}')
             if volume < 1000:
-                size_labels[test_labels==label] = SMALL
-                # count_small+=1
+                size_labels[test_labels==label] = SMALL         # 10
                 ORGAN_SCALE[SMALL] += 1
             elif volume >= 1000 and volume < 3000:
-                size_labels[test_labels==label] = MEDIUM
-                # count_medium+=1
+                size_labels[test_labels==label] = MEDIUM        # 11
                 ORGAN_SCALE[MEDIUM] += 1
             elif volume >= 3000:
-                size_labels[test_labels==label] = LARGE
-                # count_large+=1
+                size_labels[test_labels==label] = LARGE         # 12
                 ORGAN_SCALE[LARGE] += 1
 
         print(f'organs small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
@@ -200,6 +198,8 @@ with torch.no_grad():
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
+        #### test output -- > 1, 5, H, W, C
+        #### test label ---> 1, 1, H, W, C
         # print(f'test outputs:{test_outputs.shape}')
         
         # size_labels = size_labels[0 ,0, :, :, :]
@@ -207,8 +207,8 @@ with torch.no_grad():
         
         for scale in range(1, 4):       # SMALL to LARGE
             if ORGAN_SCALE[scale] == 0:
-                output_scale[scale].append(0)
-                patient_wise_dice[scale] = 0
+                output_scale[scale].append(None)
+                patient_wise_dice[scale] = None
                 continue
             test_labels_size = copy.deepcopy(test_labels)
             test_outputs_size = copy.deepcopy(test_outputs)
