@@ -30,6 +30,7 @@ import datetime
 import argparse
 import time
 import copy
+from utils import scale_wise_organ_filtration
 parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
@@ -166,58 +167,32 @@ with torch.no_grad():
                                                                             # to calculate volume for each organ.
                                                                             # To calculate volume we can use labels from
                                                                             # val_labels. How? That's where I need help
-        # test_labels_tensor = test_labels[0, 0, :, :, :]
-        unique_labels = torch.unique(test_labels)
-        print(f'unique labels: {unique_labels}')
-
-        size_labels = torch.zeros_like(test_labels, dtype=torch.uint8)
-        count_small, count_medium, count_large = 0, 0, 0
-        ORGAN_SCALE ={SMALL:0, MEDIUM:0, LARGE:0}
-        # Filtering of Small, Medium and Large
-        for label in unique_labels:
-            if label == 0:
-                continue
-            dummy = torch.zeros_like(test_labels, dtype=torch.uint8)
-            dummy[test_labels == label] = 1
-            N_voxel = torch.count_nonzero(dummy)
-            volume = N_voxel.item() * 1.5 * 1.5 * 2    # in mm^3
-            volume = volume / 1000                     # in cm^3
-            print(f'Class: {ORGAN_CLASSES[label.item()]} volume: {volume}')
-            if volume < 1000:
-                size_labels[test_labels==label] = SMALL         # 10
-                ORGAN_SCALE[SMALL] += 1
-            elif volume >= 1000 and volume < 3000:
-                size_labels[test_labels==label] = MEDIUM        # 11
-                ORGAN_SCALE[MEDIUM] += 1
-            elif volume >= 3000:
-                size_labels[test_labels==label] = LARGE         # 12
-                ORGAN_SCALE[LARGE] += 1
-
-        print(f'organs small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
+        
+        size_labels_target, ORGAN_SCALE = scale_wise_organ_filtration(test_labels, ORGAN_CLASSES)
+        print(f'Scales In GT::: small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
+        print(f'scale-wise label: {size_labels_target.shape}')
+        
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
-        #### test output -- > 1, 5, H, W, C
-        #### test label ---> 1, 1, H, W, C
-        # print(f'test outputs:{test_outputs.shape}')
+        print(f'test output: {test_outputs.shape}')
+        size_labels_prediction, ORGAN_SCALE_PREDICTION = scale_wise_organ_filtration(test_outputs, ORGAN_CLASSES, prediction=True)
+        print(f'Scales In GT::: small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
+        print(f'scale-wise label for prediction: {size_labels_prediction.shape}')
         
-        # size_labels = size_labels[0 ,0, :, :, :]
         patient_wise_dice = {SMALL:0, MEDIUM:0, LARGE:0}
-        
         for scale in range(1, 4):       # SMALL to LARGE
-            if ORGAN_SCALE[scale] == 0:
+            if ORGAN_SCALE[scale] == 0 and ORGAN_SCALE_PREDICTION[scale] == 0:
                 output_scale[scale].append(None)
                 patient_wise_dice[scale] = None
                 continue
             test_labels_size = copy.deepcopy(test_labels)
             test_outputs_size = copy.deepcopy(test_outputs)
 
-            # test_labels_size = test_labels_size[0, 0, :, :, : ]
-            # test_outputs_size = test_outputs_size[0, 0, :, :, : ]
-
-            test_labels_size[size_labels!=scale] = 0
-            expanded_size_labels = size_labels.expand(-1, test_outputs_size.size(1), -1, -1, -1)
+            # Filtering out organs size-wise from output and prediction
+            test_labels_size[size_labels_target!=scale] = 0
+            expanded_size_labels = size_labels_prediction.expand(-1, test_outputs_size.size(1), -1, -1, -1)
             test_outputs_size[expanded_size_labels!=scale] = 0
             
             test_labels_list = decollate_batch(test_labels_size)
@@ -230,13 +205,11 @@ with torch.no_grad():
                 post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
             ]
 
-            # print(f'test output convert:{test_output_convert[0].shape} and length:{len(test_output_convert)}, test labels convert:{test_labels_convert.shape}')
             dice_metric(y_pred=test_output_convert, y=test_labels_convert)
             dice = dice_metric.aggregate().item()
-            # dices.append(dice)
+            
             output_scale[scale].append(dice)
             patient_wise_dice[scale] = dice
-            # dice_vals.append(dice)
             dice_metric.reset()
             
         patient_wise_scores.append(patient_wise_dice)
