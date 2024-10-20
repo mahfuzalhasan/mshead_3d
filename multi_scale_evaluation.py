@@ -176,9 +176,9 @@ with torch.no_grad():
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
-        print(f'test output: {test_outputs.shape}')
+        print(f'\n test output: {test_outputs.shape}')
         size_labels_prediction, ORGAN_SCALE_PREDICTION = scale_wise_organ_filtration(test_outputs, ORGAN_CLASSES, prediction=True)
-        print(f'Scales In GT::: small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
+        print(f'Scales In Prediction::: small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
         print(f'scale-wise label for prediction: {size_labels_prediction.shape}')
         
         patient_wise_dice = {SMALL:0, MEDIUM:0, LARGE:0}
@@ -187,6 +187,7 @@ with torch.no_grad():
                 output_scale[scale].append(None)
                 patient_wise_dice[scale] = None
                 continue
+            
             test_labels_size = copy.deepcopy(test_labels)
             test_outputs_size = copy.deepcopy(test_outputs)
 

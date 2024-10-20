@@ -9,7 +9,7 @@ def scale_wise_organ_filtration(arr, ORGAN_CLASSES, prediction = False):
 
     if prediction:
         post_pred = AsDiscrete(argmax=True)
-        arr = post_pred(arr)
+        arr = post_pred(arr[0])
         print(f'test output conversion: {arr.shape}')
     
     
