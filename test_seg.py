@@ -165,7 +165,7 @@ with torch.no_grad():
 # Print or analyze individual Dice scores
 print(f"Individual Dice scores: {dice_vals_individual}\n")
 print(f"mean dice score from individual calculation: {np.mean(dice_vals_individual)}")
-print(f"\n Cumulative Avg Dice: {dice_vals_aggregated}")
+# print(f"\n Cumulative Avg Dice: {dice_vals_aggregated}")
 
 test_time = time.time() - s_time
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
