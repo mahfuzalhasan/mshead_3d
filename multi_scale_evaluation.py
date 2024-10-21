@@ -30,7 +30,7 @@ import datetime
 import argparse
 import time
 import copy
-from utils import scale_wise_organ_filtration
+from utils import scale_wise_organ_filtration, filtering_output
 parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
@@ -95,14 +95,13 @@ device = torch.device("cuda")
 print(f'--- device:{device} ---')
 
 if args.network == 'MSHEAD':
-     model = MSHEAD_ATTN(
+    model = MSHEAD_ATTN(
         img_size=(96, 96, 96),
         in_chans=1,
         out_chans=out_classes,
         depths=[2,2,2,2],
         feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
-        local_region_scales = [3, 2, 2, 1],
         use_checkpoint=False,
     ).to(device)
 
@@ -116,20 +115,15 @@ elif args.network == 'SwinUNETR':
     ).to(device)
 
 if args.fold == 0:
-    # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/09-30-24_0542/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0418/model_best.pth'
 elif args.fold == 1:
-    # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/09-30-24_0607/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0428/model_best.pth'
 elif args.fold == 2:
-    # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/09-30-24_0618/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0432/model_best.pth'
 elif args.fold == 3:
-    # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/09-30-24_0635/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_0441/model_best.pth'
 elif args.fold == 4:
-    # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/09-30-24_1350/model_best.pth'
+    args.trained_weights = '/orange/r.forghani/results/09-26-24_1909/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
@@ -177,48 +171,51 @@ with torch.no_grad():
         print(f'########## Scale Wise Labels for GT #################')
         size_labels_target, ORGAN_SCALE = scale_wise_organ_filtration(test_labels, ORGAN_CLASSES)
         print(f'Scales In GT::: small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
-        print(f'scale-wise label: {size_labels_target.shape}')
-        print(f'####################################################')
+        print(f'scale-wise label: {size_labels_target}')
+        print(f'####################################################\n')
         
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
-        print(f'########## Scale Wise Labels for Prediction #################')
-        print(f'\n test output: {test_outputs.shape}')
-        size_labels_prediction, ORGAN_SCALE_PREDICTION = scale_wise_organ_filtration(test_outputs, ORGAN_CLASSES, prediction=True)
-        print(f'Scales In Prediction::: small:{ORGAN_SCALE_PREDICTION[SMALL]} medium:{ORGAN_SCALE_PREDICTION[MEDIUM]} large:{ORGAN_SCALE_PREDICTION[LARGE]}')
-        print(f'scale-wise label for prediction: {size_labels_prediction.shape}')
-        print(f'#############################################################')
         
         patient_wise_dice = {SMALL:0, MEDIUM:0, LARGE:0}
-        for scale in range(1, 4):       # SMALL to LARGE
-            if ORGAN_SCALE[scale] == 0 and ORGAN_SCALE_PREDICTION[scale] == 0:
+        for scale in range(SMALL, LARGE + 1):       # SMALL to LARGE
+            print(f'labels under scale {ORGAN_SCALE[scale]}: {size_labels_target[scale]} ')
+            if ORGAN_SCALE[scale] == 0:
                 output_scale[scale].append(None)
                 patient_wise_dice[scale] = None
                 continue
             
-            test_labels_size = copy.deepcopy(test_labels)
-            test_outputs_size = copy.deepcopy(test_outputs)
 
-            # Filtering out organs size-wise from output and prediction
-            test_labels_size[size_labels_target!=scale] = 0
-            expanded_size_labels = size_labels_prediction.expand(-1, test_outputs_size.size(1), -1, -1, -1)
-            test_outputs_size[expanded_size_labels!=scale] = 0
-            
-            #### No need for decollate batch if we have only 1 sample/batch i.e. batch_size = 1
-            test_labels_list = decollate_batch(test_labels_size)
-            test_labels_convert = [
-                post_label(test_label_tensor) for test_label_tensor in test_labels_list
-            ]
-            test_outputs_list = decollate_batch(test_outputs_size)
-            test_output_convert = [
-                post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
-            ]
+            for label in size_labels_target[scale]:     # Labels under each scale
+                test_labels_size = copy.deepcopy(test_labels)
+                test_outputs_size = copy.deepcopy(test_outputs)
 
-            dice_metric(y_pred=test_output_convert, y=test_labels_convert)
+
+                # Filtering out organs size-wise from GT and prediction
+                test_labels_size[test_labels_size!=label] = 0
+                
+                filter = filtering_output(test_outputs_size, label)
+                expanded_filter = filter.expand(-1, test_outputs_size.size(1), -1, -1, -1)
+                test_outputs_size[expanded_filter!=1] = 0
+                
+                # print(f'scale:{scale} label: {label} unique output:{torch.unique(test_outputs_size)} shape:{test_outputs_size.shape}')
+                # print(f'unique GT:{torch.unique(test_labels_size)} shape:{test_labels_size.shape}')
+                
+                #### No need for decollate batch if we have only 1 sample/batch i.e. batch_size = 1
+                test_labels_list = decollate_batch(test_labels_size)
+                test_labels_convert = [
+                    post_label(test_label_tensor) for test_label_tensor in test_labels_list
+                ]
+                test_outputs_list = decollate_batch(test_outputs_size)
+                test_output_convert = [
+                    post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
+                ]
+
+                dice_metric(y_pred=test_output_convert, y=test_labels_convert)
+
             dice = dice_metric.aggregate().item()
-            
             output_scale[scale].append(dice)
             patient_wise_dice[scale] = dice
             dice_metric.reset()

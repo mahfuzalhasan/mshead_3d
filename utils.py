@@ -1,6 +1,18 @@
 from monai.transforms import AsDiscrete
 import torch
 
+
+def filtering_output(output, filtered_label):
+    
+    post_pred = AsDiscrete(argmax=True)
+    arr = post_pred(output[0])
+    arr = arr.unsqueeze(0)
+    
+    dummy = torch.zeros_like(arr, dtype=torch.uint8)
+    dummy[arr == filtered_label] = 1
+
+    return dummy
+
 def scale_wise_organ_filtration(arr, ORGAN_CLASSES, prediction = False):
     # test_labels_tensor = test_labels[0, 0, :, :, :]
     SMALL = 1
