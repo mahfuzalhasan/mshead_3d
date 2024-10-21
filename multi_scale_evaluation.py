@@ -30,7 +30,7 @@ import datetime
 import argparse
 import time
 import copy
-from utils import scale_wise_organ_filtration
+from utils import scale_wise_organ_filtration, filtering_output
 parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
@@ -171,48 +171,51 @@ with torch.no_grad():
         print(f'########## Scale Wise Labels for GT #################')
         size_labels_target, ORGAN_SCALE = scale_wise_organ_filtration(test_labels, ORGAN_CLASSES)
         print(f'Scales In GT::: small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
-        print(f'scale-wise label: {size_labels_target.shape}')
-        print(f'####################################################')
+        print(f'scale-wise label: {size_labels_target}')
+        print(f'####################################################\n')
         
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
-        print(f'########## Scale Wise Labels for Prediction #################')
-        print(f'\n test output: {test_outputs.shape}')
-        size_labels_prediction, ORGAN_SCALE_PREDICTION = scale_wise_organ_filtration(test_outputs, ORGAN_CLASSES, prediction=True)
-        print(f'Scales In Prediction::: small:{ORGAN_SCALE_PREDICTION[SMALL]} medium:{ORGAN_SCALE_PREDICTION[MEDIUM]} large:{ORGAN_SCALE_PREDICTION[LARGE]}')
-        print(f'scale-wise label for prediction: {size_labels_prediction.shape}')
-        print(f'#############################################################')
         
         patient_wise_dice = {SMALL:0, MEDIUM:0, LARGE:0}
-        for scale in range(1, 4):       # SMALL to LARGE
-            if ORGAN_SCALE[scale] == 0 and ORGAN_SCALE_PREDICTION[scale] == 0:
+        for scale in range(SMALL, LARGE + 1):       # SMALL to LARGE
+            print(f'labels under scale {ORGAN_SCALE[scale]}: {size_labels_target[scale]} ')
+            if ORGAN_SCALE[scale] == 0:
                 output_scale[scale].append(None)
                 patient_wise_dice[scale] = None
                 continue
             
-            test_labels_size = copy.deepcopy(test_labels)
-            test_outputs_size = copy.deepcopy(test_outputs)
 
-            # Filtering out organs size-wise from output and prediction
-            test_labels_size[size_labels_target!=scale] = 0
-            expanded_size_labels = size_labels_prediction.expand(-1, test_outputs_size.size(1), -1, -1, -1)
-            test_outputs_size[expanded_size_labels!=scale] = 0
-            
-            #### No need for decollate batch if we have only 1 sample/batch i.e. batch_size = 1
-            test_labels_list = decollate_batch(test_labels_size)
-            test_labels_convert = [
-                post_label(test_label_tensor) for test_label_tensor in test_labels_list
-            ]
-            test_outputs_list = decollate_batch(test_outputs_size)
-            test_output_convert = [
-                post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
-            ]
+            for label in size_labels_target[scale]:     # Labels under each scale
+                test_labels_size = copy.deepcopy(test_labels)
+                test_outputs_size = copy.deepcopy(test_outputs)
 
-            dice_metric(y_pred=test_output_convert, y=test_labels_convert)
+
+                # Filtering out organs size-wise from GT and prediction
+                test_labels_size[test_labels_size!=label] = 0
+                
+                filter = filtering_output(test_outputs_size, label)
+                expanded_filter = filter.expand(-1, test_outputs_size.size(1), -1, -1, -1)
+                test_outputs_size[expanded_filter!=1] = 0
+                
+                print(f'scale:{scale} label: {label} unique output:{torch.unique(test_outputs_size)} shape:{test_outputs_size.shape}')
+                print(f'unique GT:{torch.unique(test_labels_size)} shape:{test_labels_size.shape}')
+                
+                #### No need for decollate batch if we have only 1 sample/batch i.e. batch_size = 1
+                test_labels_list = decollate_batch(test_labels_size)
+                test_labels_convert = [
+                    post_label(test_label_tensor) for test_label_tensor in test_labels_list
+                ]
+                test_outputs_list = decollate_batch(test_outputs_size)
+                test_output_convert = [
+                    post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
+                ]
+
+                dice_metric(y_pred=test_output_convert, y=test_labels_convert)
+
             dice = dice_metric.aggregate().item()
-            
             output_scale[scale].append(dice)
             patient_wise_dice[scale] = dice
             dice_metric.reset()
