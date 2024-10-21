@@ -146,15 +146,16 @@ with torch.no_grad():
         ]
 
         dice_metric(y_pred=test_output_convert, y=test_labels_convert)
-        dice = dice_metric.aggregate().item()
-        dice_vals.append(dice)
+        # dice = dice_metric.aggregate().item()
+        # dice_vals.append(dice)
         # epoch_iterator_val.set_description(
         #     "Validate (%d / %d Steps) (dice=%2.5f)" % (global_step, 10.0, dice)
         # )
+    dice = dice_metric.aggregate().item()
     dice_metric.reset()
-mean_dice_test = np.mean(dice_vals)
 
+# mean_dice_test = np.mean(dice_vals)
 test_time = time.time() - s_time
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
-print(f'mean test dice: {mean_dice_test}')
+print(f'mean test dice: {dice}')
 
