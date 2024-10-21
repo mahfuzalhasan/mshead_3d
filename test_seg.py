@@ -150,15 +150,17 @@ with torch.no_grad():
         
         # --- Aggregated Dice score ---
         dice_metric(y_pred=test_output_convert, y=test_labels_convert)  # Update Dice metric for this batch
-        dice = dice_metric.aggregate().item()  # This gives cumulative average Dice score so far
-        dice_vals_aggregated.append(dice)
+        # dice = dice_metric.aggregate().item()  # This gives cumulative average Dice score so far
+        # dice_vals_aggregated.append(dice)
 
+    dice = dice_metric.aggregate().item()
+    print(f"Final aggregated Dice score (over all batches): {dice}")
     # Reset the metric after evaluation
     dice_metric.reset()
 
-# Final average Dice score for the entire dataset using the aggregated metric
-final_aggregated_dice = dice_vals_aggregated[-1]
-print(f"Final aggregated Dice score (over all batches): {final_aggregated_dice}")
+# # Final average Dice score for the entire dataset using the aggregated metric
+# final_aggregated_dice = dice_vals_aggregated[-1]
+# print(f"Final aggregated Dice score (over all batches): {final_aggregated_dice}")
 
 # Print or analyze individual Dice scores
 print(f"Individual Dice scores: {dice_vals_individual}\n")
