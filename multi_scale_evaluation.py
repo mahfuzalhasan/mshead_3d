@@ -200,8 +200,8 @@ with torch.no_grad():
                 expanded_filter = filter.expand(-1, test_outputs_size.size(1), -1, -1, -1)
                 test_outputs_size[expanded_filter!=1] = 0
                 
-                print(f'scale:{scale} label: {label} unique output:{torch.unique(test_outputs_size)} shape:{test_outputs_size.shape}')
-                print(f'unique GT:{torch.unique(test_labels_size)} shape:{test_labels_size.shape}')
+                # print(f'scale:{scale} label: {label} unique output:{torch.unique(test_outputs_size)} shape:{test_outputs_size.shape}')
+                # print(f'unique GT:{torch.unique(test_labels_size)} shape:{test_labels_size.shape}')
                 
                 #### No need for decollate batch if we have only 1 sample/batch i.e. batch_size = 1
                 test_labels_list = decollate_batch(test_labels_size)
