@@ -85,19 +85,7 @@ def data_loader(args):
         valid_samples['images'] = valid_img
         valid_samples['labels'] = valid_label
 
-        ######################################################################
-        # checking split
-        # print(f'#### train_img_list ###### \n ')
-        # print(train_img)
-        # print('\n #### train label list #### \n')
-        # print(train_label)
-        # print(f'----------- {len(train_img)}, {len(train_label)}-----------')
-        # print(f'$$$$$$$$$ valid_img list $$$$$$$$$$$ \n ')
-        # print(valid_img)
-        # print('\n $$$$$$$$$ valid_label list $$$$$$$$$ \n')
-        # print(valid_label)
-        # print(f'----------- {len(valid_img)}, {len(valid_label)}-----------')
-        ######################################################################
+        
         # print(f'valid img:{valid_img} label:{valid_label}')
         print('Finished loading all training samples from dataset: {}!'.format(dataset), flush=True)
         print('Number of classes for segmentation: {}'.format(out_classes), flush=True)
