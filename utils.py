@@ -15,7 +15,7 @@ def filtering_output(output, filtered_label):
 
 
 
-def scale_wise_organ_filtration(arr, ORGAN_CLASSES, prediction = False):
+def scale_wise_organ_filtration(arr, ORGAN_CLASSES, spacing = (1.5, 1.5, 2), range = [1000, 3000], prediction = False):
     # test_labels_tensor = test_labels[0, 0, :, :, :]
     SMALL = 1
     MEDIUM = 2
@@ -42,18 +42,18 @@ def scale_wise_organ_filtration(arr, ORGAN_CLASSES, prediction = False):
         dummy = torch.zeros_like(arr, dtype=torch.uint8)
         dummy[arr == label] = 1
         N_voxel = torch.count_nonzero(dummy)
-        volume = N_voxel.item() * 1.5 * 1.5 * 2    # in mm^3
+        volume = N_voxel.item() * spacing[0] * spacing[1] * spacing[2]    # in mm^3
         volume = volume / 1000                     # in cm^3
         print(f'Class: {ORGAN_CLASSES[label.item()]} volume: {volume}')
-        if volume < 1000:
+        if volume <= range[0]:
             size_labels[SMALL].add(label)
             # size_labels[arr==label] = SMALL         # 1
             ORGAN_SCALE[SMALL] += 1
-        elif volume >= 1000 and volume < 3000:
+        elif volume > range[0] and volume <= range[1]:
             size_labels[MEDIUM].add(label)
             # size_labels[arr==label] = MEDIUM        # 2
             ORGAN_SCALE[MEDIUM] += 1
-        elif volume >= 3000:
+        elif volume >= range[1]:
             size_labels[LARGE].add(label)
             # size_labels[arr==label] = LARGE         # 3
             ORGAN_SCALE[LARGE] += 1

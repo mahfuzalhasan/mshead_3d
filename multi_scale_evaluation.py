@@ -67,15 +67,18 @@ if args.dataset == 'amos':
         7: "Stomach", 8: "Aorta", 9: "Inferior Vena Cava", 10: "Pancreas", 11: "Right Adrenal Gland", 
         12: "Left Adrenal Gland", 13: "Duodenum", 14: "Bladder", 15: "Prostate"
     }
+    range = [150, 500]
+    spacing = (1.5, 1.5, 2)
 elif args.dataset == 'flare':
     ORGAN_CLASSES = {1: "Liver", 2: "Kidney", 3: "Spleen", 4: "Pancreas"}
+    range = [1000, 3000]
+    spacing = (1, 1, 1.2)
 elif args.dataset == 'kits':
     ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
 
 SMALL = 1
 MEDIUM = 2
 LARGE = 3
-
 
 
 test_samples, out_classes = data_loader(args)
@@ -177,7 +180,8 @@ with torch.no_grad():
                                                                             # val_labels. How? That's where I need help
         
         print(f'########## Scale Wise Labels for GT #################')
-        size_labels_target, ORGAN_SCALE = scale_wise_organ_filtration(test_labels, ORGAN_CLASSES)
+
+        size_labels_target, ORGAN_SCALE = scale_wise_organ_filtration(test_labels, ORGAN_CLASSES, range=range, spacing=spacing)
         print(f'Scales In GT::: small:{ORGAN_SCALE[SMALL]} medium:{ORGAN_SCALE[MEDIUM]} large:{ORGAN_SCALE[LARGE]}')
         print(f'scale-wise label: {size_labels_target}')
         print(f'####################################################\n')
@@ -189,7 +193,7 @@ with torch.no_grad():
         
         patient_wise_dice = {SMALL:0, MEDIUM:0, LARGE:0}
         for scale in range(SMALL, LARGE + 1):       # SMALL to LARGE
-            print(f'labels under scale {ORGAN_SCALE[scale]}: {size_labels_target[scale]} ')
+            print(f'organs under scale {scale}::: {ORGAN_SCALE[scale]} - labels - {size_labels_target[scale]} ')
             if ORGAN_SCALE[scale] == 0:
                 output_scale[scale].append(None)
                 patient_wise_dice[scale] = None
