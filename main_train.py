@@ -32,9 +32,9 @@ import time
 print(f'########### Running Flare Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='/blue/r.forghani/share/kits2019', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='kits', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
@@ -52,11 +52,8 @@ parser.add_argument('--resume', default=False, help='resume training from an ear
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
 parser.add_argument('--num_workers', type=int, default=8, help='Number of workers')
-parser.add_argument('--start_index', type=int, default=160, help='validation set starts')
-parser.add_argument('--end_index', type=int, default=180, help='validation set ends')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
-parser.add_argument('--no_split', default=False, help='No splitting into train and validation')
-parser.add_argument('--plot', default=False, help='plotting prediction or not')
+parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
 
 args = parser.parse_args()
 print(f'################################')
