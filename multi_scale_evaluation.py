@@ -155,7 +155,6 @@ post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
 dice_metric = DiceMetric(include_background=False, reduction="mean", get_not_nans=False)
 
 dice_vals = list()
-patient_wise_dice_vals = {i:{SMALL:0, MEDIUM:0, LARGE:0} for i in range(20)}
 s_time = time.time()
 
 ## Load Networks
