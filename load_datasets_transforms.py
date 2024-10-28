@@ -192,7 +192,7 @@ def data_transforms(args):
                 Spacingd(keys=["image"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear")),
                 Orientationd(keys=["image"], axcodes="RAS"),
                 ScaleIntensityRanged(
-                    keys=["image"], a_min=-125, a_max=275,
+                    keys=["image"], a_min=-200, a_max=300,
                     b_min=0.0, b_max=1.0, clip=True,
                 ),
                 CropForegroundd(keys=["image"], source_key="image"),
