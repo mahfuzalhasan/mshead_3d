@@ -71,7 +71,7 @@ if args.dataset == 'amos':
     spacing = (1.5, 1.5, 2)
 elif args.dataset == 'flare':
     ORGAN_CLASSES = {1: "Liver", 2: "Kidney", 3: "Spleen", 4: "Pancreas"}
-    organ_size_range = [1000, 3000]
+    organ_size_range = [250, 1000]
     spacing = (1, 1, 1.2)
 elif args.dataset == 'kits':
     ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}

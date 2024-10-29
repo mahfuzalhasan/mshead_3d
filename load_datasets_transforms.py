@@ -69,7 +69,7 @@ def data_loader(args):
                 start_index = args.start_index
                 end_index = args.end_index
             elif args.dataset == "kits":
-                validation_per_fold = 38
+                validation_per_fold = 42
                 start_index = validation_per_fold * args.fold
                 end_index = validation_per_fold * args.fold + validation_per_fold
 

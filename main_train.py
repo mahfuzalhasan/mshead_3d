@@ -60,6 +60,13 @@ print(f'################################')
 print(f'args:{args}')
 print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+if args.dataset == 'flare':
+    args.root = '/blue/r.forghani/share/flare_data'
+elif args.dataset == 'amos':
+    args.root = '/blue/r.forghani/share/amoss22/amos22'
+elif args.dataset == 'kits':
+    args.root = '/blue/r.forghani/share/kits2019'
+    
 print('Used GPU: {}'.format(args.gpu))
 
 run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
@@ -157,17 +164,20 @@ def validation(val_loader):
                 post_pred(val_pred_tensor) for val_pred_tensor in val_outputs_list
             ]
             dice_metric(y_pred=val_output_convert, y=val_labels_convert)
-            dice = dice_metric.aggregate().item()
-            dice_vals.append(dice)
+            # dice = dice_metric.aggregate().item()
+            # dice_vals.append(dice)
             # epoch_iterator_val.set_description(
             #     "Validate (%d / %d Steps) (dice=%2.5f)" % (global_step, 10.0, dice)
             # )
+        dice = dice_metric.aggregate().item()
         dice_metric.reset()
-    mean_dice_val = np.mean(dice_vals)
-    writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
+
+    
+    # mean_dice_val = np.mean(dice_vals)
+    writer.add_scalar('Validation Segmentation Dice Val', dice, global_step)
     val_time = time.time() - s_time
     print(f"val takes {datetime.timedelta(seconds=int(val_time))}")
-    return mean_dice_val
+    return dice
 
 
 def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, global_step_best, save_dir, best=False):
@@ -241,7 +251,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                         dice_val_best, global_step_best
                     )
                 )
-                scheduler.step(dice_val)
+                # scheduler.step(dice_val)
                 # save model if we acheive best dice score at the evaluation
                 
             else:
@@ -249,7 +259,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                     "Not Best Model. Current Best Avg. Dice: {} from step:{}, Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
                 )
                 save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
-                scheduler.step(dice_val)
+                # scheduler.step(dice_val)
 
             # setting model to train mode again
             model.train()

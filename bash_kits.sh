@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=python_train_Kits_ablation_wave-2-branch-v2
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d/results/wave-2-branch_kits_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d/results/wave-2-branch_kits_job.%J.err
+#SBATCH --job-name=train_kits_wf_2211
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d/results/kits_train_2211_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d/results/kits_train_2211_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -16,5 +16,5 @@ conda activate waveformer
 cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d
 
 # Execute the Python script
-srun python main_train_kits.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
+srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD --dataset $DATASET
 # srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
