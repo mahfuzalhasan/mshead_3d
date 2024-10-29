@@ -47,6 +47,13 @@ parser.add_argument('--no_split', default=False, help='No splitting into train a
 
 args = parser.parse_args()
 
+if args.dataset == 'flare':
+    args.root = '/blue/r.forghani/share/flare_data'
+elif args.dataset == 'amos':
+    args.root = '/blue/r.forghani/share/amoss22/amos22'
+elif args.dataset == 'kits':
+    args.root = '/blue/r.forghani/share/kits2019'
+
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 test_samples, out_classes = data_loader(args)

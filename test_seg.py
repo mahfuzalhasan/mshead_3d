@@ -48,6 +48,13 @@ args = parser.parse_args()
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
+if args.dataset == 'flare':
+    args.root = '/blue/r.forghani/share/flare_data'
+elif args.dataset == 'amos':
+    args.root = '/blue/r.forghani/share/amoss22/amos22'
+elif args.dataset == 'kits':
+    args.root = '/blue/r.forghani/share/kits2019'
+
 test_samples, out_classes = data_loader(args)
 
 test_files = [
@@ -89,22 +96,22 @@ elif args.network == 'SwinUNETR':
         feature_size=48,
         use_checkpoint=False,
     ).to(device)
-
-if args.fold == 0:
-    # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/09-30-24_2152/model_best.pth'
-elif args.fold == 1:
-    # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/09-30-24_2200/model_best.pth'
-elif args.fold == 2:
-    # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/09-30-24_2213/model_best.pth'
-elif args.fold == 3:
-    # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/09-30-24_2239/model_best.pth'
-elif args.fold == 4:
-    # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
-    args.trained_weights = '/orange/r.forghani/results/09-30-24_2258/model_best.pth'
+if args.dataset!='amos':
+    if args.fold == 0:
+        # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/09-30-24_2152/model_best.pth'
+    elif args.fold == 1:
+        # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/09-30-24_2200/model_best.pth'
+    elif args.fold == 2:
+        # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/09-30-24_2213/model_best.pth'
+    elif args.fold == 3:
+        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/09-30-24_2239/model_best.pth'
+    elif args.fold == 4:
+        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/09-30-24_2258/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)

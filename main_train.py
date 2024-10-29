@@ -40,7 +40,7 @@ parser.add_argument('--dataset', type=str, default='kits', required=False, help=
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
-parser.add_argument('--pretrained_weights', default='', help='Path of pretrained weights')
+parser.add_argument('--pretrained_weights', type=str, default=None, help='Path of pretrained weights')
 parser.add_argument('--batch_size', type=int, default='2', help='Batch size for subject input')
 parser.add_argument('--crop_sample', type=int, default='2', help='Number of cropped sub-volumes for each subject')
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
@@ -130,9 +130,18 @@ elif args.network == 'SwinUNETR':
 
 print('Chosen Network Architecture: {}'.format(args.network))
 
-if args.pretrain == 'True':
+if args.dataset == 'amos' and args.pretrained_weights is not None:
     print('Pretrained weight is found! Start to load weight from: {}'.format(args.pretrained_weights), flush=True)
-    model.load_state_dict(torch.load(args.pretrained_weights))
+    state_dict = torch.load(args.pretrained_weights)
+    pretrained_dict = state_dict['model']
+    model_dict = model.state_dict()
+    # Filter out layers that have a size mismatch
+    pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict and model_dict[k].shape == v.shape}
+    # Update the model with the filtered weights
+    model_dict.update(pretrained_dict)
+    model.load_state_dict(model_dict)
+    # model.load_state_dict(state_dict['model'], strict=False
+    print(f'########### pretrained weights loaded ###############\n')
 
 ## Define Loss function and optimizer
 loss_function = DiceCELoss(to_onehot_y=True, softmax=True)

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=test_amos_wf_2211
+#SBATCH --job-name=multiscale_amos_wf_2211
 #SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet-two-branch/mshead_3d/results/_wf_2211_amos_ms_test_job.%J.out
 #SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet-two-branch/mshead_3d/results/wf_2211_amos_ms_test_job.%J.err
 #SBATCH --nodes=1
@@ -18,4 +18,4 @@ cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet-two-b
 # Execute the Python script
 # srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
 # srun python multi_scale_evaluation.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
-srun python multi_scale_evaluation.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --trained_weights $TRAINED_WEIGHTS
+srun python multi_scale_evaluation.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --trained_weights $TRAINED_WEIGHTS --dataset $DATASET
