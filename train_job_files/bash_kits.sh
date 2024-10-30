@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=train_kits_wf_2211
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d/results/kits_train_2211_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d/results/kits_train_2211_job.%J.err
+#SBATCH --job-name=train_kits_wf_1111
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d/results/kits_train_1111_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d/results/kits_train_1111_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
