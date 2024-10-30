@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=multiscale_amos_wf_2211
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet-two-branch/mshead_3d/results/_wf_2211_amos_ms_test_job.%J.out
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet-two-branch/mshead_3d/results/wf_2211_amos_ms_test_job.%J.out
 #SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_amos/wavelet-two-branch/mshead_3d/results/wf_2211_amos_ms_test_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
