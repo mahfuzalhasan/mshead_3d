@@ -29,7 +29,7 @@ import datetime
 import argparse
 import time
 
-print(f'########### Running KITS Segmentation ################# \n')
+print(f'########### Running Flare Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='/blue/r.forghani/share/kits2019', required=False, help='Root folder of all your images and labels')
@@ -40,7 +40,7 @@ parser.add_argument('--dataset', type=str, default='kits', required=False, help=
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
-parser.add_argument('--pretrained_weights', default='', help='Path of pretrained weights')
+parser.add_argument('--pretrained_weights', type=str, default=None, help='Path of pretrained weights')
 parser.add_argument('--batch_size', type=int, default='2', help='Batch size for subject input')
 parser.add_argument('--crop_sample', type=int, default='2', help='Number of cropped sub-volumes for each subject')
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
@@ -60,6 +60,13 @@ print(f'################################')
 print(f'args:{args}')
 print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+if args.dataset == 'flare':
+    args.root = '/blue/r.forghani/share/flare_data'
+elif args.dataset == 'amos':
+    args.root = '/blue/r.forghani/share/amoss22/amos22'
+elif args.dataset == 'kits':
+    args.root = '/blue/r.forghani/share/kits2019'
+    
 print('Used GPU: {}'.format(args.gpu))
 
 run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
@@ -76,8 +83,6 @@ val_files = [
     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
 ]
 print(f'train files:{len(train_files)} val files:{len(val_files)}')
-print(f'val file list: {val_files}')
-
 
 
 set_determinism(seed=0)
@@ -91,6 +96,11 @@ val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.
 
 train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)
 val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
+#train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+
+## Valid Pytorch Data Loader and Caching
+#val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
+# val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
 
 
 ## Load Networks
@@ -108,7 +118,6 @@ if args.network == 'MSHEAD':
         num_heads = [3,6,12,24],
         use_checkpoint=False,
     ).to(device)
-
 elif args.network == 'SwinUNETR':
     model = SwinUNETR(
         img_size=(96, 96, 96),
@@ -120,9 +129,18 @@ elif args.network == 'SwinUNETR':
 
 print('Chosen Network Architecture: {}'.format(args.network))
 
-if args.pretrain == 'True':
+if args.dataset == 'amos' and args.pretrained_weights is not None:
     print('Pretrained weight is found! Start to load weight from: {}'.format(args.pretrained_weights), flush=True)
-    model.load_state_dict(torch.load(args.pretrained_weights))
+    state_dict = torch.load(args.pretrained_weights)
+    pretrained_dict = state_dict['model']
+    model_dict = model.state_dict()
+    # Filter out layers that have a size mismatch
+    pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict and model_dict[k].shape == v.shape}
+    # Update the model with the filtered weights
+    model_dict.update(pretrained_dict)
+    model.load_state_dict(model_dict)
+    # model.load_state_dict(state_dict['model'], strict=False
+    print(f'########### pretrained weights loaded ###############\n')
 
 ## Define Loss function and optimizer
 loss_function = DiceCELoss(to_onehot_y=True, softmax=True)
@@ -154,17 +172,20 @@ def validation(val_loader):
                 post_pred(val_pred_tensor) for val_pred_tensor in val_outputs_list
             ]
             dice_metric(y_pred=val_output_convert, y=val_labels_convert)
-            dice = dice_metric.aggregate().item()
-            dice_vals.append(dice)
+            # dice = dice_metric.aggregate().item()
+            # dice_vals.append(dice)
             # epoch_iterator_val.set_description(
             #     "Validate (%d / %d Steps) (dice=%2.5f)" % (global_step, 10.0, dice)
             # )
+        dice = dice_metric.aggregate().item()
         dice_metric.reset()
-    mean_dice_val = np.mean(dice_vals)
-    writer.add_scalar('Validation Segmentation Dice Val', mean_dice_val, global_step)
+
+    
+    # mean_dice_val = np.mean(dice_vals)
+    writer.add_scalar('Validation Segmentation Dice Val', dice, global_step)
     val_time = time.time() - s_time
     print(f"val takes {datetime.timedelta(seconds=int(val_time))}")
-    return mean_dice_val
+    return dice
 
 
 def save_model(model, optimizer, lr_scheduler, iteration, run_id, dice_score, global_step_best, save_dir, best=False):
@@ -197,7 +218,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     print(f'######### new epoch started. Global Step:{global_step} ###############')
     # total training data--> 272. Batch 2. This loop will run for 272/2 = 136 times
     for step, batch in enumerate(train_loader):     
-        # step += 1
+        step += 1
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,D,H,W = 2,1,96,96,96. y same
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
@@ -234,19 +255,19 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                 global_step_best = global_step
                 save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir, best=True)
                 print(
-                    "Model Was Saved ! Current Best Avg. Dice: {} Current Avg. Dice: {}".format(
-                        dice_val_best, dice_val
+                    "Model Was Saved ! Current Best Avg. Dice: {} at step {}".format(
+                        dice_val_best, global_step_best
                     )
                 )
-                scheduler.step(dice_val)
+                # scheduler.step(dice_val)
                 # save model if we acheive best dice score at the evaluation
                 
             else:
                 print(
-                    "Not Best Model. Current Best Avg. Dice: {} from step: {},  Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
+                    "Not Best Model. Current Best Avg. Dice: {} from step:{}, Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
                 )
                 save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
-                scheduler.step(dice_val)
+                # scheduler.step(dice_val)
 
             # setting model to train mode again
             model.train()

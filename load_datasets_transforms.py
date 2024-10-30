@@ -52,7 +52,7 @@ def data_loader(args):
         train_samples = {}
         valid_samples = {}
         print(f'#### loading training and validation set ########## \n')
-        print(f'Training on fold:{args.fold}')
+        
 
         
         ## Input training data
@@ -60,15 +60,23 @@ def data_loader(args):
         train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
 
         if not args.no_split:
-            if args.dataset == "kits":
-                validation_per_fold = 38
-            elif args.dataset == "flare":
+            if args.dataset == "flare":
+                print(f'Training on fold:{args.fold}')
                 validation_per_fold = 69
+                start_index = validation_per_fold * args.fold
+                end_index = validation_per_fold * args.fold + validation_per_fold
+            elif args.dataset == "amos":
+                start_index = args.start_index
+                end_index = args.end_index
+            elif args.dataset == "kits":
+                validation_per_fold = 42
+                start_index = validation_per_fold * args.fold
+                end_index = validation_per_fold * args.fold + validation_per_fold
 
-            start_index = validation_per_fold * args.fold
-            end_index = validation_per_fold * args.fold + validation_per_fold
             if end_index > len(train_label):
                 end_index = len(train_label)
+
+            
             valid_img = train_img[start_index:end_index]
             valid_label = train_label[start_index:end_index]
 
@@ -85,7 +93,19 @@ def data_loader(args):
         valid_samples['images'] = valid_img
         valid_samples['labels'] = valid_label
 
-        
+        ######################################################################
+        # checking split
+        # print(f'#### train_img_list ###### \n ')
+        # print(train_img)
+        # print('\n #### train label list #### \n')
+        # print(train_label)
+        # print(f'----------- {len(train_img)}, {len(train_label)}-----------')
+        # print(f'$$$$$$$$$ valid_img list $$$$$$$$$$$ \n ')
+        # print(valid_img)
+        # print('\n $$$$$$$$$ valid_label list $$$$$$$$$ \n')
+        # print(valid_label)
+        # print(f'----------- {len(valid_img)}, {len(valid_label)}-----------')
+        ######################################################################
         # print(f'valid img:{valid_img} label:{valid_label}')
         print('Finished loading all training samples from dataset: {}!'.format(dataset), flush=True)
         print('Number of classes for segmentation: {}'.format(out_classes), flush=True)
@@ -114,104 +134,18 @@ def data_transforms(args):
     else:
         crop_samples = None
 
-    
-    if dataset == "kits":
-        train_transforms = Compose(
-        [
-            LoadImaged(keys=["image", "label"]),
-            AddChanneld(keys=["image", "label"]),
-            Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
-            # ResizeWithPadOrCropd(keys=["image", "label"], spatial_size=(256,256,128), mode=("constant")),
-            Orientationd(keys=["image", "label"], axcodes="RAS"),
-            ScaleIntensityRanged(
-                keys=["image"], a_min=-200, a_max=300,
-                b_min=0.0, b_max=1.0, clip=True,
-            ),
-            CropForegroundd(keys=["image", "label"], source_key="image"),
-            RandCropByPosNegLabeld(
-                keys=["image", "label"],
-                label_key="label",
-                spatial_size=(96, 96, 96),
-                pos=1,
-                neg=1,
-                num_samples=2,
-                image_key="image",
-                image_threshold=0,
-            ),
-           
-            RandShiftIntensityd(
-                keys=["image"],
-                offsets=0.10,
-                prob=0.50,
-            ),
-            RandAffined(
-                keys=['image', 'label'],
-                mode=('bilinear', 'nearest'),
-                prob=1.0, spatial_size=(96, 96, 96),
-                rotate_range=(0, 0, np.pi/30),
-                scale_range=(0.1, 0.1, 0.1)),
-            ToTensord(keys=["image", "label"]),
-
-        ]
-        )
-
-        val_transforms = Compose(
-            [
-                LoadImaged(keys=["image", "label"]),
-                AddChanneld(keys=["image", "label"]),
-                Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
-                Orientationd(keys=["image", "label"], axcodes="RAS"),
-                ScaleIntensityRanged(
-                    keys=["image"], a_min=-200, a_max=300,
-                    b_min=0.0, b_max=1.0, clip=True,
-                ),
-                CropForegroundd(keys=["image", "label"], source_key="image"),
-                ToTensord(keys=["image", "label"]),
-            ]
-        )
-
-        test_transforms = Compose(
-            [
-                LoadImaged(keys=["image", "label"]),
-                AddChanneld(keys=["image", "label"]),
-                Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
-                Orientationd(keys=["image", "label"], axcodes="RAS"),
-                ScaleIntensityRanged(
-                    keys=["image"], a_min=-200, a_max=300,
-                    b_min=0.0, b_max=1.0, clip=True,
-                ),
-                CropForegroundd(keys=["image", "label"], source_key="image"),
-                ToTensord(keys=["image", "label"]),
-            ]
-        )
-
-        test_transforms_plot = Compose(
-            [
-                LoadImaged(keys=["image"]),
-                AddChanneld(keys=["image"]),
-                Spacingd(keys=["image"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear")),
-                Orientationd(keys=["image"], axcodes="RAS"),
-                ScaleIntensityRanged(
-                    keys=["image"], a_min=-200, a_max=300,
-                    b_min=0.0, b_max=1.0, clip=True,
-                ),
-                CropForegroundd(keys=["image"], source_key="image"),
-                ToTensord(keys=["image"]),
-            ]
-        )
-    elif dataset == 'flare':
+    if dataset == 'flare':
         train_transforms = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
                 AddChanneld(keys=["image", "label"]),
                 Spacingd(keys=["image", "label"], pixdim=(
                     1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
-                # ResizeWithPadOrCropd(keys=["image", "label"], spatial_size=(256,256,128), mode=("constant")),
                 Orientationd(keys=["image", "label"], axcodes="RAS"),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-125, a_max=275,
                     b_min=0.0, b_max=1.0, clip=True,
-                ),
+                ),          # scale --> [-125, 375] --> [-1, 1] or [0, 1] : float(32)
                 CropForegroundd(keys=["image", "label"], source_key="image"),
                 RandCropByPosNegLabeld(
                     keys=["image", "label"],
@@ -368,6 +302,110 @@ def data_transforms(args):
                 Orientationd(keys=["image"], axcodes="RAS"),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-125, a_max=275,
+                    b_min=0.0, b_max=1.0, clip=True,
+                ),
+                CropForegroundd(keys=["image"], source_key="image"),
+                ToTensord(keys=["image"]),
+            ]
+        )
+    elif dataset == "kits":
+        train_transforms = Compose(
+        [
+            LoadImaged(keys=["image", "label"]),
+            AddChanneld(keys=["image", "label"]),
+            Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+            # ResizeWithPadOrCropd(keys=["image", "label"], spatial_size=(256,256,128), mode=("constant")),
+            Orientationd(keys=["image", "label"], axcodes="RAS"),
+            ScaleIntensityRanged(
+                keys=["image"], a_min=-200, a_max=300,
+                b_min=0.0, b_max=1.0, clip=True,
+            ),
+            CropForegroundd(keys=["image", "label"], source_key="image"),
+            RandCropByPosNegLabeld(
+                keys=["image", "label"],
+                label_key="label",
+                spatial_size=(96, 96, 96),
+                pos=1,
+                neg=1,
+                num_samples=2,
+                image_key="image",
+                image_threshold=0,
+            ),
+            # user can also add other random transforms
+            # RandFlipd(
+            #     keys=["image", "label"],
+            #     spatial_axis=[0],
+            #     prob=0.10,
+            # ),
+            # RandFlipd(
+            #     keys=["image", "label"],
+            #     spatial_axis=[1],
+            #     prob=0.10,
+            # ),
+            # RandFlipd(
+            #     keys=["image", "label"],
+            #     spatial_axis=[2],
+            #     prob=0.10,
+            # ),
+            # RandRotate90d(
+            #     keys=["image", "label"],
+            #     prob=0.10,
+            #     max_k=3,
+            # ),
+            RandShiftIntensityd(
+                keys=["image"],
+                offsets=0.10,
+                prob=0.50,
+            ),
+            RandAffined(
+                keys=['image', 'label'],
+                mode=('bilinear', 'nearest'),
+                prob=1.0, spatial_size=(96, 96, 96),
+                rotate_range=(0, 0, np.pi/30),
+                scale_range=(0.1, 0.1, 0.1)),
+            ToTensord(keys=["image", "label"]),
+
+        ]
+        )
+
+        val_transforms = Compose(
+            [
+                LoadImaged(keys=["image", "label"]),
+                AddChanneld(keys=["image", "label"]),
+                Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+                Orientationd(keys=["image", "label"], axcodes="RAS"),
+                ScaleIntensityRanged(
+                    keys=["image"], a_min=-200, a_max=300,
+                    b_min=0.0, b_max=1.0, clip=True,
+                ),
+                CropForegroundd(keys=["image", "label"], source_key="image"),
+                ToTensord(keys=["image", "label"]),
+            ]
+        )
+
+        test_transforms = Compose(
+            [
+                LoadImaged(keys=["image", "label"]),
+                AddChanneld(keys=["image", "label"]),
+                Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+                Orientationd(keys=["image", "label"], axcodes="RAS"),
+                ScaleIntensityRanged(
+                    keys=["image"], a_min=-200, a_max=300,
+                    b_min=0.0, b_max=1.0, clip=True,
+                ),
+                CropForegroundd(keys=["image", "label"], source_key="image"),
+                ToTensord(keys=["image", "label"]),
+            ]
+        )
+
+        test_transforms_plot = Compose(
+            [
+                LoadImaged(keys=["image"]),
+                AddChanneld(keys=["image"]),
+                Spacingd(keys=["image"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear")),
+                Orientationd(keys=["image"], axcodes="RAS"),
+                ScaleIntensityRanged(
+                    keys=["image"], a_min=-200, a_max=300,
                     b_min=0.0, b_max=1.0, clip=True,
                 ),
                 CropForegroundd(keys=["image"], source_key="image"),
