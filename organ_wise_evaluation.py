@@ -108,7 +108,6 @@ if args.network == 'MSHEAD':
         depths=[2,2,2,2],
         feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
-        local_region_scales = [2, 2, 1, 1],
         use_checkpoint=False,
     ).to(device)
 
@@ -221,34 +220,7 @@ for organ, dice_vals in output_organ.items():
 # # mean_dice_test = np.mean(dice_vals)
 
 test_time = time.time() - s_time
-print(f'#######################################')
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
-print(f'dice score subject wise: {patient_wise_scores}\n')
-
-# print(f'patient wise mean dice: {patient_wise_dice}\n')
-
-print(f'size wise dice:{output_scale}')
-# print(f'mean test dice: {mean_dice_test}')
-print(f'########################################')
-
-# print(f'mean patient-wise')
-
-# def calculate_patient_mean(data):
-means = []
-for patient in patient_wise_scores:
-    values = [v for v in patient.values() if v is not None]  # Filter out None values
-    means.append(np.mean(values))  # Calculate mean
-print(f'\n mean dice score subject wise: {means}')
-print(f'\n overall mean dice score from subject-wise mean: {np.mean(means)}')
-
-means = []
-for key, values in output_scale.items():
-    filtered_values = [v for v in values if v is not None]
-    means.append(np.mean(filtered_values))
-print(f'\n mean dice score size wise: {means}')
-print(f'\n mean dice score based on size: {np.mean(means)}')
-
-    
 
 
 
