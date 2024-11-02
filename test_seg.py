@@ -149,7 +149,7 @@ with torch.no_grad():
     for step, batch in enumerate(test_loader):
         test_inputs, test_labels = (batch["image"].to(device), batch["label"].to(device))
         path = batch["path"]
-        print(f'path for the image {step}: {path}')
+        print(f'path for the image {step}: {path} shape:{test_inputs.shape}')
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
