@@ -114,10 +114,21 @@ def data_loader(args):
 
     elif args.mode == 'test':
         test_samples = {}
+        if args.dataset == 'kits':
+            ## Input training data
+            train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
+            train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
+            
+            validation_per_fold = 42
+            start_index = validation_per_fold * args.fold
+            end_index = validation_per_fold * args.fold + validation_per_fold
 
-        ## Input inference data
-        test_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTs', '*.nii.gz')))
-        test_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTs', '*.nii.gz')))
+            test_img = train_img[start_index:end_index]
+            test_label = train_label[start_index:end_index]
+        else:
+            ## Input inference data
+            test_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTs', '*.nii.gz')))
+            test_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTs', '*.nii.gz')))
 
         test_samples['images'] = test_img
         test_samples['labels'] = test_label
