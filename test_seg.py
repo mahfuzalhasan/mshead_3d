@@ -162,7 +162,7 @@ with torch.no_grad():
 
         test_outputs_list = decollate_batch(test_outputs)
         test_output_convert = [
-            post_pred(test_pred_tensor) for test_pred_tensor in test_outputs
+            post_pred(test_pred_tensor) for test_pred_tensor in test_outputs_list
         ]
 
         dice_metric(y_pred=test_output_convert, y=test_labels_convert)
