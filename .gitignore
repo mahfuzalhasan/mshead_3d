@@ -21,4 +21,6 @@ Config/*
 slurm_logs*/
 *.txt
 backup/*
+playground/*.png
+nautilus/*.yaml
 
