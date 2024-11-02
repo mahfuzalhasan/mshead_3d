@@ -132,6 +132,7 @@ def data_loader(args):
 
         test_samples['images'] = test_img
         test_samples['labels'] = test_label
+        test_samples['paths'] = test_img 
 
         print('Finished loading all inference samples from dataset: {}!'.format(dataset))
 
@@ -383,13 +384,13 @@ def data_transforms(args):
             [
                 LoadImaged(keys=["image", "label"]),
                 AddChanneld(keys=["image", "label"]),
-                # Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+                Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
                 Orientationd(keys=["image", "label"], axcodes="RAS"),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-200, a_max=300,
                     b_min=0.0, b_max=1.0, clip=True,
                 ),
-                # CropForegroundd(keys=["image", "label"], source_key="image"),
+                CropForegroundd(keys=["image", "label"], source_key="image"),
                 ToTensord(keys=["image", "label"]),
             ]
         )

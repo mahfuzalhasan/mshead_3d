@@ -49,11 +49,29 @@ args = parser.parse_args()
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
+if args.dataset == 'amos':
+    args.root = '/blue/r.forghani/share/amoss22/amos22'
+    ORGAN_CLASSES = {1: "Spleen", 2: "Right Kidney", 3: "Left Kidney", 4: "Gall Bladder", 5: "Esophagus",6: "Liver",
+        7: "Stomach", 8: "Aorta", 9: "Inferior Vena Cava", 10: "Pancreas", 11: "Right Adrenal Gland", 
+        12: "Left Adrenal Gland", 13: "Duodenum", 14: "Bladder", 15: "Prostate"
+    }
+    organ_size_range = [150, 500]
+    spacing = (1.5, 1.5, 2)
+elif args.dataset == 'flare':
+    args.root = '/blue/r.forghani/share/flare_data'
+    ORGAN_CLASSES = {1: "Liver", 2: "Kidney", 3: "Spleen", 4: "Pancreas"}
+    organ_size_range = [250, 1000]
+    spacing = (1, 1, 1.2)
+elif args.dataset == 'kits':
+    args.root = '/blue/r.forghani/share/kits2019'
+    ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
+
+
 test_samples, out_classes = data_loader(args)
 
 test_files = [
-    {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(test_samples['images'], test_samples['labels'])
+    {"image": image_name, "label": label_name, "path": data_path}
+    for image_name, label_name, data_path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
 
 set_determinism(seed=0)
@@ -76,9 +94,9 @@ if args.network == 'MSHEAD':
         in_chans=1,
         out_chans=out_classes,
         depths=[2,2,2,2],
-        feat_size=[48,96,192,384,768],
+        feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
-        use_checkpoint=False,
+        use_checkpoint=False
     ).to(device)
 
 elif args.network == 'SwinUNETR':
@@ -90,16 +108,22 @@ elif args.network == 'SwinUNETR':
         use_checkpoint=False,
     ).to(device)
 
-if args.fold == 0:
-    args.trained_weights = '/orange/r.forghani/results/09-29-24_1523/model_best.pth'
-elif args.fold == 1:
-    args.trained_weights = '/orange/r.forghani/results/09-29-24_1553/model_best.pth'
-elif args.fold == 2:
-    args.trained_weights = '/orange/r.forghani/results/09-29-24_1615/model_best.pth'
-elif args.fold == 3:
-    args.trained_weights = '/orange/r.forghani/results/09-29-24_2044/model_best.pth'
-elif args.fold == 4:
-    args.trained_weights = '/orange/r.forghani/results/09-29-24_2050/model_best.pth'
+if args.dataset != 'amos':
+    if args.fold == 0:
+        # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/10-30-24_0442/model_best.pth'
+    elif args.fold == 1:
+        # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/10-30-24_0454/model_best.pth'
+    elif args.fold == 2:
+        # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/10-30-24_0500/model_best.pth'
+    elif args.fold == 3:
+        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/10-30-24_0505/model_best.pth'
+    elif args.fold == 4:
+        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/10-30-24_0513/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
@@ -117,14 +141,15 @@ model.eval()
 
 post_label = AsDiscrete(to_onehot=out_classes)
 post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
-dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
+dice_metric = DiceMetric(include_background=False, reduction="mean", get_not_nans=False)
 
 dice_vals = list()
 s_time = time.time()
 with torch.no_grad():
     for step, batch in enumerate(test_loader):
         test_inputs, test_labels = (batch["image"].to(device), batch["label"].to(device))
-        # val_outputs = model(val_inputs)
+        path = batch["path"]
+        print(f'path for the image {step}: {path}')
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
@@ -141,15 +166,11 @@ with torch.no_grad():
         ]
 
         dice_metric(y_pred=test_output_convert, y=test_labels_convert)
-        dice = dice_metric.aggregate().item()
-        dice_vals.append(dice)
-        # epoch_iterator_val.set_description(
-        #     "Validate (%d / %d Steps) (dice=%2.5f)" % (global_step, 10.0, dice)
-        # )
+        
+    dice = dice_metric.aggregate().item()
     dice_metric.reset()
-mean_dice_test = np.mean(dice_vals)
 
 test_time = time.time() - s_time
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
-print(f'mean test dice: {mean_dice_test}')
+print(f'mean test dice: {dice}')
 
