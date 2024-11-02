@@ -184,12 +184,16 @@ with torch.no_grad():
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
+        print(f'test output size:{test_outputs.shape}')
 
         # Organ Wise Calculation
         for organ, labels in regions.items():
             print(f'########## Calculating for Organ: {organ} ###########')
             new_output = hierarchical_prediction(test_outputs, labels, prediction=True)
             new_gt = hierarchical_prediction(test_labels, labels)
+
+            print(f'new output:{new_output.shape}')
+            print(f'new_gt:{new_gt.shape}')
         
             
             #### No need for decollate batch if we have only 1 sample/batch i.e. batch_size = 1
