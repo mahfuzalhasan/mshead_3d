@@ -180,6 +180,7 @@ with torch.no_grad():
                                                                             # To calculate volume we can use labels from
                                                                             # val_labels. How? That's where I need help
         
+        print(f'#### file name: {test_files[step]} ####')
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
@@ -191,6 +192,7 @@ with torch.no_grad():
             print(f'########## Calculating for Organ: {organ} ###########')
             new_output = hierarchical_prediction(test_outputs, labels, prediction=True)
             new_gt = hierarchical_prediction(test_labels, labels)
+
 
             print(f'new output:{new_output.shape}')
             print(f'new_gt:{new_gt.shape}')
