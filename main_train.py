@@ -73,6 +73,7 @@ if not args.root:
 print(f'Root folder for data: {args.root}')
     
 print('Used GPU: {}'.format(args.gpu))
+print(f'############## Training on Fold:{args.fold} ################## \n')
 
 run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
 print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')

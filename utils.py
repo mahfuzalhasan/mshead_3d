@@ -27,7 +27,6 @@ def hierarchical_prediction(arr, label_values, prediction = False):
     arr_new = torch.zeros_like(arr, dtype=torch.uint8)
     for l in label_values:           #(1,2)
         arr_new[arr == l] = 1
-    
     return arr_new
 
 
