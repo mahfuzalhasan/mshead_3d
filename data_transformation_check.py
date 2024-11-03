@@ -9,7 +9,7 @@ val_transforms = Compose(
         AddChanneld(keys=["image", "label"]),
         Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
         Orientationd(keys=["image", "label"], axcodes="RAS"),
-        # Transposed(keys=["image", "label"], perm=(0, 3, 1, 2)),
+        Transposed(keys=["image", "label"], perm=(0, 3, 1, 2)),
         ScaleIntensityRanged(
             keys=["image"], a_min=-200, a_max=300,
             b_min=0.0, b_max=1.0, clip=True,
