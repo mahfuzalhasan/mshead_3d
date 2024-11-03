@@ -5,12 +5,12 @@ import nibabel as nib  # Optional, for additional image inspection
 # Define individual transforms
 load_transform = LoadImaged(keys=["image", "label"])
 add_channel_transform = AddChanneld(keys=["image", "label"])
-spacing_transform = Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest"))
+spacing_transform = Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest"))
 orientation_transform = Orientationd(keys=["image", "label"], axcodes="RAS")
 scale_intensity_transform = ScaleIntensityRanged(
     keys=["image"],
-    a_min=-200,
-    a_max=300,
+    a_min=-125,
+    a_max=275,
     b_min=0.0,
     b_max=1.0,
     clip=True,
@@ -18,10 +18,16 @@ scale_intensity_transform = ScaleIntensityRanged(
 crop_foreground_transform = CropForegroundd(keys=["image", "label"], source_key="image")
 to_tensor_transform = ToTensord(keys=["image", "label"])
 
+# print(f'kits check')
+# sample_data = {
+#     "image": "/blue/r.forghani/share/kits2019/imagesTr/test_00199_imaging.nii.gz",
+#     "label": "/blue/r.forghani/share/kits2019/labelsTr/test_00199_segmentation.nii.gz"
+# }
 
+print(f'Flare check')
 sample_data = {
-    "image": "/blue/r.forghani/share/kits2019/imagesTr/test_00199_imaging.nii.gz",
-    "label": "/blue/r.forghani/share/kits2019/labelsTr/test_00199_segmentation.nii.gz"
+    "image": "/blue/r.forghani/share/flare_data/imagesTr/train_000_0000.nii.gz",
+    "label": "/blue/r.forghani/share/flare_data/labelsTr/train_000.nii.gz"
 }
 
 # Apply LoadImaged
