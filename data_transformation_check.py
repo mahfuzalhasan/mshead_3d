@@ -18,9 +18,10 @@ scale_intensity_transform = ScaleIntensityRanged(
 crop_foreground_transform = CropForegroundd(keys=["image", "label"], source_key="image")
 to_tensor_transform = ToTensord(keys=["image", "label"])
 
+
 sample_data = {
-    "image": "/blue/r.forghani/share/kits2019/imagesTr/test_00190_imaging.nii.gz",
-    "label": "/blue/r.forghani/share/kits2019/labelsTr/test_00190_segmentation.nii.gz"
+    "image": "/blue/r.forghani/share/kits2019/imagesTr/test_00199_imaging.nii.gz",
+    "label": "/blue/r.forghani/share/kits2019/labelsTr/test_00199_segmentation.nii.gz"
 }
 
 # Apply LoadImaged
