@@ -52,12 +52,12 @@ class MultiScaleAttention(nn.Module):
 
         if self.level > 0:                  # 48--> level=3,   24--> level=2,  12--> level=1
             self.dwt_downsample = []
-            if self.level > 1:
-                ds_wt = WaveletTransform3D(wavelet='haar', level=1)   #DWT_l=1=2-->24,  DWT_l = 1 = 24--> 12
+            if self.level > 1:              # 48--> level=3,   24--> level=2
+                ds_wt = WaveletTransform3D(wavelet='haar', level=1)   #DWT_l = 1 = 48 --> 24,    DWT_l = 1 = 24--> 12
                 self.dwt_downsample.append(ds_wt)
-                ds_wt = WaveletTransform3D(wavelet='haar', level=self.level-1)#DWT_l=3-1=2=24-->6, #DWT_l=1--> 12 to 6
+                ds_wt = WaveletTransform3D(wavelet='haar', level=self.level-1)#DWT_l=3-1=2=24-->6, DWT_l=2-1=1-->12 to 6
                 self.dwt_downsample.append(ds_wt)
-            else:
+            else:               # 12 --> level = 1
                 if not self.dwt_layer_1:            # 2,2,2,1  otherwise 2,2,1,1
                     ds_wt = nn.Identity()
                     self.self.dwt_downsample.append(ds_wt)
