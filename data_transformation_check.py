@@ -26,8 +26,8 @@ to_tensor_transform = ToTensord(keys=["image", "label"])
 
 print(f'Flare check')
 sample_data = {
-    "image": "/blue/r.forghani/share/flare_data/imagesTr/train_095_0000.nii.gz",
-    "label": "/blue/r.forghani/share/flare_data/labelsTr/train_095.nii.gz"
+    "image": "/blue/r.forghani/share/flare_data/imagesTr/train_000_0000.nii.gz",
+    "label": "/blue/r.forghani/share/flare_data/labelsTr/train_000.nii.gz"
 }
 
 # Apply LoadImaged
