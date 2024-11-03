@@ -32,7 +32,7 @@ import time
 print(f'########### Running Flare Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/kits2019', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
 parser.add_argument('--dataset', type=str, default='kits', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
@@ -60,14 +60,20 @@ print(f'################################')
 print(f'args:{args}')
 print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-if args.dataset == 'flare':
-    args.root = '/blue/r.forghani/share/flare_data'
-elif args.dataset == 'amos':
-    args.root = '/blue/r.forghani/share/amoss22/amos22'
-elif args.dataset == 'kits':
-    args.root = '/blue/r.forghani/share/kits2019'
+if not args.root:
+    if args.dataset == 'flare':
+        args.root = '/blue/r.forghani/share/flare_data'
+    elif args.dataset == 'amos':
+        args.root = '/blue/r.forghani/share/amoss22/amos22'
+    elif args.dataset == 'kits':
+        args.root = '/blue/r.forghani/share/kits2019'
+    else:
+        raise NotImplementedError(f'No such dataset: {args.dataset}')
+        
+print(f'Root folder for data: {args.root}')
     
 print('Used GPU: {}'.format(args.gpu))
+print(f'############## Training on Fold:{args.fold} ################## \n')
 
 run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
 print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
@@ -83,6 +89,7 @@ val_files = [
     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
 ]
 print(f'train files:{len(train_files)} val files:{len(val_files)}')
+print(f' \n ****************** Validation File List :\n {val_files} \n ******************* \n')
 
 
 set_determinism(seed=0)

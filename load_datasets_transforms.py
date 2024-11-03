@@ -12,6 +12,7 @@ from monai.transforms import (
     ResizeWithPadOrCropd,
     LoadImaged,
     Orientationd,
+    Transposed,
     RandCropByPosNegLabeld,
     ScaleIntensityRanged,
     KeepLargestConnectedComponentd,
@@ -114,13 +115,25 @@ def data_loader(args):
 
     elif args.mode == 'test':
         test_samples = {}
+        if args.dataset == 'kits':
+            ## Input training data
+            train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
+            train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
+            
+            validation_per_fold = 42
+            start_index = validation_per_fold * args.fold
+            end_index = validation_per_fold * args.fold + validation_per_fold
 
-        ## Input inference data
-        test_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTs', '*.nii.gz')))
-        test_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTs', '*.nii.gz')))
+            test_img = train_img[start_index:end_index]
+            test_label = train_label[start_index:end_index]
+        else:
+            ## Input inference data
+            test_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTs', '*.nii.gz')))
+            test_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTs', '*.nii.gz')))
 
         test_samples['images'] = test_img
         test_samples['labels'] = test_label
+        test_samples['paths'] = test_img 
 
         print('Finished loading all inference samples from dataset: {}!'.format(dataset))
 
@@ -311,11 +324,12 @@ def data_transforms(args):
     elif dataset == "kits":
         train_transforms = Compose(
         [
-            LoadImaged(keys=["image", "label"]),
+            LoadImaged(keys=["image", "label"]),            # D, H, W
             AddChanneld(keys=["image", "label"]),
-            Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+            Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
             # ResizeWithPadOrCropd(keys=["image", "label"], spatial_size=(256,256,128), mode=("constant")),
-            Orientationd(keys=["image", "label"], axcodes="RAS"),
+            Orientationd(keys=["image", "label"], axcodes="RAS"),           # H, W, D
+            Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),      # D, H, W --> PyTorch expects this    
             ScaleIntensityRanged(
                 keys=["image"], a_min=-200, a_max=300,
                 b_min=0.0, b_max=1.0, clip=True,
@@ -372,8 +386,9 @@ def data_transforms(args):
             [
                 LoadImaged(keys=["image", "label"]),
                 AddChanneld(keys=["image", "label"]),
-                Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+                Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
                 Orientationd(keys=["image", "label"], axcodes="RAS"),
+                Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-200, a_max=300,
                     b_min=0.0, b_max=1.0, clip=True,
@@ -387,8 +402,9 @@ def data_transforms(args):
             [
                 LoadImaged(keys=["image", "label"]),
                 AddChanneld(keys=["image", "label"]),
-                Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+                Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
                 Orientationd(keys=["image", "label"], axcodes="RAS"),
+                Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-200, a_max=300,
                     b_min=0.0, b_max=1.0, clip=True,
@@ -402,8 +418,9 @@ def data_transforms(args):
             [
                 LoadImaged(keys=["image"]),
                 AddChanneld(keys=["image"]),
-                Spacingd(keys=["image"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear")),
+                Spacingd(keys=["image"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear")),
                 Orientationd(keys=["image"], axcodes="RAS"),
+                Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-200, a_max=300,
                     b_min=0.0, b_max=1.0, clip=True,
