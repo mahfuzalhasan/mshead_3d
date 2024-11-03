@@ -100,7 +100,7 @@ print(f"Label shape: {loaded_data['label'].shape}")
 
 train_files = [
     {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(sample_data['images'], sample_data['labels'])
+    for image_name, label_name in zip(sample_data['image'], sample_data['label'])
 ]
 
 train_ds = CacheDataset(data=train_files, transform=val_transforms,cache_rate=1, num_workers=1)
