@@ -38,12 +38,35 @@ print(f"Image shape: {loaded_data['image'].shape}")
 print(f"Label shape: {loaded_data['label'].shape}")
 
 # Similarly, apply other transforms and print shapes as needed
-# Apply AddChanneld
+# Apply Spacingd
 loaded_data = spacing_transform(loaded_data)
 print("\nAfter spacing:")
 print(f"Image shape: {loaded_data['image'].shape}")
 print(f"Label shape: {loaded_data['label'].shape}")
 
-# Similarly, apply other transforms and print shapes as needed
+# Apply Orientationd
+loaded_data = orientation_transform(loaded_data)
+print("\nAfter orientation:")
+print(f"Image shape: {loaded_data['image'].shape}")
+print(f"Label shape: {loaded_data['label'].shape}")
+
+# Apply ScaleIntensityRanged
+loaded_data = scale_intensity_transform(loaded_data)
+print("\nAfter scale_intensity:")
+print(f"Image shape: {loaded_data['image'].shape}")
+print(f"Label shape: {loaded_data['label'].shape}")
+
+# Apply crop_foreground_transform
+loaded_data = crop_foreground_transform(loaded_data)
+print("\nAfter crop_foreground_transform:")
+print(f"Image shape: {loaded_data['image'].shape}")
+print(f"Label shape: {loaded_data['label'].shape}")
+
+# Apply to_tensor_transform
+loaded_data = to_tensor_transform(loaded_data)
+print("\nAfter to_tensor_transform:")
+print(f"Image shape: {loaded_data['image'].shape}")
+print(f"Label shape: {loaded_data['label'].shape}")
+
 
 
