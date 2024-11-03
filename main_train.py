@@ -89,6 +89,7 @@ val_files = [
     for image_name, label_name in zip(valid_samples['images'], valid_samples['labels'])
 ]
 print(f'train files:{len(train_files)} val files:{len(val_files)}')
+print(f' \n ****************** Validation File List :\n {val_files} \n ******************* \n')
 
 
 set_determinism(seed=0)
