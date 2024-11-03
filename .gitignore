@@ -2,7 +2,10 @@
 /.idea
 /__pycache__
 
-lib/__pycache__/*
+*/__pycache__
+*/**/__pycache__/*.pyc
+*/**/**/__pycache__/*
+lib/**/__pycache__/*
 networks/__pycache__/*
 __pycache__/*
 */__pycache__/*

@@ -47,12 +47,15 @@ parser.add_argument('--no_split', default=False, help='No splitting into train a
 
 args = parser.parse_args()
 
-if args.dataset == 'flare':
-    args.root = '/blue/r.forghani/share/flare_data'
-elif args.dataset == 'amos':
-    args.root = '/blue/r.forghani/share/amoss22/amos22'
-elif args.dataset == 'kits':
-    args.root = '/blue/r.forghani/share/kits2019'
+if not args.root:
+    if args.dataset == 'flare':
+        args.root = '/blue/r.forghani/share/flare_data'
+    elif args.dataset == 'amos':
+        args.root = '/blue/r.forghani/share/amoss22/amos22'
+    elif args.dataset == 'kits':
+        args.root = '/blue/r.forghani/share/kits2019'
+    else:
+        raise NotImplementedError(f'No such dataset: {args.dataset}')
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
