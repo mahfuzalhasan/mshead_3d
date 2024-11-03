@@ -22,7 +22,7 @@ val_transforms = Compose(
 load_transform = LoadImaged(keys=["image", "label"])
 add_channel_transform = AddChanneld(keys=["image", "label"])
 spacing_transform = Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest"))
-transpose = Transposed(keys=["image", "label"], perm=(0, 3, 1, 2))
+transpose = Transposed(keys=["image", "label"], indices = (0, 3, 1, 2))
 orientation_transform = Orientationd(keys=["image", "label"], axcodes="RAS")
 scale_intensity_transform = ScaleIntensityRanged(
     keys=["image"],
