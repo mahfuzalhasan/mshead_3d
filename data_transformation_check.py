@@ -37,8 +37,8 @@ to_tensor_transform = ToTensord(keys=["image", "label"])
 
 print(f'kits check')
 sample_data = {
-    "image": "/blue/r.forghani/share/kits2019/imagesTr/test_00199_imaging.nii.gz",
-    "label": "/blue/r.forghani/share/kits2019/labelsTr/test_00199_segmentation.nii.gz"
+    "image": ["/blue/r.forghani/share/kits2019/imagesTr/test_00199_imaging.nii.gz"],
+    "label": ["/blue/r.forghani/share/kits2019/labelsTr/test_00199_segmentation.nii.gz"]
 }
 
 # print(f'Flare check')
@@ -103,6 +103,7 @@ train_files = [
     for image_name, label_name in zip(sample_data['image'], sample_data['label'])
 ]
 
+print(train_files)
 train_ds = CacheDataset(data=train_files, transform=val_transforms,cache_rate=1, num_workers=1)
 train_loader = ThreadDataLoader(train_ds, batch_size=1, shuffle=True, num_workers=0)
 
