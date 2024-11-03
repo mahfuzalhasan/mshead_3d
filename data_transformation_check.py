@@ -32,14 +32,14 @@ print(f"Image shape: {loaded_data['image'].shape}")
 print(f"Label shape: {loaded_data['label'].shape}")
 
 # Apply AddChanneld
-add_channel_transform(loaded_data)
+loaded_data = add_channel_transform(loaded_data)
 print("\nAfter AddChanneld:")
 print(f"Image shape: {loaded_data['image'].shape}")
 print(f"Label shape: {loaded_data['label'].shape}")
 
 # Similarly, apply other transforms and print shapes as needed
 # Apply AddChanneld
-spacing_transform(loaded_data)
+loaded_data = spacing_transform(loaded_data)
 print("\nAfter spacing:")
 print(f"Image shape: {loaded_data['image'].shape}")
 print(f"Label shape: {loaded_data['label'].shape}")
