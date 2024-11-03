@@ -18,17 +18,17 @@ scale_intensity_transform = ScaleIntensityRanged(
 crop_foreground_transform = CropForegroundd(keys=["image", "label"], source_key="image")
 to_tensor_transform = ToTensord(keys=["image", "label"])
 
-# print(f'kits check')
-# sample_data = {
-#     "image": "/blue/r.forghani/share/kits2019/imagesTr/test_00199_imaging.nii.gz",
-#     "label": "/blue/r.forghani/share/kits2019/labelsTr/test_00199_segmentation.nii.gz"
-# }
-
-print(f'Flare check')
+print(f'kits check')
 sample_data = {
-    "image": "/blue/r.forghani/share/flare_data/imagesTr/train_000_0000.nii.gz",
-    "label": "/blue/r.forghani/share/flare_data/labelsTr/train_000.nii.gz"
+    "image": "/blue/r.forghani/share/kits2019/imagesTr/test_00199_imaging.nii.gz",
+    "label": "/blue/r.forghani/share/kits2019/labelsTr/test_00199_segmentation.nii.gz"
 }
+
+# print(f'Flare check')
+# sample_data = {
+#     "image": "/blue/r.forghani/share/flare_data/imagesTr/train_000_0000.nii.gz",
+#     "label": "/blue/r.forghani/share/flare_data/labelsTr/train_000.nii.gz"
+# }
 
 # Apply LoadImaged
 loaded_data = load_transform(sample_data)
