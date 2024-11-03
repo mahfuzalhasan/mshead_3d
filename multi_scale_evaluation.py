@@ -59,23 +59,24 @@ args = parser.parse_args()
 print(f'args:{args}')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
-
-if args.dataset == 'amos':
-    args.root = '/blue/r.forghani/share/amoss22/amos22'
-    ORGAN_CLASSES = {1: "Spleen", 2: "Right Kidney", 3: "Left Kidney", 4: "Gall Bladder", 5: "Esophagus",6: "Liver",
-        7: "Stomach", 8: "Aorta", 9: "Inferior Vena Cava", 10: "Pancreas", 11: "Right Adrenal Gland", 
-        12: "Left Adrenal Gland", 13: "Duodenum", 14: "Bladder", 15: "Prostate"
-    }
-    organ_size_range = [150, 500]
-    spacing = (1.5, 1.5, 2)
-elif args.dataset == 'flare':
-    args.root = '/blue/r.forghani/share/flare_data'
-    ORGAN_CLASSES = {1: "Liver", 2: "Kidney", 3: "Spleen", 4: "Pancreas"}
-    organ_size_range = [250, 1000]
-    spacing = (1, 1, 1.2)
-elif args.dataset == 'kits':
-    args.root = '/blue/r.forghani/share/kits2019'
-    ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
+if not args.root:
+    if args.dataset == 'amos':
+        args.root = '/blue/r.forghani/share/amoss22/amos22'
+        ORGAN_CLASSES = {1: "Spleen", 2: "Right Kidney", 3: "Left Kidney", 4: "Gall Bladder", 5: "Esophagus",6: "Liver",
+            7: "Stomach", 8: "Aorta", 9: "Inferior Vena Cava", 10: "Pancreas", 11: "Right Adrenal Gland", 
+            12: "Left Adrenal Gland", 13: "Duodenum", 14: "Bladder", 15: "Prostate"}
+        organ_size_range = [150, 500]
+        spacing = (1.5, 1.5, 2)
+    elif args.dataset == 'flare':
+        args.root = '/blue/r.forghani/share/flare_data'
+        ORGAN_CLASSES = {1: "Liver", 2: "Kidney", 3: "Spleen", 4: "Pancreas"}
+        organ_size_range = [250, 1000]
+        spacing = (1, 1, 1.2)
+    elif args.dataset == 'kits':
+        args.root = '/blue/r.forghani/share/kits2019'
+        ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
+    else:
+        raise NotImplementedError(f'No such dataset: {args.dataset}')
 
 SMALL = 1
 MEDIUM = 2

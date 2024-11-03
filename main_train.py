@@ -32,9 +32,9 @@ import time
 print(f'########### Running Flare Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/kits2019', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='kits', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='kits', required=False, help='Currently supporting datasets: {flare, amos, kits}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
@@ -60,12 +60,17 @@ print(f'################################')
 print(f'args:{args}')
 print('#################################')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-if args.dataset == 'flare':
-    args.root = '/blue/r.forghani/share/flare_data'
-elif args.dataset == 'amos':
-    args.root = '/blue/r.forghani/share/amoss22/amos22'
-elif args.dataset == 'kits':
-    args.root = '/blue/r.forghani/share/kits2019'
+if not args.root:
+    if args.dataset == 'flare':
+        args.root = '/blue/r.forghani/share/flare_data'
+    elif args.dataset == 'amos':
+        args.root = '/blue/r.forghani/share/amoss22/amos22'
+    elif args.dataset == 'kits':
+        args.root = '/blue/r.forghani/share/kits2019'
+    else:
+        raise NotImplementedError(f'No such dataset: {args.dataset}')
+        
+print(f'Root folder for data: {args.root}')
     
 print('Used GPU: {}'.format(args.gpu))
 
