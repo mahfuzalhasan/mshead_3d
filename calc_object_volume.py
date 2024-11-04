@@ -1,5 +1,5 @@
 DATASET = 'kits'    # 'amos' or 'flare' or 'kits'
-FOLD = 0
+FOLD = 1
 
 
 
@@ -94,6 +94,7 @@ elif config.dataset == 'flare':
     voxel_volume = 1.0 * 1.0 * 1.2  # mm^3
 elif config.dataset == 'kits':
     ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
+    voxel_volume = 1.2 * 1.0 * 1.0
 else:
     raise ValueError("Invalid dataset name")
 
@@ -128,40 +129,6 @@ test_loader = ThreadDataLoader(test_ds, batch_size=1, num_workers=0)
 # Set the device for PyTorch operations
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f'--- device: {device} ---')
-
-
-
-
-for step, batch in enumerate(test_loader):
-    test_inputs, test_labels = (batch["image"].to(device), batch["label"].to(device))
-    print(f'---------------------{step}---------------------')
-    print(f'input: {test_inputs.shape} labels:{test_labels.shape}')     # B,C,D,H,W format: D slices in each CT data
-                                                                        #each slice has 1 channel-> C = 1
-                                                                        # for validation loader B = 1 too.
-                                                                        # So, 1,1,D,H,W
-                                                                        # H, W and D will be different for each CT
-                                                                        # we need to calculate shape-wise result on
-                                                                        # validation set. So, here we take the full image
-                                                                        # to calculate volume for each organ.
-                                                                        # To calculate volume we can use labels from
-                                                                        # val_labels. How? That's where I need help
-    test_labels = test_labels.numpy()
-    test_labels = test_labels[0, 0, :, :, :]
-    unique_labels = np.unique(test_labels)
-    print(f'unique labels: {unique_labels}')
-    for label in unique_labels:
-        if label == 0.0:  # Skip background
-            continue
-        dummy = np.zeros(shape=test_labels.shape, dtype='uint8')
-        dummy[test_labels==label] = 1
-        N_voxel = np.count_nonzero(dummy)
-        volume = N_voxel * voxel_volume    # in mm^3
-        volume = volume/1000                # in cm^3
-        print(f'Class: {ORGAN_CLASSES[label]} volume: {volume}')
-    print(f'---------------------{step}---------------------COMPLETED')
-
-
-
 
 import pandas as pd
 import numpy as np
@@ -198,6 +165,7 @@ for step, batch in enumerate(test_loader):
 
         # Store the volume in the dictionary
         volume_dict[ORGAN_CLASSES[label]] = volume
+        print(f'Class: {ORGAN_CLASSES[label]} volume: {volume}')
 
     # Append the volume dictionary as a new row in the DataFrame
     df = pd.concat([df, pd.DataFrame([volume_dict])], ignore_index=True)
@@ -207,18 +175,15 @@ for step, batch in enumerate(test_loader):
 
 
 # Calculate and print min and max for each class
-print("\nMin and Max Volumes for Each Class:")
+print("\n Min and Max Volumes for Each Class:")
 for label in class_labels:
     min_volume = df[label].min(skipna=True)  # Skip NaN values
     max_volume = df[label].max(skipna=True)  # Skip NaN values
     print(f"{label}: Min = {min_volume:.2f} cm^3, Max = {max_volume:.2f} cm^3")
     
-    
-    
-    
-    
 # Plotting volumes with different colors for each class
 plt.figure(figsize=(10, 6))
+
 
 for label in class_labels:
     plt.scatter(df[label], [label] * len(df), label=label)
