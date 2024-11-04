@@ -39,7 +39,7 @@ class Config:
 
 # Create the config object from the dictionary
 config_dict = {
-    'root': './data/' + DATASET,
+    'root': '/blue/r.forghani/share/kits2019',
     'output': '/orange/r.forghani/results',
     'dataset': DATASET,
     'network': 'MSHEAD',
