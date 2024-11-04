@@ -36,7 +36,7 @@ parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameter
 # parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
 # parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
 # parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/amoss22/amos22', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
 parser.add_argument('--dataset', type=str, default='amos', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 ## Input model & training hyperparameters
@@ -59,7 +59,7 @@ args = parser.parse_args()
 print(f'args:{args}')
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 print('Used GPU: {}'.format(args.gpu))
-
+if not args.root:
 if args.dataset == 'amos':
     args.root = '/blue/r.forghani/share/amoss22/amos22'
     ORGAN_CLASSES = {1: "Spleen", 2: "Right Kidney", 3: "Left Kidney", 4: "Gall Bladder", 5: "Esophagus",6: "Liver",
@@ -76,6 +76,7 @@ elif args.dataset == 'flare':
 elif args.dataset == 'kits':
     args.root = '/blue/r.forghani/share/kits2019'
     ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
+    spacing = (1.2, 1, 1)
 
 SMALL = 1
 MEDIUM = 2

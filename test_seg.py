@@ -26,7 +26,7 @@ import time
 print(f'########### Running KITS Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/kits2019', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
 parser.add_argument('--dataset', type=str, default='kits', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
@@ -114,19 +114,24 @@ elif args.network == 'SwinUNETR':
 if args.dataset != 'amos':
     if args.fold == 0:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0442/model_best.pth'
         args.trained_weights = '/orange/r.forghani/results/10-30-24_0442/model_best.pth'
     elif args.fold == 1:
         # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/10-30-24_0454/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0454/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-03-24_0237/model_best.pth'
     elif args.fold == 2:
         # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/10-30-24_0500/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0500/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-03-24_0331/model_best.pth'
     elif args.fold == 3:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/10-30-24_0505/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0505/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-03-24_0342/model_best.pth'
     elif args.fold == 4:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/10-30-24_0513/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0513/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-03-24_0358/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
