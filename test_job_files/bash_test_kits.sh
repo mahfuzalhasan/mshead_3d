@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=train_kits_WF_2211
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d/results/train_kits_WF_2211_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d/results/train_kits_WF_2211_job.%J.err
+#SBATCH --job-name=test_kits_WF_2211
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d/results/test_kits_WF_2211_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d/results/test_kits_WF_2211_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
