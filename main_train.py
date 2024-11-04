@@ -307,6 +307,7 @@ epoch_loss_values = []
 ### run with python main_train.py --resume True
 ### Then set model_path here
 if args.resume:
+    
     # model_path = '/orange/r.forghani/results/06-26-24_2259/model_36500.pth'
     if args.fold == 0:
         model_path = '/orange/r.forghani/results/11-03-24_1306/model_34000.pth' # best 31500
@@ -318,7 +319,8 @@ if args.resume:
         model_path = '/orange/r.forghani/results/11-03-24_1942/model_27000.pth' # best 24000
     if args.fold == 4:
         model_path = '/orange/r.forghani/results/11-03-24_2009/model_16500.pth' # best 15000
-
+    
+    print(f'resuming trianing for fold: {args.fold}::: model:{model_path}')
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict['model'])
     optimizer.load_state_dict(state_dict['optimizer'])
