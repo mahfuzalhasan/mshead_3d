@@ -47,6 +47,16 @@ parser.add_argument('--no_split', default=False, help='No splitting into train a
 
 args = parser.parse_args()
 
+if not args.root:
+    if args.dataset == 'flare':
+        args.root = '/blue/r.forghani/share/flare_data'
+    elif args.dataset == 'amos':
+        args.root = '/blue/r.forghani/share/amoss22/amos22'
+    elif args.dataset == 'kits':
+        args.root = '/blue/r.forghani/share/kits2019'
+    else:
+        raise NotImplementedError(f'No such dataset: {args.dataset}')
+
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 test_samples, out_classes = data_loader(args)
@@ -84,8 +94,9 @@ if args.network == 'MSHEAD':
         in_chans=1,
         out_chans=out_classes,
         depths=[2,2,2,2],
-        feat_size=[48,96,192,384,768],
+        feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
+        local_region_scales = [2, 2, 1, 1],
         use_checkpoint=False,
     ).to(device)
 
