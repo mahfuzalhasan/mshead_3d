@@ -115,7 +115,7 @@ if args.dataset != 'amos':
     if args.fold == 0:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/10-30-24_0442/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/10-30-24_0442/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-04-24_2125/model_best.pth'
     elif args.fold == 1:
         # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/10-30-24_0454/model_best.pth'
