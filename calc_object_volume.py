@@ -262,5 +262,6 @@ plt.legend(title="Organ Classes")
 plt.grid(axis='x', linestyle='--', alpha=0.7)
 
 # Show the plot
-plt.show()
-plt.savefig('volumes_{DATASET}.png')
+# plt.show()
+plt.savefig(f'volumes_{DATASET}.png')
+plt.close()
