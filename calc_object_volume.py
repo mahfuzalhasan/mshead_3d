@@ -15,6 +15,33 @@ from monai.losses import DiceCELoss
 from monai.inferers import sliding_window_inference
 from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
 
+from monai.transforms import (
+    AsDiscreted,
+    AddChanneld,
+    Compose,
+    CropForegroundd,
+    SpatialPadd,
+    ResizeWithPadOrCropd,
+    LoadImaged,
+    Orientationd,
+    Transposed,
+    RandCropByPosNegLabeld,
+    ScaleIntensityRanged,
+    KeepLargestConnectedComponentd,
+    Spacingd,
+    ToTensord,
+    RandAffined,
+    RandFlipd,
+    RandCropByPosNegLabeld,
+    RandShiftIntensityd,
+    RandRotate90d,
+    EnsureTyped,
+    Invertd,
+    KeepLargestConnectedComponentd,
+    SaveImaged,
+    Activationsd
+)
+
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from load_datasets_transforms import data_loader, data_transforms
@@ -116,7 +143,22 @@ print(f' \n ****************** test File List :\n {test_files} \n **************
 set_determinism(seed=0)
 
 # Apply data transforms using the config object
-test_transforms = data_transforms(config)
+# test_transforms = data_transforms(config)
+test_transforms = Compose(
+    [
+        LoadImaged(keys=["image", "label"]),
+        AddChanneld(keys=["image", "label"]),
+        # Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
+        Orientationd(keys=["image", "label"], axcodes="RAS"),
+        Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
+        ScaleIntensityRanged(
+            keys=["image"], a_min=-200, a_max=300,
+            b_min=0.0, b_max=1.0, clip=True,
+        ),
+        # CropForegroundd(keys=["image", "label"], source_key="image"),
+        ToTensord(keys=["image", "label"]),
+    ]
+)
 print('Start caching datasets!')
 
 # Initialize the cache dataset and data loader
@@ -159,16 +201,19 @@ for step, batch in enumerate(test_loader):
     for label in unique_labels:
         if label == 0:  # Skip background
             continue
-        
-        dummy = np.zeros(shape=test_labels.shape, dtype='uint8')
-        dummy[test_labels == label] = 1
-        N_voxel = np.count_nonzero(dummy)
+
+        N_voxel = np.sum(unique_labels == label)
+
+        # dummy = np.zeros(shape=test_labels.shape, dtype='uint8')
+        # dummy[test_labels == label] = 1
+        # N_voxel = np.count_nonzero(dummy)
+
         volume = N_voxel * voxel_volume  # in mm^3
-        volume /= 1000  # Convert to cm^3
+        volume_cm3 = volume / 1000  # Convert to cm^3
 
         # Store the volume in the dictionary
         volume_dict[ORGAN_CLASSES[label]] = volume
-        print(f'Class: {ORGAN_CLASSES[label]} volume: {volume}')
+        print(f'Class: {ORGAN_CLASSES[label]} volume: {volume} volume_cm3:{volume_cm3}')
 
     # Append the volume dictionary as a new row in the DataFrame
     df = pd.concat([df, pd.DataFrame([volume_dict])], ignore_index=True)
