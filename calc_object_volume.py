@@ -14,6 +14,7 @@ from monai.metrics import DiceMetric
 from monai.losses import DiceCELoss
 from monai.inferers import sliding_window_inference
 from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
+import nibabel as nib
 
 from monai.transforms import (
     AsDiscreted,
@@ -121,8 +122,8 @@ elif config.dataset == 'flare':
     voxel_volume = 1.0 * 1.0 * 1.2  # mm^3
 elif config.dataset == 'kits':
     ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
-    spacing = (1.2, 1.0, 1.0)
-    voxel_volume = 1.2 * 1.0 * 1.0  # mm^3
+    # spacing = (1.2, 1.0, 1.0)
+    # voxel_volume = 1.2 * 1.0 * 1.0  # mm^3
 else:
     raise ValueError("Invalid dataset name")
 
@@ -187,7 +188,23 @@ for step, batch in enumerate(test_loader):
     test_inputs, test_labels = batch["image"].to(device), batch["label"].to(device)
     print(f'---------------------{step}---------------------')
     print(f'input: {test_inputs.shape} labels: {test_labels.shape}')
-    print('path:', batch["path"])
+    print('label path:', batch["path"])
+
+    ############ Reading spacing    ####################
+    # Load the NIfTI image
+    nifti_img = nib.load(batch["path"])
+
+    # Extract the header
+    header = nifti_img.header
+
+    # Read voxel spacing (pixdim values)
+    spacing = header.get_zooms()  # This returns a tuple with the spacing for each dimension
+
+    # Display the spacing
+    print("Voxel Spacing (mm):", spacing)
+    voxel_volume = spacing[0] * spacing[1] * spacing[2]
+
+    ################################
     
     # Extract label data and find unique labels
     test_labels = test_labels.cpu().numpy()[0, 0, :, :, :]
