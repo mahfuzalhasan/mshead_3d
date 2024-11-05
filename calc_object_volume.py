@@ -235,6 +235,20 @@ for step, batch in enumerate(test_loader):
     # Append the volume dictionary as a new row in the DataFrame
     df = pd.concat([df, pd.DataFrame([volume_dict])], ignore_index=True)
 
+# Define the volume threshold
+volume_thresholds = [25, 50, 75, 100]
+
+# Find entries in the DataFrame where any organ has a volume below the threshold
+
+for label in class_labels:
+    for volume_threshold in volume_thresholds:
+        below_threshold = df[df[label] < volume_threshold]  # Filter rows for the current label
+        count_below_threshold = below_threshold.shape[0]  # Count entries below the threshold
+        print(f"\n{label}: Organs with volume < {volume_threshold} cm³:")
+        if count_below_threshold > 0:
+            print(below_threshold[[label]])  # Print only the relevant column
+        else:
+            print("None found")
 
 
 

@@ -85,10 +85,12 @@ LARGE = 3
 
 test_samples, out_classes = data_loader(args)
 test_files = [
-    {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(test_samples['images'], test_samples['labels'])
+    {"image": image_name, "label": label_name, 'path': path}
+    for image_name, label_name, path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
 print(f'test files:{len(test_files)}')
+print(f' \n ****************** test File List :\n {test_files} \n ******************* \n')
+
 
 set_determinism(seed=0)
 test_transforms = data_transforms(args)
@@ -109,7 +111,6 @@ if args.network == 'MSHEAD':
         depths=[2,2,2,2],
         feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
-        local_region_scales = [2, 2, 1, 1],
         use_checkpoint=False,
     ).to(device)
 
@@ -121,22 +122,23 @@ elif args.network == 'SwinUNETR':
         feature_size=48,
         use_checkpoint=False,
     ).to(device)
+
 if args.dataset != 'amos':
     if args.fold == 0:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/09-30-24_2152/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/10-30-24_0442/model_best.pth'
     elif args.fold == 1:
         # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/09-30-24_2200/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-03-24_0237/model_best.pth'
     elif args.fold == 2:
         # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/09-30-24_2213/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-03-24_0331/model_best.pth'
     elif args.fold == 3:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/09-30-24_2239/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-03-24_0342/model_best.pth'
     elif args.fold == 4:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/09-30-24_2258/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-03-24_0358/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
@@ -165,6 +167,7 @@ device = torch.device("cuda")
 print(f'--- device:{device} ---')
 output_scale = {SMALL:[], MEDIUM:[], LARGE:[]}
 patient_wise_scores = []
+
 with torch.no_grad():
     for step, batch in enumerate(test_loader):
         print(f'########## image:{step} ######################')
