@@ -71,7 +71,6 @@ if not args.root:
         raise NotImplementedError(f'No such dataset: {args.dataset}')
         
 print(f'Root folder for data: {args.root}')
-    
 print('Used GPU: {}'.format(args.gpu))
 print(f'############## Training on Fold:{args.fold} ################## \n')
 
@@ -103,11 +102,7 @@ val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.
 
 train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)
 val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
-#train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 
-## Valid Pytorch Data Loader and Caching
-#val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
-# val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
 
 
 ## Load Networks
