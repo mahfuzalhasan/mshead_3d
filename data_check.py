@@ -28,7 +28,7 @@ train_label_destination = "/blue/r.forghani/share/kits2019/labelsTr"
 for i, image in enumerate(os.listdir(train_label_destination)):
     label_path = os.path.join(train_label_destination, image)
     seg_img = nib.load(label_path)
-    print(f'\n ########## case:{image} volume: {seg_img.shape} #########')
+    print(f'\n ########## case {i+1}:{image} volume: {seg_img.shape} #########')
     # Load the segmentation label file
     seg_data = seg_img.get_fdata()
 
