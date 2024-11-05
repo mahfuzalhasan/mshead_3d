@@ -9,7 +9,6 @@ def dice_score_organ(im1, im2):
     if im1.shape != im2.shape:
         raise ValueError('Shape mismatch: im1 and im2 must have the same shape')
     intersection = np.logical_and(im1 , im2)
-
     return (2. * intersection.sum() + 0.0000001) / (im1.sum() + im2.sum() + 0.0000001)
 
 def filtering_output(output, filtered_label):
@@ -73,7 +72,7 @@ def scale_wise_organ_filtration(arr, ORGAN_CLASSES, spacing = (1.5, 1.5, 2), org
         post_pred = AsDiscrete(argmax=True)
         arr = post_pred(arr[0])
         arr = arr.unsqueeze(0)
-        print(f'test output conversion: {arr.shape}')
+        print(f'test output conversion: {arr.shape}')       # 1, 1, D, H, W
     
     
     unique_labels = torch.unique(arr)

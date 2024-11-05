@@ -74,7 +74,9 @@ if not args.root:
         spacing = (1, 1, 1.2)
     elif args.dataset == 'kits':
         args.root = '/blue/r.forghani/share/kits2019'
-        ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
+        # ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
+        ORGAN_CLASSES = {2: "Tumor"}    # Concerned with multi-scale tumor evaluation
+        organ_size_range = [75, 200]
     else:
         raise NotImplementedError(f'No such dataset: {args.dataset}')
 
@@ -88,6 +90,7 @@ test_files = [
     {"image": image_name, "label": label_name, 'path': path}
     for image_name, label_name, path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
+
 print(f'test files:{len(test_files)}')
 print(f' \n ****************** test File List :\n {test_files} \n ******************* \n')
 
