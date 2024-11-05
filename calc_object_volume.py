@@ -220,9 +220,9 @@ for step, batch in enumerate(test_loader):
         if label == 0:  # Skip background
             continue
         
-        N_voxel = np.sum(unique_labels == label)
+        N_voxel = np.sum(test_labels == label)
         if label == 1:      # if kidney
-            N_voxel += np.sum(unique_labels == 2)   # add tumor voxel too
+            N_voxel += np.sum(test_labels == 2)   # add tumor voxel too
 
         # dummy = np.zeros(shape=test_labels.shape, dtype='uint8')
         # dummy[test_labels == label] = 1
