@@ -33,11 +33,15 @@ for i, image in enumerate(os.listdir(train_label_destination)):
     seg_data = seg_img.get_fdata()
 
     # Extract tumor regions (labeled as 2)
-    tumor_regions = (seg_data == 2)
+    # tumor_regions = (seg_data == 2)
+    kidney_regions = (seg_data == 1)
 
     # Label connected components
-    labeled_tumors, num_tumors = label(tumor_regions)
-    print(f"Number of distinct tumors: {num_tumors}")
+    # labeled_tumors, num_tumors = label(tumor_regions)
+    # print(f"Number of distinct tumors: {num_tumors}")
+
+    labeled_kidney, num_kidney = label(kidney_regions)
+    print(f"Number of distinct kidney: {num_kidney}")
 
 
 # exit()
