@@ -153,10 +153,10 @@ class MultiScaleAttention(nn.Module):
         x_local = x.view(B, D, H, W, C)
         # print(f'###################################')
         # print(f'input:{x_local.shape}')
-        for i in range(self.n_local_region_scale):
+        for i in range(self.n_local_region_scale):  # 3, 2, 1, 1
             up_required = False
             ############################# Wavelet Decomposition
-            if self.dwt_layer_1 or i>0:
+            if self.dwt_layer_1 or i>0: # 48 --> 24 --> 12 --> 6, 24 -->12-->6, 12-->6, 6
                 x_local = self.decomposition(x_local)
                 up_required = True
 
