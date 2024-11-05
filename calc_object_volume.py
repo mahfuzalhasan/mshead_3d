@@ -186,13 +186,14 @@ df = pd.DataFrame(columns=class_labels)
 for step, batch in enumerate(test_loader):
     # Move tensors to device and convert to numpy
     test_inputs, test_labels = batch["image"].to(device), batch["label"].to(device)
+    label_path = batch["path"]
     print(f'---------------------{step}---------------------')
     print(f'input: {test_inputs.shape} labels: {test_labels.shape}')
-    print('label path:', batch["path"])
+    print('label path:', label_path)
 
     ############ Reading spacing    ####################
     # Load the NIfTI image
-    nifti_img = nib.load(batch["path"])
+    nifti_img = nib.load(label_path[0])
 
     # Extract the header
     header = nifti_img.header
