@@ -94,7 +94,8 @@ elif config.dataset == 'flare':
     voxel_volume = 1.0 * 1.0 * 1.2  # mm^3
 elif config.dataset == 'kits':
     ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
-    voxel_volume = 1.2 * 1.0 * 1.0
+    spacing = (1.2, 1.0, 1.0)
+    voxel_volume = 1.2 * 1.0 * 1.0  # mm^3
 else:
     raise ValueError("Invalid dataset name")
 
@@ -105,10 +106,11 @@ test_samples, out_classes = data_loader(config)
 
 
 test_files = [
-    {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(test_samples['images'], test_samples['labels'])
+    {"image": image_name, "label": label_name, "path": path}
+    for image_name, label_name, path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
 print(f'test files: {len(test_files)}')
+print(f' \n ****************** test File List :\n {test_files} \n ******************* \n')
 
 # Set determinism for reproducibility
 set_determinism(seed=0)
@@ -142,19 +144,20 @@ for step, batch in enumerate(test_loader):
     # Move tensors to device and convert to numpy
     test_inputs, test_labels = batch["image"].to(device), batch["label"].to(device)
     print(f'---------------------{step}---------------------')
-    # print(f'input: {test_inputs.shape} labels: {test_labels.shape}')
+    print(f'input: {test_inputs.shape} labels: {test_labels.shape}')
+    print('path:', batch["path"])
     
     # Extract label data and find unique labels
     test_labels = test_labels.cpu().numpy()[0, 0, :, :, :]
     unique_labels = np.unique(test_labels)
-    # print(f'unique labels: {unique_labels}')
+    print(f'unique labels: {unique_labels}')
     
     # Initialize a dictionary to store volumes for the current sample
     volume_dict = {label_name: np.nan for label_name in class_labels}
 
     # Calculate volumes for each unique label (excluding background)
     for label in unique_labels:
-        if label == 0.0:  # Skip background
+        if label == 0:  # Skip background
             continue
         
         dummy = np.zeros(shape=test_labels.shape, dtype='uint8')
