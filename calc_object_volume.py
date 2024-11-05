@@ -194,13 +194,10 @@ for step, batch in enumerate(test_loader):
     ############ Reading spacing    ####################
     # Load the NIfTI image
     nifti_img = nib.load(label_path[0])
-
     # Extract the header
     header = nifti_img.header
-
     # Read voxel spacing (pixdim values)
     spacing = header.get_zooms()  # This returns a tuple with the spacing for each dimension
-
     # Display the spacing
     print("Voxel Spacing (mm):", spacing)
     voxel_volume = spacing[0] * spacing[1] * spacing[2]

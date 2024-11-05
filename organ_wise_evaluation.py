@@ -30,7 +30,7 @@ import datetime
 import argparse
 import time
 import copy
-from utils import scale_wise_organ_filtration, filtering_output, get_KiTS_regions, hierarchical_prediction
+from utils import scale_wise_organ_filtration, filtering_output, get_KiTS_regions, hierarchical_prediction, dice_score_organ
 parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 # parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
@@ -85,8 +85,8 @@ LARGE = 3
 
 test_samples, out_classes = data_loader(args)
 test_files = [
-    {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(test_samples['images'], test_samples['labels'])
+    {"image": image_name, "label": label_name, 'path': path}
+    for image_name, label_name, path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
 print(f'test files:{len(test_files)}')
 
@@ -169,7 +169,7 @@ output_organ = {organ:[] for organ in regions}
 patient_wise_scores = []
 with torch.no_grad():
     for step, batch in enumerate(test_loader):
-        print(f'########## image:{step} ######################')
+        print(f'\n ################# image:{step} ######################### \n')
         test_inputs, test_labels = (batch["image"].to(device), batch["label"].to(device))
         print(f'input: {test_inputs.shape} labels:{test_labels.shape}')     # B,C,D,H,W format: D slices in each CT data
                                                                             #each slice has 1 channel-> C = 1
@@ -182,7 +182,7 @@ with torch.no_grad():
                                                                             # To calculate volume we can use labels from
                                                                             # val_labels. How? That's where I need help
         
-        print(f'#### file name: {test_files[step]} ####')
+        print(f'#### file name: {batch["path"]} ####')
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
@@ -191,30 +191,35 @@ with torch.no_grad():
 
         # Organ Wise Calculation
         for organ, labels in regions.items():
-            print(f'########## Calculating for Organ: {organ} ###########')
             new_output = hierarchical_prediction(test_outputs, labels, prediction=True)
             new_gt = hierarchical_prediction(test_labels, labels)
-
-
             print(f'new output:{new_output.shape}')
             print(f'new_gt:{new_gt.shape}')
-        
-            
-            #### No need for decollate batch if we have only 1 sample/batch i.e. batch_size = 1
-            test_labels_list = decollate_batch(new_gt)
-            test_labels_convert = [
-                post_label(test_label_tensor) for test_label_tensor in test_labels_list
-            ]
 
-            test_outputs_list = decollate_batch(new_output)
-            test_output_convert = [
-                post_pred(test_pred_tensor) for test_pred_tensor in test_outputs_list
-            ]
+            new_output = new_output.cpu().numpy()
+            new_gt = new_gt.cpu().numpy()
 
-            dice_metric(y_pred=test_output_convert, y=test_labels_convert)
-            dice = dice_metric.aggregate().item()
-            dice_metric.reset()
+            dice = dice_score_organ(new_output, new_gt)
             output_organ[organ].append(dice)
+            print(f' **** Dice for {organ}:{dice} *** ')
+        
+
+            
+            # #### No need for decollate batch if we have only 1 sample/batch i.e. batch_size = 1
+            # test_labels_list = decollate_batch(new_gt)
+            # test_labels_convert = [
+            #     post_label(test_label_tensor) for test_label_tensor in test_labels_list
+            # ]
+
+            # test_outputs_list = decollate_batch(new_output)
+            # test_output_convert = [
+            #     post_pred(test_pred_tensor) for test_pred_tensor in test_outputs_list
+            # ]
+
+            # dice_metric(y_pred=test_output_convert, y=test_labels_convert)
+            # dice = dice_metric.aggregate().item()
+            # dice_metric.reset()
+            # output_organ[organ].append(dice)
 
 
 

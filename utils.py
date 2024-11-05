@@ -3,6 +3,15 @@ import torch
 import numpy as np
 
 
+def dice_score_organ(im1, im2):
+    im1 = np.asarray(im1).astype(bool)
+    im2 = np.asarray(im2).astype(bool)
+    if im1.shape != im2.shape:
+        raise ValueError('Shape mismatch: im1 and im2 must have the same shape')
+    intersection = np.logical_and(im1 , im2)
+
+    return (2. * intersection.sum() + 0.0000001) / (im1.sum() + im2.sum() + 0.0000001)
+
 def filtering_output(output, filtered_label):
     
     post_pred = AsDiscrete(argmax=True)
@@ -15,14 +24,14 @@ def filtering_output(output, filtered_label):
     return dummy
 
 ## Arr-> GT/Output: 
-# GT -> B, D, H, W/ output-> B,Class,D,H,W
+# GT -> B, 1, D, H, W/ output-> B,Class,D,H,W
 ## regions--> values from label dictionary
 
 def hierarchical_prediction(arr, label_values, prediction = False):
     if prediction:
         post_pred = AsDiscrete(argmax=True)     
-        filtered = post_pred(arr[0])        # convert output: Class,D,H,W --> (D, H, W) = [0, num_class-1]
-        arr = filtered.unsqueeze(0)         # B, D, H, W; here B=1      
+        filtered = post_pred(arr[0])        # convert output: Class,D,H,W --> (1, D, H, W) = [0, num_class-1]
+        arr = filtered.unsqueeze(0)         # B, 1, D, H, W; here B=1      
     
     arr_new = torch.zeros_like(arr, dtype=torch.uint8)
     for l in label_values:           #(1,2)
