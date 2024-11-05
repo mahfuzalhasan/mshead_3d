@@ -185,7 +185,7 @@ def validation(val_loader):
 
     
     # mean_dice_val = np.mean(dice_vals)
-    writer.add_scalar('Validation Segmentation Dice Val', dice, global_step)
+    # writer.add_scalar('Validation Segmentation Dice Val', dice, global_step)
     val_time = time.time() - s_time
     print(f"val takes {datetime.timedelta(seconds=int(val_time))}")
     return dice
@@ -276,7 +276,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             model.train()
         
         # saving loss for every iteration
-        writer.add_scalar('Training Loss_Itr', loss.data, global_step)
+        # writer.add_scalar('Training Loss_Itr', loss.data, global_step)
         global_step += 1
     
     train_time = time.time() - s_time
@@ -326,7 +326,7 @@ if os.path.exists(root_dir) == False:
 t_dir = os.path.join(root_dir, 'tensorboard')
 if os.path.exists(t_dir) == False:
     os.makedirs(t_dir)
-writer = SummaryWriter(log_dir=t_dir)
+# writer = SummaryWriter(log_dir=t_dir)
 
 
 while global_step < max_iterations:
