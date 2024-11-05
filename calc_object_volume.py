@@ -244,7 +244,7 @@ for label in class_labels:
     for volume_threshold in volume_thresholds:
         below_threshold = df[df[label] < volume_threshold]  # Filter rows for the current label
         count_below_threshold = below_threshold.shape[0]  # Count entries below the threshold
-        print(f"\n{label}: Organs with volume < {volume_threshold} cm³:")
+        print(f"\n{label}: Organs with volume < {volume_threshold} cm³: {count_below_threshold} \n")
         if count_below_threshold > 0:
             print(below_threshold[[label]])  # Print only the relevant column
         else:
