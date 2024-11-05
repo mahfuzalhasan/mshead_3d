@@ -232,7 +232,7 @@ for step, batch in enumerate(test_loader):
         volume_cm3 = volume / 1000  # Convert to cm^3
 
         # Store the volume in the dictionary
-        volume_dict[ORGAN_CLASSES[label]] = volume
+        volume_dict[ORGAN_CLASSES[label]] = volume_cm3
         print(f'Class: {ORGAN_CLASSES[label]} volume_cm3: {volume_cm3}')
 
     # Append the volume dictionary as a new row in the DataFrame
