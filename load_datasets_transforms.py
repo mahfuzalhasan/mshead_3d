@@ -133,7 +133,7 @@ def data_loader(args):
 
         test_samples['images'] = test_img
         test_samples['labels'] = test_label
-        test_samples['paths'] = test_img 
+        test_samples['paths'] = test_label 
 
         print('Finished loading all inference samples from dataset: {}!'.format(dataset))
 

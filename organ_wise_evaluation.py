@@ -85,10 +85,11 @@ LARGE = 3
 
 test_samples, out_classes = data_loader(args)
 test_files = [
-    {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(test_samples['images'], test_samples['labels'])
+    {"image": image_name, "label": label_name, "path": data_path}
+    for image_name, label_name, data_path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
 print(f'test files:{len(test_files)}')
+print(f' \n ****************** Test File List :\n {test_files} \n ******************* \n')
 
 
 set_determinism(seed=0)
@@ -183,7 +184,7 @@ with torch.no_grad():
                                                                             # To calculate volume we can use labels from
                                                                             # val_labels. How? That's where I need help
         
-        print(f'#### file name: {test_files[step]} ####')
+        print(f'#### file name: {batch["path"]} ####')
         roi_size = (96, 96, 96)
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap

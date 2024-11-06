@@ -56,11 +56,11 @@ elif args.dataset == 'kits':
     args.root = '/blue/r.forghani/share/kits2019'
 
 test_samples, out_classes = data_loader(args)
-
 test_files = [
-    {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(test_samples['images'], test_samples['labels'])
+    {"image": image_name, "label": label_name, "path": data_path}
+    for image_name, label_name, data_path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
+print(f' \n ****************** Test File List :\n {test_files} \n ******************* \n')
 
 set_determinism(seed=0)
 
