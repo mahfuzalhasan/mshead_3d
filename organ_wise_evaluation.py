@@ -30,7 +30,7 @@ import datetime
 import argparse
 import time
 import copy
-from utils import scale_wise_organ_filtration, filtering_output, get_KiTS_regions, hierarchical_prediction
+from utils import scale_wise_organ_filtration, filtering_output, get_KiTS_regions, hierarchical_prediction, dice_score_organ
 parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 # parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
@@ -192,41 +192,37 @@ with torch.no_grad():
 
         # Organ Wise Calculation
         for organ, labels in regions.items():
-            print(f'########## Calculating for Organ: {organ} ###########')
             new_output = hierarchical_prediction(test_outputs, labels, prediction=True)
             new_gt = hierarchical_prediction(test_labels, labels)
-
-
             print(f'new output:{new_output.shape}')
             print(f'new_gt:{new_gt.shape}')
+
+            new_output = new_output.cpu().numpy()
+            new_gt = new_gt.cpu().numpy()
+
+            dice = dice_score_organ(new_output, new_gt)
+            output_organ[organ].append(dice)
+            print(f' **** Dice for {organ}:{dice} *** ')
         
             
-            #### No need for decollate batch if we have only 1 sample/batch i.e. batch_size = 1
-            test_labels_list = decollate_batch(new_gt)
-            test_labels_convert = [
-                post_label(test_label_tensor) for test_label_tensor in test_labels_list
-            ]
+            # #### No need for decollate batch if we have only 1 sample/batch i.e. batch_size = 1
+            # test_labels_list = decollate_batch(new_gt)
+            # test_labels_convert = [
+            #     post_label(test_label_tensor) for test_label_tensor in test_labels_list
+            # ]
 
-            test_outputs_list = decollate_batch(new_output)
-            test_output_convert = [
-                post_pred(test_pred_tensor) for test_pred_tensor in test_outputs_list
-            ]
+            # test_outputs_list = decollate_batch(new_output)
+            # test_output_convert = [
+            #     post_pred(test_pred_tensor) for test_pred_tensor in test_outputs_list
+            # ]
 
-            dice_metric(y_pred=test_output_convert, y=test_labels_convert)
-            dice = dice_metric.aggregate().item()
-            dice_metric.reset()
-            output_organ[organ].append(dice)
-
-
+            # dice_metric(y_pred=test_output_convert, y=test_labels_convert)
+            # dice = dice_metric.aggregate().item()
+            # dice_metric.reset()
 
 for organ, dice_vals in output_organ.items():
     mean_dice = np.mean(dice_vals)
     print(f'\n ########## Organ:{organ} dice:{dice_vals} \n Mean dice:{mean_dice} ########### ')
-# patient_wise_dice_vals = torch.tensor(patient_wise_dice_vals)
-# size_wise_mean = torch.mean(size_wise_dice_vals, dim=0) # Calculate the mean across each elem of sublist (along axis 1)
-# patient_wise_dice = torch.mean(size_wise_dice_vals, dim=1) # Calculate the mean of each sublist (along axis 1)
-# mean_dice_test = torch.mean(patient_wise_dice)
-# # mean_dice_test = np.mean(dice_vals)
 
 test_time = time.time() - s_time
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
