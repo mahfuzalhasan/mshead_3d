@@ -55,6 +55,11 @@ for i, image in enumerate(os.listdir(train_label_destination)):
         tumor_voxel_count = np.sum(labeled_tumors == i)
         # Convert to physical volume
         tumor_volume = tumor_voxel_count * voxel_volume
+        ################## 
+        tumor_volume_cm3 = tumor_volume / 1000
+        if tumor_volume_cm3 < 1:
+            continue
+        ##################
         tumor_volumes.append(tumor_volume)
         print(f"Tumor {i} volume: {tumor_volume} mm³")
     
