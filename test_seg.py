@@ -96,7 +96,7 @@ elif args.network == 'SwinUNETR':
         feature_size=48,
         use_checkpoint=False,
     ).to(device)
-    
+
 if args.dataset != 'amos':
     if args.fold == 0:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
@@ -130,7 +130,7 @@ model.eval()
 
 post_label = AsDiscrete(to_onehot=out_classes)
 post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
-dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
+dice_metric = DiceMetric(include_background=False, reduction="mean", get_not_nans=False)
 
 dice_vals = list()
 s_time = time.time()
