@@ -237,7 +237,7 @@ if __name__=="__main__":
         num_classes=5,
         embed_dims=[48,96,192,384],
         depths=[2,2,2,2],
-        local_region_scales = [3, 2, 1, 1],
+        local_region_scales = [4, 3, 2, 1],
         num_heads = [3,6,12,24],
         drop_path_rate=0
     )

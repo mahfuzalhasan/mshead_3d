@@ -50,7 +50,8 @@ class MultiScaleAttention(nn.Module):
 
         self.dwt_layer_1 = dwt_layer_1
 
-        self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=1)
+        if self.level > 0:
+            self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=1)
 
         # Linear embedding
         self.qkv_proj = nn.Linear(dim, dim*3, bias=qkv_bias) 
@@ -142,7 +143,7 @@ class MultiScaleAttention(nn.Module):
 
 
     def forward(self, x):
-        # print('\n !!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
+        print('\n !!!!!!!!!!!!attention head: ',self.num_heads, ' !!!!!!!!!!')
         A = []
         D, H, W = self.D, self.H, self.W
         B, N, C = x.shape
@@ -152,15 +153,15 @@ class MultiScaleAttention(nn.Module):
         attn_fused = 0
         x_local = x.view(B, D, H, W, C)
         # print(f'###################################')
-        # print(f'input:{x_local.shape}')
-        for i in range(self.n_local_region_scale):  # 3, 2, 1, 1
+        print(f'input:{x_local.shape}')
+        for i in range(self.n_local_region_scale):  # 4, 3, 2, 1
             up_required = False
             ############################# Wavelet Decomposition
-            if self.dwt_layer_1 or i>0: # 48 --> 24 --> 12 --> 6, 24 -->12-->6, 12-->6, 6
+            if i>0: # 48-->48-->24-->12-->6, 24-->24-->12-->6, 12-->12-->6, 6
                 x_local = self.decomposition(x_local)
                 up_required = True
 
-            # print(f'branch: {i+1} x_local:{x_local.shape}')
+            print(f'branch: {i+1} x_local:{x_local.shape}')
             
             output_size = (x_local.shape[1], x_local.shape[2], x_local.shape[3])
             n_region = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
