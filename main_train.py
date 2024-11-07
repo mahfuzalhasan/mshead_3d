@@ -311,7 +311,7 @@ if args.resume:
     optimizer.load_state_dict(state_dict['optimizer'])
     scheduler.load_state_dict(state_dict['lr_scheduler'])
     global_step = state_dict['global_step'] + 1
-    global_step_best = state_dict['global_step']
+    global_step_best = state_dict['global_step_best']
     run_id = state_dict['run_id']
     dice_val_best = state_dict['dice_score']
     print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
