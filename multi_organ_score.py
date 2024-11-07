@@ -82,7 +82,7 @@ for label in natsorted(os.listdir(pred_dir)):
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
 
     if args.dataset == 'kits':
-        label_gt = os.path.join(gt_dir, label.split('imaging')[0] + '_segmentation'+'.nii.gz')
+        label_gt = os.path.join(gt_dir, label.split('imaging')[0] + 'segmentation'+'.nii.gz')
     else:
         label_gt = os.path.join(gt_dir, label.split('_0000')[0] + '.nii.gz')
     print(f'label gt:{label_gt}')
