@@ -5,7 +5,8 @@ Created on Sun Oct  4 13:18:55 2020
 
 @author: peter
 """
-
+import os
+import argparse
 
 import pandas as pd
 import os
@@ -13,6 +14,29 @@ import nibabel as nib
 import numpy as np
 import statistics as stat
 from natsort import natsorted
+
+parser = argparse.ArgumentParser(description='KiTS Evaluation segmentation')
+## Input data hyperparameters
+
+parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
+parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--fold', type=int, default=0, help='current running fold')
+
+
+args = parser.parse_args()
+
+if args.dataset == 'flare':
+    model_id_dict = {}
+    gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
+elif args.dataset == 'amos':
+    model_id_dict = {}
+    gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
+elif args.dataset == 'kits':
+    model_id_dict = {0: '11-03-24_1306', 1:'11-03-24_1316', 2:'11-03-24_1933', 3:'11-03-24_1942', 4:'11-03-24_2009'}
+    gt_dir = '/blue/r.forghani/share/kits2019/labelsTr'
+else:
+    raise NotImplementedError(f'No such dataset: {args.dataset}')
+
 
 
 def dice_score_organ(im1, im2):
@@ -33,23 +57,20 @@ def dice_score_organ(im1, im2):
 
 
 ## Model Prediction
-# pred_dir = os.path.join('/nfs/masi/leeh43/repuxnet/out_FLARE_repuxnet_conv_matrix_alldata_sample_2')
-pred_dir ="/orange/r.forghani/results/09-30-24_2258/output_seg"
+model_id = model_id_dict[args.fold]
+pred_dir ='/orange/r.forghani/results/'+model_id+'/output_seg'
 # pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
 
 
-## Ground Truth Label
-# gt_dir = os.path.join('/nfs/masi/leeh43/FLARE2021/TRAIN_MASK')
-gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
-
-print(f'pred:{pred_dir}')
+print(f'pred:{pred_dir} ground truth:{gt_dir}')
 
 
 
-spleen = []
+# spleen = []
 kidney = []
-liver = []
-pancreas = []
+tumor = []
+# liver = []
+# pancreas = []
 
 subject_list = []
 sub_list = []
@@ -60,9 +81,14 @@ count = 0
 for label in natsorted(os.listdir(pred_dir)):
     subj = label
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
-
-
-    label_gt = os.path.join(gt_dir, label.split('_0000')[0] + '.nii.gz')
+    if '00001' in subj or '00041' in subj:
+        continue
+    
+    if args.dataset == 'kits':
+        label_gt = os.path.join(gt_dir, label.split('imaging')[0] + 'segmentation'+'.nii.gz')
+    else:
+        label_gt = os.path.join(gt_dir, label.split('_0000')[0] + '.nii.gz')
+    print(f'label gt:{label_gt}')
 
 
     # label_gt = gt_file
@@ -73,6 +99,11 @@ for label in natsorted(os.listdir(pred_dir)):
     pred = pred_nib.get_fdata()
     gt = gt_nib.get_fdata()
 
+    ###### multiscale evaluation 
+    #### when data has only one size tumor
+    ### know that this tumor is small/big/medium
+    
+
 
     pred = np.transpose(pred, (2, 0, 1))
     gt = np.transpose(gt, (2, 0, 1))
@@ -81,59 +112,44 @@ for label in natsorted(os.listdir(pred_dir)):
     pred_mat = np.zeros((1, pred.shape[0], pred.shape[1], pred.shape[2]))
     gt_mat = np.zeros((1, pred.shape[0], pred.shape[1], pred.shape[2]))
     
-    # Spleen
-    idx_pred = np.where(pred == 3)
-    pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 3)
-    gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
-    dice_spleen = dice_score_organ(pred_mat, gt_mat)
-    spleen.append(dice_spleen)
-    subject_list.append(dice_spleen)
 
-
-    # Kidney
-    idx_pred = np.where(pred == 2)
+    # Kidney with Tumor
+    idx_pred = np.where(pred != 0)
+    idx_gt = np.where(gt != 0)
+    
     pred_mat[pred_mat != 0] = 0
     gt_mat[gt_mat != 0] = 0
+    
     pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 2)
     gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
     dice_kidney = dice_score_organ(pred_mat, gt_mat)
     kidney.append(dice_kidney)
     subject_list.append(dice_kidney)
 
 
-    # Liver
-    idx_pred = np.where(pred == 1)
+    # Tumor
+    idx_pred = np.where(pred == 2)
+    idx_gt = np.where(gt == 2)
+
     pred_mat[pred_mat != 0] = 0
     gt_mat[gt_mat != 0] = 0
     pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 1)
     gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
-    dice_liver = dice_score_organ(pred_mat, gt_mat)
-    liver.append(dice_liver)
-    subject_list.append(dice_liver)
+    
+    dice_tumor = dice_score_organ(pred_mat, gt_mat)
+    tumor.append(dice_tumor)
+    subject_list.append(dice_tumor)
+
+    ### size_dict[SMALL] = dice_tumor
 
 
-    # Pancreas
-    idx_pred = np.where(pred == 4)
-    pred_mat[pred_mat != 0] = 0
-    gt_mat[gt_mat != 0] = 0
-    pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 4)
-    gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
-    dice_pancreas = dice_score_organ(pred_mat, gt_mat)
-    pancreas.append(dice_pancreas)
-    subject_list.append(dice_pancreas)
-
-    avg_dice = (dice_spleen + dice_kidney + dice_liver + dice_pancreas)/4
+    avg_dice = (dice_kidney + dice_tumor)/2
     count += 1
     print(f'\n ################ count:{count} --- --- Dataset: {label} ################')
 
-    print('Spleen DICE: {}'.format(dice_spleen))
-    print('Right Kidney DICE: {}'.format(dice_kidney))
-    print('Liver DICE: {}'.format(dice_liver))
-    print('Pancreas DICE: {}'.format(dice_pancreas))
+   
+    print('Kidney with Tumor DICE: {}'.format(dice_kidney))
+    print('Tumor DICE: {}'.format(dice_tumor))
     print('Avg DICE: {}'.format(avg_dice))
 
     print(f'########################################################################### \n')
@@ -143,18 +159,14 @@ for label in natsorted(os.listdir(pred_dir)):
     subject_list = []
 
 
-all_organs = spleen + kidney + liver + pancreas
+all_organs = kidney + tumor
 
 # all_organs = pancreas
 
+print('Mean Kidney with Tumot DICE: {}'.format(stat.mean(kidney)))
+print('Stdev Kidney with Tumor DICE: {}'.format(stat.stdev(kidney)))
+print('Mean Tumor DICE: {}'.format(stat.mean(tumor)))
+print('Stdev Tumor DICE: {}'.format(stat.stdev(tumor)))
 
-print('Mean Spleen DICE: {}'.format(stat.mean(spleen)))
-print('Stdev Spleen DICE: {}'.format(stat.stdev(spleen)))
-print('Mean Right Kidney DICE: {}'.format(stat.mean(kidney)))
-print('Stdev Right Kidney DICE: {}'.format(stat.stdev(kidney)))
-print('Mean Liver DICE: {}'.format(stat.mean(liver)))
-print('Stdev Liver DICE: {}'.format(stat.stdev(liver)))
-print('Mean Pancreas DICE: {}'.format(stat.mean(pancreas)))
-print('Stdev pancreas DICE: {}'.format(stat.stdev(pancreas)))
 print('All Organ Mean DICE: {} /n'.format(stat.mean(all_organs)))
 print('All Organ Stdev DICE: {} /n'.format(stat.stdev(all_organs)))
