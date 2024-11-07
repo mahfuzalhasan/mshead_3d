@@ -107,11 +107,13 @@ for label in natsorted(os.listdir(pred_dir)):
     
 
     # Kidney with Tumor
-    idx_pred = np.where(pred == 1 or pred == 2)
+    idx_pred = np.where(pred != 0)
+    idx_gt = np.where(gt != 0)
+    
     pred_mat[pred_mat != 0] = 0
     gt_mat[gt_mat != 0] = 0
+    
     pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 1 or gt==2)
     gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
     dice_kidney = dice_score_organ(pred_mat, gt_mat)
     kidney.append(dice_kidney)
@@ -120,11 +122,13 @@ for label in natsorted(os.listdir(pred_dir)):
 
     # Tumor
     idx_pred = np.where(pred == 2)
+    idx_gt = np.where(gt == 2)
+
     pred_mat[pred_mat != 0] = 0
     gt_mat[gt_mat != 0] = 0
     pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 2)
     gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
+    
     dice_tumor = dice_score_organ(pred_mat, gt_mat)
     tumor.append(dice_tumor)
     subject_list.append(dice_tumor)
