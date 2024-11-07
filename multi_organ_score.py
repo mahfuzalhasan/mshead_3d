@@ -66,10 +66,11 @@ print(f'pred:{pred_dir} ground truth:{gt_dir}')
 
 
 
-spleen = []
+# spleen = []
 kidney = []
-liver = []
-pancreas = []
+tumor = []
+# liver = []
+# pancreas = []
 
 subject_list = []
 sub_list = []
@@ -104,59 +105,38 @@ for label in natsorted(os.listdir(pred_dir)):
     pred_mat = np.zeros((1, pred.shape[0], pred.shape[1], pred.shape[2]))
     gt_mat = np.zeros((1, pred.shape[0], pred.shape[1], pred.shape[2]))
     
-    # Spleen
-    idx_pred = np.where(pred == 3)
-    pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 3)
-    gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
-    dice_spleen = dice_score_organ(pred_mat, gt_mat)
-    spleen.append(dice_spleen)
-    subject_list.append(dice_spleen)
 
-
-    # Kidney
-    idx_pred = np.where(pred == 2)
+    # Kidney with Tumor
+    idx_pred = np.where(pred == 1 or pred == 2)
     pred_mat[pred_mat != 0] = 0
     gt_mat[gt_mat != 0] = 0
     pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 2)
+    idx_gt = np.where(gt == 1 or gt==2)
     gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
     dice_kidney = dice_score_organ(pred_mat, gt_mat)
     kidney.append(dice_kidney)
     subject_list.append(dice_kidney)
 
 
-    # Liver
-    idx_pred = np.where(pred == 1)
+    # Tumor
+    idx_pred = np.where(pred == 2)
     pred_mat[pred_mat != 0] = 0
     gt_mat[gt_mat != 0] = 0
     pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 1)
+    idx_gt = np.where(gt == 2)
     gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
-    dice_liver = dice_score_organ(pred_mat, gt_mat)
-    liver.append(dice_liver)
-    subject_list.append(dice_liver)
+    dice_tumor = dice_score_organ(pred_mat, gt_mat)
+    tumor.append(dice_tumor)
+    subject_list.append(dice_tumor)
 
 
-    # Pancreas
-    idx_pred = np.where(pred == 4)
-    pred_mat[pred_mat != 0] = 0
-    gt_mat[gt_mat != 0] = 0
-    pred_mat[0, idx_pred[0], idx_pred[1], idx_pred[2]] = 1
-    idx_gt = np.where(gt == 4)
-    gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
-    dice_pancreas = dice_score_organ(pred_mat, gt_mat)
-    pancreas.append(dice_pancreas)
-    subject_list.append(dice_pancreas)
-
-    avg_dice = (dice_spleen + dice_kidney + dice_liver + dice_pancreas)/4
+    avg_dice = (dice_kidney + dice_tumor)/2
     count += 1
     print(f'\n ################ count:{count} --- --- Dataset: {label} ################')
 
-    print('Spleen DICE: {}'.format(dice_spleen))
-    print('Right Kidney DICE: {}'.format(dice_kidney))
-    print('Liver DICE: {}'.format(dice_liver))
-    print('Pancreas DICE: {}'.format(dice_pancreas))
+   
+    print('Kidney with Tumor DICE: {}'.format(dice_kidney))
+    print('Tumor DICE: {}'.format(dice_tumor))
     print('Avg DICE: {}'.format(avg_dice))
 
     print(f'########################################################################### \n')
@@ -166,18 +146,14 @@ for label in natsorted(os.listdir(pred_dir)):
     subject_list = []
 
 
-all_organs = spleen + kidney + liver + pancreas
+all_organs = kidney + tumor
 
 # all_organs = pancreas
 
+print('Mean Kidney with Tumot DICE: {}'.format(stat.mean(kidney)))
+print('Stdev Kidney with Tumor DICE: {}'.format(stat.stdev(kidney)))
+print('Mean Tumor DICE: {}'.format(stat.mean(tumor)))
+print('Stdev Tumor DICE: {}'.format(stat.stdev(tumor)))
 
-print('Mean Spleen DICE: {}'.format(stat.mean(spleen)))
-print('Stdev Spleen DICE: {}'.format(stat.stdev(spleen)))
-print('Mean Right Kidney DICE: {}'.format(stat.mean(kidney)))
-print('Stdev Right Kidney DICE: {}'.format(stat.stdev(kidney)))
-print('Mean Liver DICE: {}'.format(stat.mean(liver)))
-print('Stdev Liver DICE: {}'.format(stat.stdev(liver)))
-print('Mean Pancreas DICE: {}'.format(stat.mean(pancreas)))
-print('Stdev pancreas DICE: {}'.format(stat.stdev(pancreas)))
 print('All Organ Mean DICE: {} /n'.format(stat.mean(all_organs)))
 print('All Organ Stdev DICE: {} /n'.format(stat.stdev(all_organs)))
