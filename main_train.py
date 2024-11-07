@@ -47,7 +47,7 @@ parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for 
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
-parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
+parser.add_argument('--resume', default=True, help='resume training from an earlier iteration')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
@@ -303,15 +303,15 @@ epoch_loss_values = []
 ### Then set model_path here
 if args.resume:
     # model_path = '/orange/r.forghani/results/06-26-24_2259/model_36500.pth'
-    if args.fold == 0:
-        model_path = '/orange/r.forghani/results/07-11-24_2054/model_36500.pth'
+    if args.fold == 2:
+        model_path = '/orange/r.forghani/results/11-05-24_0325/model_best.pth'
 
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict['model'])
     optimizer.load_state_dict(state_dict['optimizer'])
     scheduler.load_state_dict(state_dict['lr_scheduler'])
     global_step = state_dict['global_step'] + 1
-    # global_step_best = state_dict['global_step']
+    global_step_best = state_dict['global_step']
     run_id = state_dict['run_id']
     dice_val_best = state_dict['dice_score']
     print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
