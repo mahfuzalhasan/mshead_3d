@@ -5,7 +5,8 @@ Created on Sun Oct  4 13:18:55 2020
 
 @author: peter
 """
-
+import os
+import argparse
 
 import pandas as pd
 import os
@@ -13,6 +14,29 @@ import nibabel as nib
 import numpy as np
 import statistics as stat
 from natsort import natsorted
+
+parser = argparse.ArgumentParser(description='KiTS Evaluation segmentation')
+## Input data hyperparameters
+
+parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
+parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--fold', type=int, default=0, help='current running fold')
+
+
+args = parser.parse_args()
+
+if args.dataset == 'flare':
+    model_id_dict = {}
+    gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
+elif args.dataset == 'amos':
+    model_id_dict = {}
+    gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
+elif args.dataset == 'kits':
+    model_id_dict = {0: '11-04-24_2125', 1:'11-03-24_0237', 2:'11-03-24_0331', 3:'11-03-24_0342', 4:'11-03-24_0358'}
+    gt_dir = '/blue/r.forghani/share/kits2019/labelsTr'
+else:
+    raise NotImplementedError(f'No such dataset: {args.dataset}')
+
 
 
 def dice_score_organ(im1, im2):
@@ -33,16 +57,12 @@ def dice_score_organ(im1, im2):
 
 
 ## Model Prediction
-# pred_dir = os.path.join('/nfs/masi/leeh43/repuxnet/out_FLARE_repuxnet_conv_matrix_alldata_sample_2')
-pred_dir ="/orange/r.forghani/results/09-30-24_2258/output_seg"
+model_id = model_id_dict[args.fold]
+pred_dir ='/orange/r.forghani/results/'+model_id+'/output_seg'
 # pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
 
 
-## Ground Truth Label
-# gt_dir = os.path.join('/nfs/masi/leeh43/FLARE2021/TRAIN_MASK')
-gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
-
-print(f'pred:{pred_dir}')
+print(f'pred:{pred_dir} ground truth:{gt_dir}')
 
 
 
@@ -61,8 +81,11 @@ for label in natsorted(os.listdir(pred_dir)):
     subj = label
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
 
-
-    label_gt = os.path.join(gt_dir, label.split('_0000')[0] + '.nii.gz')
+    if args.dataset == 'kits':
+        label_gt = os.path.join(gt_dir, label.split('imaging')[0] + '_segmentation'+'.nii.gz')
+    else:
+        label_gt = os.path.join(gt_dir, label.split('_0000')[0] + '.nii.gz')
+    print(f'label gt:{label_gt}')
 
 
     # label_gt = gt_file
