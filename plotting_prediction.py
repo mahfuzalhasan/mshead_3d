@@ -131,7 +131,7 @@ elif args.network == 'SwinUNETR':
     ).to(device)
 
 
-print(f'best model path:{args.pretrained_weights}')
+print(f'fold:{args.fold} - best model path:{args.pretrained_weights} ')
 state_dict = torch.load(args.pretrained_weights)
 model.load_state_dict(state_dict['model'])
 model.eval()
