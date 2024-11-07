@@ -25,7 +25,7 @@ import time
 
 parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
 parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
@@ -58,6 +58,8 @@ if not args.root:
         raise NotImplementedError(f'No such dataset: {args.dataset}')
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+print(f'######## datapath: {args.root}  dataset:{args.dataset} fold:{args.fold} ######## \n')
+
 
 test_samples, out_classes = data_loader(args)
 
