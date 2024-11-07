@@ -81,6 +81,12 @@ count = 0
 for label in natsorted(os.listdir(pred_dir)):
     subj = label
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
+    
+    # Exlude data with multiple size tumors
+    if '00001' in subj or '00041' in subj:
+        continue
+    
+    
 
     if args.dataset == 'kits':
         label_gt = os.path.join(gt_dir, label.split('imaging')[0] + 'segmentation'+'.nii.gz')
@@ -96,6 +102,17 @@ for label in natsorted(os.listdir(pred_dir)):
 
     pred = pred_nib.get_fdata()
     gt = gt_nib.get_fdata()
+
+    ################# Filtration of GT
+    ### calculate connected component from label_gt:
+    ### find out indexes of component with <1cm3 volume
+    ### set those indexes in gt as 0
+
+    ################ Size Identification --> Now assuming each image has identical size tumors 
+    ###### multiscale evaluation 
+    #### when data has only one size tumor
+    ### know that this tumor is small/big/medium
+    
 
 
     pred = np.transpose(pred, (2, 0, 1))
@@ -132,6 +149,8 @@ for label in natsorted(os.listdir(pred_dir)):
     dice_tumor = dice_score_organ(pred_mat, gt_mat)
     tumor.append(dice_tumor)
     subject_list.append(dice_tumor)
+
+    ### size_dict[SMALL] = dice_tumor
 
 
     avg_dice = (dice_kidney + dice_tumor)/2
