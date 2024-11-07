@@ -304,7 +304,7 @@ epoch_loss_values = []
 if args.resume:
     # model_path = '/orange/r.forghani/results/06-26-24_2259/model_36500.pth'
     if args.fold == 2:
-        model_path = '/orange/r.forghani/results/11-05-24_0325/model_best.pth'
+        model_path = '/orange/r.forghani/results/11-05-24_0325/model_best.pth'  #35500
 
     state_dict = torch.load(model_path)
     model.load_state_dict(state_dict['model'])
