@@ -55,7 +55,11 @@ if __name__ == '__main__':
         model_id_dict = {}
         gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
     elif args.dataset == 'kits':
-        model_id_dict = {0: '11-04-24_2125', 1:'11-03-24_0237', 2:'11-03-24_0331', 3:'11-03-24_0342', 4:'11-03-24_0358'}
+        model_id_dict = {0: '11-04-24_2018', 
+                        1:'_', 
+                        2:'11-06-24_2219', 
+                        3:'11-07-24_0301', 
+                        4:'_'}
         gt_dir = '/blue/r.forghani/share/kits2019/labelsTr'
     else:
         raise NotImplementedError(f'No such dataset: {args.dataset}')
@@ -97,11 +101,10 @@ if __name__ == '__main__':
         
         # Exclude samples with multiple tumors for now
         if any(img in subj for img in skip_images):
-            print(f'skipping  {subj} due to multiple tumors \n')
+            print(f'skipping {subj} due to multiple tumors \n')
             continue
         
         
-
         if args.dataset == 'kits':
             label_gt = os.path.join(gt_dir, label.split('imaging')[0] + 'segmentation'+'.nii.gz')
         else:
@@ -123,7 +126,6 @@ if __name__ == '__main__':
 
         voxel_volume = np.prod(gt_nib.header.get_zooms())  # Volume of each voxel in mm³
         
-
         tumor_volumes = []
         for i in range(1, num_tumors + 1):
             # Count voxels in the ith tumor region
@@ -131,11 +133,11 @@ if __name__ == '__main__':
             # Convert to physical volume
             tumor_volume = tumor_voxel_count * voxel_volume
             tumor_volume_cm3 = tumor_volume / 1000
-            # Erase Tumor < 1cm^3. those are probably lesions or annotation error
+            # Erase Tumor < 1cm^3. Those are likely to be lesions or annotation error
             if tumor_volume_cm3 < 1:
                 gt[labeled_tumors == i] = 0
                 continue
-            # Seprating tumor into different bins based on volume
+            # Separating tumor into different bins based on volume
             for t_vol in tumor_volumes_binned:
                 if tumor_volume_cm3 >= t_vol[0] and tumor_volume_cm3 < t_vol[1]:
                     (tumor_volumes_binned[t_vol]).append(subj)
