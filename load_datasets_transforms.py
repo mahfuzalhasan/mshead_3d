@@ -420,7 +420,7 @@ def data_transforms(args):
                 AddChanneld(keys=["image"]),
                 Spacingd(keys=["image"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear")),
                 Orientationd(keys=["image"], axcodes="RAS"),
-                Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
+                Transposed(keys=["image"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-200, a_max=300,
                     b_min=0.0, b_max=1.0, clip=True,
