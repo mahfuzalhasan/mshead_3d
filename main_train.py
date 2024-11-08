@@ -128,6 +128,20 @@ elif args.network == 'SwinUNETR':
         feature_size=48,
         use_checkpoint=False,
     ).to(device)
+elif args.network == 'UNETR':
+    model = UNETR(
+        in_channels=1,
+        out_channels=out_classes,
+        img_size=(96, 96, 96),
+        feature_size=16,
+        hidden_size=768,
+        mlp_dim=3072,
+        num_heads=12,
+        pos_embed="perceptron",
+        norm_name="instance",
+        res_block=True,
+        dropout_rate=0.0,
+    ).to(device)
 
 print('Chosen Network Architecture: {}'.format(args.network))
 
