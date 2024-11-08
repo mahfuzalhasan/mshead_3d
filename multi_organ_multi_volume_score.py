@@ -68,7 +68,7 @@ if __name__ == '__main__':
     kidney = []
     tumor = []
 
-    subject_list = []
+    # subject_list = []
     sub_list = []
     all_subjects = []
     count = 0
@@ -156,7 +156,7 @@ if __name__ == '__main__':
         gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
         dice_kidney = dice_score_organ(pred_mat, gt_mat)
         kidney.append(dice_kidney)
-        subject_list.append(dice_kidney)
+        # subject_list.append(dice_kidney)
 
 
         ### Tumor
@@ -175,7 +175,7 @@ if __name__ == '__main__':
                     multi_scale_dice[t_vol].append(dice_tumor)
         
         tumor.append(dice_tumor)
-        subject_list.append(dice_tumor)
+        # subject_list.append(dice_tumor)
 
         ### size_dict[SMALL] = dice_tumor
 
@@ -191,9 +191,9 @@ if __name__ == '__main__':
 
         print(f'########################################################################### \n')
 
-        all_subjects.append([stat.mean(subject_list), label])
-        sub_list.append('All Subjects')
-        subject_list = []
+        # all_subjects.append([stat.mean(subject_list), label])
+        # sub_list.append('All Subjects')
+        # subject_list = []
 
     
     all_organs = kidney + tumor
