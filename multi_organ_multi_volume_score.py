@@ -44,6 +44,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='KiTS Evaluation segmentation')
     parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
     parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+    parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
     parser.add_argument('--fold', type=int, default=0, help='current running fold')
     args = parser.parse_args()
 
@@ -63,6 +64,8 @@ if __name__ == '__main__':
     ## Model Prediction
     model_id = model_id_dict[args.fold]
     pred_dir ='/orange/r.forghani/results/'+model_id+'/output_seg'
+    if args.network!='MSHEAD':
+        pred_dir = '/orange/r.forghani/results/'+args.network+model_id+'/output_seg'
     print(f'pred:{pred_dir} ground truth:{gt_dir}')
 
     kidney = []
