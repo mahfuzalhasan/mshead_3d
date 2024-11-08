@@ -59,7 +59,7 @@ if __name__ == '__main__':
                         1:'_', 
                         2:'11-06-24_2219', 
                         3:'11-07-24_0301', 
-                        4:'_'}
+                        4:'11-06-24_0758'}
         gt_dir = '/blue/r.forghani/share/kits2019/labelsTr'
     else:
         raise NotImplementedError(f'No such dataset: {args.dataset}')

@@ -89,7 +89,7 @@ if args.dataset != 'amos':
     elif args.fold == 4:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/10-30-24_0513/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/{run_id}}/model_best.pth'
+        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_0758/model_best.pth'
 
 set_determinism(seed=0)
 ### extracting run_id of testing model
