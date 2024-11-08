@@ -124,19 +124,19 @@ elif args.network == 'SwinUNETR':
 if args.dataset != 'amos':
     if args.fold == 0:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/10-30-24_0442/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-06-24_0143/model_best.pth'
     elif args.fold == 1:
         # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/11-03-24_0237/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-06-24_0221/model_best.pth'
     elif args.fold == 2:
         # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/11-03-24_0331/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-06-24_0250/model_best.pth'
     elif args.fold == 3:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/11-03-24_0342/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-06-24_0252/model_best.pth'
     elif args.fold == 4:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/11-03-24_0358/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-06-24_0259/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
