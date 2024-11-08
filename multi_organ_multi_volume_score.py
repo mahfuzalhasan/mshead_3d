@@ -72,6 +72,20 @@ if __name__ == '__main__':
     all_subjects = []
     count = 0
 
+    
+    # Define range for volume-based classes
+    tumor_volumes_binned = {(1, 10):[], # VS
+                            (10, 30):[],    # S
+                            (30, 50):[],    # M
+                            (50, 100):[],   # L
+                            (100, 40000):[]}    # VL
+    multi_scale_dice = {(1, 10):[], # VS
+                            (10, 30):[],    # S
+                            (30, 50):[],    # M
+                            (50, 100):[],   # L
+                            (100, 40000):[]}    # VL
+    
+    
     skip_images = ['00001', '00041', '00104', '00117', '00118', '00151', '00184', '00205']
     for label in natsorted(os.listdir(pred_dir)):
         subj = label
@@ -79,7 +93,7 @@ if __name__ == '__main__':
         
         # Exclude samples with multiple tumors for now
         if any(img in subj for img in skip_images):
-            print(f'skipping  {subj} due to multiple tumors')
+            print(f'skipping  {subj} due to multiple tumors \n')
             continue
         
         
@@ -95,31 +109,46 @@ if __name__ == '__main__':
         pred_nib = nib.load(label_pred)
         gt_nib = nib.load(label_gt)
 
-
         pred = pred_nib.get_fdata()
         gt = gt_nib.get_fdata()
 
-        ################# Filtration of GT
+        ################# Filtration of GT  
         ### calculate connected component from label_gt:
         ### find out indexes of component with <1cm3 volume
         ### set those indexes in gt as 0
-
         ################ Size Identification --> Now assuming each image has identical size tumors 
         ###### multiscale evaluation 
         #### when data has only one size tumor
         ### know that this tumor is small/big/medium
+        tumor_regions = (gt == 2)   # Extract tumor regions (labeled as 2)
+        labeled_tumors, num_tumors = label(tumor_regions)   # Label connected components
+
+        voxel_volume = np.prod(gt_nib.header.get_zooms())  # Volume of each voxel in mm³
         
+
+        tumor_volumes = []
+        for i in range(1, num_tumors + 1):
+            # Count voxels in the ith tumor region
+            tumor_voxel_count = np.sum(labeled_tumors == i)
+            # Convert to physical volume
+            tumor_volume = tumor_voxel_count * voxel_volume
+            tumor_volume_cm3 = tumor_volume / 1000
+            if tumor_volume_cm3 < 1:
+                gt[labeled_tumors == i] = 0
+                continue
+            for t_vol in tumor_volumes_binned:
+                if tumor_volume_cm3 >= t_vol[0] and tumor_volume_cm3 < t_vol[1]:
+                    (tumor_volumes_binned[t_vol]).append(subj)
 
 
         pred = np.transpose(pred, (2, 0, 1))
         gt = np.transpose(gt, (2, 0, 1))
 
-
         pred_mat = np.zeros((1, pred.shape[0], pred.shape[1], pred.shape[2]))
         gt_mat = np.zeros((1, pred.shape[0], pred.shape[1], pred.shape[2]))
         
 
-        # Kidney with Tumor
+        ### Kidney with Tumor
         idx_pred = np.where(pred != 0)
         idx_gt = np.where(gt != 0)
         
@@ -133,7 +162,7 @@ if __name__ == '__main__':
         subject_list.append(dice_kidney)
 
 
-        # Tumor
+        ### Tumor
         idx_pred = np.where(pred == 2)
         idx_gt = np.where(gt == 2)
 
@@ -143,6 +172,10 @@ if __name__ == '__main__':
         gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
         
         dice_tumor = dice_score_organ(pred_mat, gt_mat)
+        for t_vol in tumor_volumes_binned:
+                if subj in tumor_volumes_binned[t_vol]:
+                    multi_scale_dice[t_vol].append(dice_tumor)
+        
         tumor.append(dice_tumor)
         subject_list.append(dice_tumor)
 
@@ -167,12 +200,15 @@ if __name__ == '__main__':
 
     all_organs = kidney + tumor
 
-    # all_organs = pancreas
+    for vol_range in multi_scale_dice:
+        print(f'\n ----- Volume Range: {vol_range} -----')
+        print('Mean DICE: {}'.format(stat.mean(multi_scale_dice[vol_range])))
+        print('Stdev DICE: {}'.format(stat.stdev(multi_scale_dice[vol_range])))
 
-    print('Mean Kidney with Tumot DICE: {}'.format(stat.mean(kidney)))
-    print('Stdev Kidney with Tumor DICE: {}'.format(stat.stdev(kidney)))
+    print('Mean Kidney with Tumor DICE: {}'.format(stat.mean(kidney)))
+    # print('Stdev Kidney with Tumor DICE: {}'.format(stat.stdev(kidney)))
     print('Mean Tumor DICE: {}'.format(stat.mean(tumor)))
-    print('Stdev Tumor DICE: {}'.format(stat.stdev(tumor)))
+    # print('Stdev Tumor DICE: {}'.format(stat.stdev(tumor)))
 
     print('All Organ Mean DICE: {} /n'.format(stat.mean(all_organs)))
     print('All Organ Stdev DICE: {} /n'.format(stat.stdev(all_organs)))
