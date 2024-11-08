@@ -68,19 +68,19 @@ test_files = [
 if args.dataset != 'amos':
     if args.fold == 0:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/11-03-24_1306/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-06-24_0143/model_best.pth'
     elif args.fold == 1:
         # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/11-03-24_1316/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-06-24_0221/model_best.pth'
     elif args.fold == 2:
         # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/11-03-24_1933/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-06-24_0250/model_best.pth'
     elif args.fold == 3:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/11-03-24_1942/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-06-24_0252/model_best.pth'
     elif args.fold == 4:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/11-03-24_2009/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/11-06-24_0259/model_best.pth'
 
 set_determinism(seed=0)
 ### extracting run_id of testing model
