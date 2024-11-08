@@ -25,13 +25,13 @@ import time
 
 parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
 ## Input data hyperparameters
-parser.add_argument('--root', type=str, default='/blue/r.forghani/share/flare_data', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
 parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
-parser.add_argument('--pretrained_weights', default='', required=True, help='Path of pretrained/fine-tuned weights')
+parser.add_argument('--pretrained_weights', default='', required=False, help='Path of pretrained/fine-tuned weights')
 parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
 parser.add_argument('--sw_batch_size', type=int, default=4, help='Sliding window batch size for inference')
 parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overlapped percentage')
@@ -47,24 +47,40 @@ parser.add_argument('--no_split', default=False, help='No splitting into train a
 
 args = parser.parse_args()
 
-if not args.root:
-    if args.dataset == 'flare':
-        args.root = '/blue/r.forghani/share/flare_data'
-    elif args.dataset == 'amos':
-        args.root = '/blue/r.forghani/share/amoss22/amos22'
-    elif args.dataset == 'kits':
-        args.root = '/blue/r.forghani/share/kits2019'
-    else:
-        raise NotImplementedError(f'No such dataset: {args.dataset}')
+if args.dataset == 'flare':
+    args.root = '/blue/r.forghani/share/flare_data'
+elif args.dataset == 'amos':
+    args.root = '/blue/r.forghani/share/amoss22/amos22'
+elif args.dataset == 'kits':
+    args.root = '/blue/r.forghani/share/kits2019'
+else:
+    raise NotImplementedError(f'No such dataset: {args.dataset}')
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 
 test_samples, out_classes = data_loader(args)
 
 test_files = [
-    {"image": image_name, "label": label_name}
-    for image_name, label_name in zip(test_samples['images'], test_samples['labels'])
+    {"image": image_name, "label": label_name, "path": data_path}
+    for image_name, label_name, data_path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
+
+if args.dataset != 'amos':
+    if args.fold == 0:
+        # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
+        args.pretrained_weights = '/orange/r.forghani/results/11-03-24_1306/model_best.pth'
+    elif args.fold == 1:
+        # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
+        args.pretrained_weights = '/orange/r.forghani/results/11-03-24_1316/model_best.pth'
+    elif args.fold == 2:
+        # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
+        args.pretrained_weights = '/orange/r.forghani/results/11-03-24_1933/model_best.pth'
+    elif args.fold == 3:
+        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
+        args.pretrained_weights = '/orange/r.forghani/results/11-03-24_1942/model_best.pth'
+    elif args.fold == 4:
+        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
+        args.pretrained_weights = '/orange/r.forghani/results/11-03-24_2009/model_best.pth'
 
 set_determinism(seed=0)
 ### extracting run_id of testing model
@@ -96,7 +112,7 @@ if args.network == 'MSHEAD':
         depths=[2,2,2,2],
         feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
-        local_region_scales = [2, 2, 1, 1],
+        local_region_scales = [4, 3, 2, 1],
         use_checkpoint=False,
     ).to(device)
 
@@ -110,7 +126,7 @@ elif args.network == 'SwinUNETR':
     ).to(device)
 
 
-print(f'best model path:{args.pretrained_weights}')
+print(f'fold:{args.fold} - best model path:{args.pretrained_weights} ')
 state_dict = torch.load(args.pretrained_weights)
 model.load_state_dict(state_dict['model'])
 model.eval()
