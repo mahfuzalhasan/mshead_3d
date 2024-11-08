@@ -68,7 +68,7 @@ if __name__ == '__main__':
     kidney = []
     tumor = []
 
-    subject_list = []
+    # subject_list = []
     sub_list = []
     all_subjects = []
     count = 0
@@ -113,14 +113,8 @@ if __name__ == '__main__':
         pred = pred_nib.get_fdata()
         gt = gt_nib.get_fdata()
 
-        ################# Filtration of GT  
-        ### calculate connected component from label_gt:
-        ### find out indexes of component with <1cm3 volume
-        ### set those indexes in gt as 0
-        ################ Size Identification --> Now assuming each image has identical size tumors 
-        ###### multiscale evaluation 
-        #### when data has only one size tumor
-        ### know that this tumor is small/big/medium
+
+        ############ Ground Truth Filtration + Volume-wise Separation ####################
         tumor_regions = (gt == 2)   # Extract tumor regions (labeled as 2)
         labeled_tumors, num_tumors = connectedcomponent(tumor_regions)   # Label connected components
 
@@ -134,9 +128,11 @@ if __name__ == '__main__':
             # Convert to physical volume
             tumor_volume = tumor_voxel_count * voxel_volume
             tumor_volume_cm3 = tumor_volume / 1000
+            # Erase Tumor < 1cm^3. those are probably lesions or annotation error
             if tumor_volume_cm3 < 1:
                 gt[labeled_tumors == i] = 0
                 continue
+            # Seprating tumor into different bins based on volume
             for t_vol in tumor_volumes_binned:
                 if tumor_volume_cm3 >= t_vol[0] and tumor_volume_cm3 < t_vol[1]:
                     (tumor_volumes_binned[t_vol]).append(subj)
@@ -160,7 +156,7 @@ if __name__ == '__main__':
         gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
         dice_kidney = dice_score_organ(pred_mat, gt_mat)
         kidney.append(dice_kidney)
-        subject_list.append(dice_kidney)
+        # subject_list.append(dice_kidney)
 
 
         ### Tumor
@@ -173,12 +169,13 @@ if __name__ == '__main__':
         gt_mat[0, idx_gt[0], idx_gt[1], idx_gt[2]] = 1
         
         dice_tumor = dice_score_organ(pred_mat, gt_mat)
+        
         for t_vol in tumor_volumes_binned:
                 if subj in tumor_volumes_binned[t_vol]:
                     multi_scale_dice[t_vol].append(dice_tumor)
         
         tumor.append(dice_tumor)
-        subject_list.append(dice_tumor)
+        # subject_list.append(dice_tumor)
 
         ### size_dict[SMALL] = dice_tumor
 
@@ -194,12 +191,13 @@ if __name__ == '__main__':
 
         print(f'########################################################################### \n')
 
-        all_subjects.append([stat.mean(subject_list), label])
-        sub_list.append('All Subjects')
-        subject_list = []
+        # all_subjects.append([stat.mean(subject_list), label])
+        # sub_list.append('All Subjects')
+        # subject_list = []
 
-
+    
     all_organs = kidney + tumor
+    print(f'len dice values::::: tumor{len(tumor)} kidney:{len(kidney)} all organs:{len(all_organs)}')
 
     for vol_range in multi_scale_dice:
         print(f'\n ----- Volume Range: {vol_range} -----')
@@ -207,9 +205,11 @@ if __name__ == '__main__':
         print('Stdev DICE: {}'.format(stat.stdev(multi_scale_dice[vol_range])))
 
     print('Mean Kidney with Tumor DICE: {}'.format(stat.mean(kidney)))
-    # print('Stdev Kidney with Tumor DICE: {}'.format(stat.stdev(kidney)))
-    print('Mean Tumor DICE: {}'.format(stat.mean(tumor)))
-    # print('Stdev Tumor DICE: {}'.format(stat.stdev(tumor)))
+    print('Stdev Kidney with Tumor DICE: {}'.format(stat.stdev(kidney)))
 
+    print('Mean Tumor DICE: {}'.format(stat.mean(tumor)))
+    print('Stdev Tumor DICE: {}'.format(stat.stdev(tumor)))
+
+    # print(f'all organs: {all_organs} length:{len(all_organs)}')
     print('All Organ Mean DICE: {} /n'.format(stat.mean(all_organs)))
     print('All Organ Stdev DICE: {} /n'.format(stat.stdev(all_organs)))
