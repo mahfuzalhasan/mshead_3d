@@ -14,7 +14,7 @@ import nibabel as nib
 import numpy as np
 import statistics as stat
 from natsort import natsorted
-from scipy.ndimage import label
+from scipy.ndimage import label as connectedcomponent
 
 
 
@@ -122,7 +122,7 @@ if __name__ == '__main__':
         #### when data has only one size tumor
         ### know that this tumor is small/big/medium
         tumor_regions = (gt == 2)   # Extract tumor regions (labeled as 2)
-        labeled_tumors, num_tumors = label(tumor_regions)   # Label connected components
+        labeled_tumors, num_tumors = connectedcomponent(tumor_regions)   # Label connected components
 
         voxel_volume = np.prod(gt_nib.header.get_zooms())  # Volume of each voxel in mm³
         
