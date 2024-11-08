@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=plot_kits_WF_2211
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d/results/plot_kits_WF_2211_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d/results/plot_kits_WF_2211_job.%J.err
+#SBATCH --job-name=plot_kits_wf_4321
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wf_4321/mshead_3d/results/kits_plot_4321_job.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wf_4321/mshead_3d/results/kits_plot_4321_job.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
@@ -13,7 +13,7 @@
 module load conda
 conda activate waveformer
 
-cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wavelet-two-branch/mshead_3d
+cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_kits/wf_4321/mshead_3d
 
 # Execute the Python script
 srun python plotting_prediction.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD --dataset $DATASET
