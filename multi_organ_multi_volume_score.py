@@ -56,7 +56,7 @@ if __name__ == '__main__':
         gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
     elif args.dataset == 'kits':
         model_id_dict = {0: '11-04-24_2018', 
-                        1:'_', 
+                        1:'11-08-24_0059', 
                         2:'11-06-24_2219', 
                         3:'11-07-24_0301', 
                         4:'11-06-24_0758'}
