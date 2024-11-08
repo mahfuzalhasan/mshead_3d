@@ -69,7 +69,7 @@ if __name__ == '__main__':
     model_id = model_id_dict[args.fold]
     pred_dir ='/orange/r.forghani/results/'+model_id+'/output_seg'
     if args.network!='MSHEAD':
-        pred_dir = '/orange/r.forghani/results/'+args.network+model_id+'/output_seg'
+        pred_dir = '/orange/r.forghani/results/'+ args.network + '/' + model_id +'/output_seg' # /orange/r.forghani/results/SwinUNETR/{run_id}}/output_seg'
     print(f'pred:{pred_dir} ground truth:{gt_dir}')
 
     kidney = []
