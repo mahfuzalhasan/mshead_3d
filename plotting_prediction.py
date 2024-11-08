@@ -72,7 +72,8 @@ if args.dataset != 'amos':
     if args.fold == 0:
         # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/10-30-24_0442/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/11-04-24_2125/model_best.pth'
+        # args.pretrained_weights = '/orange/r.forghani/results/11-04-24_2125/model_best.pth'
+        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/{run_id}/model_best.pth'
     elif args.fold == 1:
         # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/10-30-24_0454/model_best.pth'
@@ -95,6 +96,9 @@ set_determinism(seed=0)
 splitted_text = args.pretrained_weights[:args.pretrained_weights.rindex('/')]
 run_id = splitted_text[splitted_text.rindex('/')+1:]
 print(f'############## run id of pretrained model: {run_id} ################')
+
+if args.network!='MSHEAD':
+    args.output = os.path.join(args.output, args.network)   # '/orange/r.forghani/results/SwinUNETR'
 
 output_seg_dir = os.path.join(args.output, run_id, 'output_seg')
 if not os.path.exists(output_seg_dir):
