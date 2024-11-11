@@ -239,6 +239,7 @@ class Block(nn.Module):
         self.mlp_ratio = mlp_ratio
         self.level = level
         mlp_hidden_dim = int(dim * mlp_ratio)
+        print(f'self level: {self.level}')
 
         if not isinstance(self.level, list):    # WF --> 1, 1, 1, 1
             if self.level > 0:
