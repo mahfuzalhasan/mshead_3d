@@ -273,18 +273,18 @@ class Block(nn.Module):
             if m.bias is not None:
                 m.bias.data.zero_()
 
-    def window_partition(x, window_size):
+    def window_partition(self, x, window_size):
         """
         Args:
-            x: (B, H, W, C)
+            x: (B, D, H, W, C)
             window_size (int): window size
 
         Returns:
-            windows: (num_windows*B, window_size, window_size, C)
+            windows: (num_windows*B, window_size, window_size, window_size C)
         """
         B, D, H, W, C = x.shape
-        x = x.view(B,  D // window_size, H // window_size, window_size, W // window_size, window_size, C)
-        windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size, window_size, C)
+        x = x.view(B,  D // window_size, window_size, H // window_size, window_size, W // window_size, window_size, C)
+        windows = x.permute(0, 1, 3, 5, 2, 4, 6, 7).contiguous().view(-1, window_size, window_size, window_size, C)
         return windows
 
     def forward(self, x):
