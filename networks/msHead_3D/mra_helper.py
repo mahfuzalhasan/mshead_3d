@@ -295,12 +295,12 @@ class Block(nn.Module):
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
-        print(f'input x:{x.shape}')
+        # print(f'input x:{x.shape}')
         if self.level > 0:
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             x = self.dwt_downsamples(x)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
-        print(f'DWT_x:{x.shape} shortcut:{shortcut.shape}')
+        # print(f'DWT_x:{x.shape} shortcut:{shortcut.shape}')
         output_size = (x.shape[1], x.shape[2], x.shape[3])
         nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
 
@@ -314,7 +314,7 @@ class Block(nn.Module):
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
         # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
         x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
-        print(f'attn reshape:{x.shape}')
+        # print(f'attn reshape:{x.shape}')
         if self.level > 0:
             x = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
         
