@@ -252,7 +252,7 @@ class Block(nn.Module):
                     if l > 0:
                         self.dwt_downsamples.append(WaveletTransform3D(wavelet='haar', level=l))
                 self.dwt_downsamples = nn.ModuleList(self.dwt_downsamples)
-                self.window_size = self.img_size[0]//pow(2, np.sum(self.level))
+            self.window_size = self.img_size[0]//pow(2, np.sum(self.level))
             
         
         self.norm1 = norm_layer(dim)
@@ -318,7 +318,7 @@ class Block(nn.Module):
                 x_local = self.dwt_downsamples[index](x_local)
                 x_local = x_local.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
                 index += 1
-            print(f'DWT_x:{x_local.shape} shortcut:{shortcut.shape}')
+            print(f'DWT_x:{x_local.shape} shortcut:{shortcut.shape} window:{self.window_size}')
             output_size = (x_local.shape[1], x_local.shape[2], x_local.shape[3])
             nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
 
