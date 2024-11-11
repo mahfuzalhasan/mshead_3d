@@ -300,6 +300,7 @@ class Block(nn.Module):
         return windows
 
     def forward(self, x):
+        print(f'########## levels: {self.level} ############ \n')
         D,H,W = self.img_size
         B, N, C = x.shape
         assert N==D*H*W
@@ -332,7 +333,7 @@ class Block(nn.Module):
             # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
             y = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
             print(f'attn reshape:{y.shape}')
-            if self.level > 0:
+            if self.level[i] > 0:
                 y = F.interpolate(attn_windows, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
             attn_fused += y
         
