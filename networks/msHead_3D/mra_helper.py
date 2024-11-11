@@ -322,7 +322,7 @@ class Block(nn.Module):
         x = x.permute(0, 2, 3, 4, 1).contiguous().view(B, D * H * W, C)
         x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
-        print(f'final output:{x.shape}')
+        # print(f'final output:{x.shape}')
 
         return x
     
