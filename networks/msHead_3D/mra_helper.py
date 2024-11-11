@@ -231,7 +231,7 @@ class WaveletTransform3D(torch.nn.Module):
 
 class Block(nn.Module):
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, level=0, img_size=(1024, 1024)):
+                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, level=0, img_size=(48, 48, 48)):
         super().__init__()
         self.dim = dim 
         self.img_size = img_size

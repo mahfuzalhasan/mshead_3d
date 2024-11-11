@@ -89,8 +89,8 @@ class WindowAttention(nn.Module):
         attn = (q @ k.transpose(-2, -1))
 
         relative_position_bias = self.relative_position_bias_table[self.relative_position_index.view(-1)].view(
-            self.window_size[0] * self.window_size[1], self.window_size[0] * self.window_size[1], -1)  # Wh*Ww,Wh*Ww,nH
-        relative_position_bias = relative_position_bias.permute(2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
+            self.window_size*self.window_size*self.window_size, self.window_size*self.window_size*self.window_size, -1)  # Wd*Wh*Ww, Wd*Wh*Ww,nH
+        relative_position_bias = relative_position_bias.permute(2, 0, 1).contiguous()  # nH, Wd*Wh*Ww, Wd*Wh*Ww
         attn = attn + relative_position_bias.unsqueeze(0)
         attn = self.softmax(attn)
         attn = self.attn_drop(attn)
@@ -135,12 +135,12 @@ if __name__=="__main__":
     H = 56
     W = 56
     # device = 'cuda:1'
-    ms_attention = MultiScaleAttention(C, num_heads=4, n_local_region_scales=4, window_size=7, img_size=(56, 56))
+    # ms_attention = MultiScaleAttention(C, num_heads=4, n_local_region_scales=4, window_size=7, img_size=(56, 56))
     # ms_attention = ms_attention.to(device)
     # # ms_attention = nn.DataParallel(ms_attention, device_ids = [0,1])
     # # ms_attention.to(f'cuda:{ms_attention.device_ids[0]}', non_blocking=True)
 
     f = torch.randn(B, H*W, C)
     ##print(f'input to multiScaleAttention:{f.shape}')
-    y = ms_attention(f, H, W)
+    # y = ms_attention(f, H, W)
     print('output: ',y.shape)
