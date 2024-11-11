@@ -227,7 +227,7 @@ class mra_b0(MRATransformer):
         super(mra_b0, self).__init__(
             img_size = img_size, patch_size = 2, num_classes=num_classes, embed_dims=embed_dims, 
             num_heads=num_heads, mlp_ratios=[4, 4, 4, 4], qkv_bias=True, 
-            norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=depths, 
+            norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=depths, attn_drop_rate=0,
             drop_rate=0, drop_path_rate=drop_path_rate)
 
 
@@ -237,10 +237,10 @@ if __name__=="__main__":
     backbone = mra_b0(
         img_size=(96, 96, 96),
         num_classes=5,
-        embed_dims=[48,96,192,384,768],
+        embed_dims=[48,96,192,384],
         depths=[2,2,2,2],
         num_heads = [3,6,12,24],
-        drop_path_rate=0
+        drop_path_rate=0.1
     )
     
     # ########print(backbone)

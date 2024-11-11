@@ -15,13 +15,14 @@ sys.path.append(parent_dir)
 model_dir = os.path.abspath(os.path.join(parent_dir, os.pardir))
 sys.path.append(model_dir)
 
-from multi_scale_head import MultiScaleAttention
+from multi_scale_head import WindowAttention
 from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 # from configs.config_imagenet import config
 
 
 import math
 import time
+import ptwt
 # from utils.logger import get_logger
 
 # logger = get_logger()
@@ -213,16 +214,40 @@ class Mlp(nn.Module):
         flops_mlp += self.dwconv.flops()
         flops_mlp += self.fc2.in_features * self.fc2.out_features * 2
         return flops_mlp
+    
+class WaveletTransform3D(torch.nn.Module):
+    def __init__(self, wavelet='db1', level=5, mode='zero'):
+        super(WaveletTransform3D, self).__init__()
+        self.wavelet = wavelet #pywt.Wavelet(wavelet)
+        self.level = level
+        self.mode = mode
+
+    def forward(self, x):
+        # print(f'x:{x.shape}  ')
+        coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
+        Yl = coeffs[0]  # Extracting the approximation coefficients
+        return Yl
+
 
 class Block(nn.Module):
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, img_size=(1024, 1024)):
+                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, level=0, img_size=(1024, 1024)):
         super().__init__()
-        self.norm1 = norm_layer(dim)
+        self.dim = dim 
+        self.img_size = img_size
+        self.mlp_ratio = mlp_ratio
+        self.level = level
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.attn = MultiScaleAttention(
+
+        if self.level > 0:
+            self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=self.level)
+
+        self.norm1 = norm_layer(dim)
+        self.attn = WindowAttention(
             dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
             attn_drop=attn_drop, proj_drop=drop, img_size=img_size)
+
+        
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
@@ -248,8 +273,38 @@ class Block(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        x = x + self.drop_path(self.attn(self.norm1(x)))
+        D,H,W = self.img_size
+        B, N, C = x.shape
+        assert N==D*H*W
+
+        shortcut = x
+        x = self.norm1(x)
+        x = x.view(B, D, H, W, C)
+        if self.level > 0:
+            x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
+            x = self.dwt_downsamples(x)
+            x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D,H,W,C
+        
+        output_size = (x.shape[1], x.shape[2], x.shape[3])
+        nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
+
+        x_windows = self.window_partition(x)
+        
+        x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
+        B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
+        
+        # B, nW, Nr, C [Here nW = 1]
+        attn_windows = self.attn(x_windows) 
+        attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, nW, self.window_size, self.window_size, self.window_size, C)   # B, nW, ws,ws,ws, C [Here nW = 1]
+        attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
+        x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
+        if self.level > 0:
+            x = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
+        
+        x = x.permute(0, 2, 3, 4, 1).contiguous().view(B, D * H * W, C)
+        x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
+
         return x
     
     def flops(self):

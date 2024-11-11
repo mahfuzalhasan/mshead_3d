@@ -56,7 +56,7 @@ class MSHEAD_ATTN(nn.Module):
         depths=[2, 2, 2, 2],
         feat_size=[48, 96, 192, 384],
         num_heads = [3, 6, 12, 24],
-        drop_path_rate=0,
+        drop_path_rate=0.1,
         layer_scale_init_value=1e-6,
         hidden_size: int = 768,
         norm_name: Union[Tuple, str] = "instance",
