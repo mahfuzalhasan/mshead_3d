@@ -241,6 +241,7 @@ class Block(nn.Module):
 
         if self.level > 0:
             self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=self.level)
+        self.window_size = self.img_size[0]//pow(2, level)
 
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
@@ -272,6 +273,20 @@ class Block(nn.Module):
             if m.bias is not None:
                 m.bias.data.zero_()
 
+    def window_partition(x, window_size):
+        """
+        Args:
+            x: (B, H, W, C)
+            window_size (int): window size
+
+        Returns:
+            windows: (num_windows*B, window_size, window_size, C)
+        """
+        B, D, H, W, C = x.shape
+        x = x.view(B,  D // window_size, H // window_size, window_size, W // window_size, window_size, C)
+        windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size, window_size, C)
+        return windows
+
     def forward(self, x):
         D,H,W = self.img_size
         B, N, C = x.shape
@@ -280,30 +295,34 @@ class Block(nn.Module):
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
+        print(f'input x:{x.shape}')
         if self.level > 0:
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             x = self.dwt_downsamples(x)
-            x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D,H,W,C
-        
+            x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
+        print(f'DWT_x:{x.shape} shortcut:{shortcut.shape}')
         output_size = (x.shape[1], x.shape[2], x.shape[3])
         nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
 
-        x_windows = self.window_partition(x)
+        x_windows = self.window_partition(x, self.window_size)
         
         x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
         B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
         
-        # B, nW, Nr, C [Here nW = 1]
+        # B*nW, Nr, C [Here nW = 1]
         attn_windows = self.attn(x_windows) 
-        attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, nW, self.window_size, self.window_size, self.window_size, C)   # B, nW, ws,ws,ws, C [Here nW = 1]
-        attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
+        attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
+        # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
         x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
+        print(f'attn reshape:{x.shape}')
         if self.level > 0:
             x = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
+        
         
         x = x.permute(0, 2, 3, 4, 1).contiguous().view(B, D * H * W, C)
         x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
+        print(f'final output:{x.shape}')
 
         return x
     
