@@ -248,9 +248,10 @@ class Block(nn.Module):
             self.dwt_downsamples = []
             if not(len(self.level) == 1 and self.level[0] == 0):
                 for l in self.level:
-                    self.dwt_downsamples.append(WaveletTransform3D(wavelet='haar', level=l))
-            self.dwt_downsamples = nn.ModuleList(self.dwt_downsamples)
-            self.window_size = self.img_size[0]//pow(2, np.sum(self.level))
+                    if l > 0:
+                        self.dwt_downsamples.append(WaveletTransform3D(wavelet='haar', level=l))
+                self.dwt_downsamples = nn.ModuleList(self.dwt_downsamples)
+                self.window_size = self.img_size[0]//pow(2, np.sum(self.level))
             
         
         self.norm1 = norm_layer(dim)
@@ -307,12 +308,14 @@ class Block(nn.Module):
         shortcut = x
         x = self.norm1(x)
         x_local = x.view(B, D, H, W, C)
+        index = 0                       # To maintain index in parsing DWT list
         for i in range(len(self.level)):
             print(f'input x:{x.shape}')
             if self.level[i] > 0:
                 x_local = x_local.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
-                x_local = self.dwt_downsamples(x_local)
+                x_local = self.dwt_downsamples[index](x_local)
                 x_local = x_local.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
+                index += 1
             print(f'DWT_x:{x_local.shape} shortcut:{shortcut.shape}')
             output_size = (x_local.shape[1], x_local.shape[2], x_local.shape[3])
             nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
