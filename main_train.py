@@ -118,6 +118,7 @@ if args.network == 'MSHEAD':
         depths=[2, 2, 2, 2],
         feat_size=[48, 96, 192, 384],
         num_heads = [3, 6, 12, 24],
+        summarization_levels = [[1, 2], [1, 1], [1], [0]],
         drop_path_rate=0.1,
         use_checkpoint=False,
     ).to(device)
