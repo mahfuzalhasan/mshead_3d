@@ -335,6 +335,7 @@ class Block(nn.Module):
             print(f'attn reshape:{y.shape}')
             if self.level[i] > 0:
                 y = F.interpolate(attn_windows, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
+            print(f'output after interpolation:{y.shape}')
             attn_fused += y
         
         x = attn_fused.permute(0, 2, 3, 4, 1).contiguous().view(B, D * H * W, C)
