@@ -239,7 +239,7 @@ class Block(nn.Module):
         self.mlp_ratio = mlp_ratio
         self.level = level
         mlp_hidden_dim = int(dim * mlp_ratio)
-        print(f'self level: {self.level}')
+        # print(f'self level: {self.level}')
 
         if not isinstance(self.level, list):    # WF --> 1, 1, 1, 1
             if self.level > 0:
@@ -300,7 +300,7 @@ class Block(nn.Module):
         return windows
 
     def forward(self, x):
-        print(f'########## levels: {self.level} ############ \n')
+        # print(f'########## levels: {self.level} ############ \n')
         D,H,W = self.img_size
         B, N, C = x.shape
         assert N==D*H*W
@@ -312,13 +312,13 @@ class Block(nn.Module):
         x_local = x.view(B, D, H, W, C)
         index = 0                       # To maintain index in parsing DWT list
         for i in range(len(self.level)):
-            print(f'input x:{x.shape}')
+            # print(f'input x:{x.shape}')
             if self.level[i] > 0:
                 x_local = x_local.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
                 x_local = self.dwt_downsamples[index](x_local)
                 x_local = x_local.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
                 index += 1
-            print(f'DWT_x:{x_local.shape} shortcut:{shortcut.shape} window:{self.window_size}')
+            # print(f'DWT_x:{x_local.shape} shortcut:{shortcut.shape} window:{self.window_size}')
             output_size = (x_local.shape[1], x_local.shape[2], x_local.shape[3])
             nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
 
@@ -332,16 +332,16 @@ class Block(nn.Module):
             attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
             # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
             y = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
-            print(f'attn reshape:{y.shape}')
+            # print(f'attn reshape:{y.shape}')
             if self.level[i] > 0:
                 y = F.interpolate(y, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
-            print(f'output after interpolation:{y.shape}')
+            # print(f'output after interpolation:{y.shape}')
             attn_fused += y
         
         x = attn_fused.permute(0, 2, 3, 4, 1).contiguous().view(B, D * H * W, C)
         x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
-        print(f'final output:{x.shape}')
+        # print(f'final output:{x.shape}')
 
         return x
     
