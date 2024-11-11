@@ -31,7 +31,7 @@ from functools import partial
 # How to apply multihead multiscale
 class MRATransformer(nn.Module):
     def __init__(self, img_size=(96, 96, 96), patch_size=2, in_chans=1, num_classes=5, embed_dims=[48, 96, 192, 384], 
-                 num_heads=[3, 6, 12, 24], mlp_ratios=[4, 4, 4, 4], qkv_bias=False, qk_scale=None, drop_rate=0.,
+                 num_heads=[3, 6, 12, 24], mlp_ratios=[4, 4, 4, 4], summarization_levels = [[1, 2], [1, 1], [1], [0]], qkv_bias=False, qk_scale=None, drop_rate=0.,
                  attn_drop_rate=0., drop_path_rate=0., norm_layer=nn.LayerNorm, 
                  depths=[2, 2, 2, 2]):
         super().__init__()
@@ -39,6 +39,7 @@ class MRATransformer(nn.Module):
         self.depths = depths
         # self.logger = get_logger()
         self.img_size = img_size
+        self.levels = summarization_levels
         # print('img_size: ',img_size)
 
         # patch_embed
@@ -60,7 +61,7 @@ class MRATransformer(nn.Module):
         
         self.block1 = nn.ModuleList([Block(
             dim=embed_dims[0], num_heads=num_heads[0], mlp_ratio=mlp_ratios[0], qkv_bias=qkv_bias, qk_scale=qk_scale,
-            drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 3,
+            drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = self.levels[0],
             img_size=(img_size[0]// 2, img_size[1]//2, img_size[2]//2))
             for i in range(depths[0])])
         self.norm1 = norm_layer(embed_dims[0])
@@ -69,7 +70,7 @@ class MRATransformer(nn.Module):
         # 28x28
         self.block2 = nn.ModuleList([Block(
             dim=embed_dims[1], num_heads=num_heads[1], mlp_ratio=mlp_ratios[1], qkv_bias=qkv_bias, qk_scale=qk_scale,
-            drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 2,
+            drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = self.levels[1],
             img_size=(img_size[0]//4, img_size[1]//4, img_size[2]//4))
             for i in range(depths[1])])
         self.norm2 = norm_layer(embed_dims[1])
@@ -78,7 +79,7 @@ class MRATransformer(nn.Module):
         # 14x14
         self.block3 = nn.ModuleList([Block(
             dim=embed_dims[2], num_heads=num_heads[2], mlp_ratio=mlp_ratios[2], qkv_bias=qkv_bias, qk_scale=qk_scale,
-            drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 1,
+            drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = self.levels[2],
             img_size=(img_size[0]//8, img_size[1]//8, img_size[2]//8))
             for i in range(depths[2])])
         self.norm3 = norm_layer(embed_dims[2])
@@ -87,7 +88,7 @@ class MRATransformer(nn.Module):
         #7x7
         self.block4 = nn.ModuleList([Block(
             dim=embed_dims[3], num_heads=num_heads[3], mlp_ratio=mlp_ratios[3], qkv_bias=qkv_bias, qk_scale=qk_scale,
-            drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 0,
+            drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = self.levels[3],
             img_size=(img_size[0]//16, img_size[1]//16, img_size[2]//16))
             for i in range(depths[3])])             
         self.norm4 = norm_layer(embed_dims[3])
@@ -226,7 +227,7 @@ class mra_b0(MRATransformer):
     def __init__(self, img_size, num_classes, embed_dims, depths, num_heads, drop_path_rate):
         super(mra_b0, self).__init__(
             img_size = img_size, patch_size = 2, num_classes=num_classes, embed_dims=embed_dims, 
-            num_heads=num_heads, mlp_ratios=[4, 4, 4, 4], qkv_bias=True, 
+            num_heads=num_heads, mlp_ratios=[4, 4, 4, 4], summarization_levels = [[1, 2], [1, 1], [1], [0]] qkv_bias=True, 
             norm_layer=partial(nn.LayerNorm, eps=1e-6), depths=depths, attn_drop_rate=0,
             drop_rate=0, drop_path_rate=drop_path_rate)
 
