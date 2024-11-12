@@ -269,7 +269,7 @@ if __name__=="__main__":
     H = 96
     W = 96
     num_classes = 5
-    model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes)
+    model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes, summarization_levels = [[1, 2], [1, 1], [1], [0]])
     # model = SwinUNETR(
     #     img_size=(96, 96, 96),
     #     in_channels=1,
