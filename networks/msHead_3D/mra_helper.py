@@ -309,8 +309,9 @@ class Block(nn.Module):
         x = self.norm1(x)
         x_local = x.view(B, D, H, W, C)
         index = 0                       # To maintain index in parsing DWT list
+        print(f'\n @@@@@@@@@@ input x:{x_local.shape} @@@@@@@@@@@@@@@@')
         for i in range(len(self.level)):
-            print(f'input x:{x_local.shape}')
+            
             if self.level[i] > 0:
                 x_local = x_local.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
                 x_local = self.dwt_downsamples[index](x_local)
