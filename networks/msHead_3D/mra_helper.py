@@ -308,7 +308,7 @@ class Block(nn.Module):
         shortcut = x
         x = self.norm1(x)
         x_local = x.view(B, D, H, W, C)
-        index = 0                       # To maintain index in parsing DWT list
+        index = 0                   # To maintain index in parsing DWT list
         # print(f'\n @@@@@@@@@@ input x:{x_local.shape} @@@@@@@@@@@@@@@@')
         for i in range(len(self.level)):
             
