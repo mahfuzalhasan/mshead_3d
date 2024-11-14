@@ -57,13 +57,31 @@ def data_loader(args):
         print(f'#### loading training and validation set ########## \n')
         
 
+        train_img = []
+        train_label = []
+
+        for pat_id in os.listdir(dataset):
+            data_file = [f for f in os.listdir(os.path.join(dataset, pat_id)) if ('.nrrd' in f) and ('Segmentation' not in f) and ('Image' not in f)][0]
+            # print(f'data file:{data_file}')
+            data_file_path = os.path.join(dataset, pat_id, data_file)
+            # label_file = seg_file = [j for j in os.listdir(os.path.join(dataset, pat_id)) if ('Segmentation_modified.seg' in j) or ('Image.nrrd' in j)][0]
+            label_file = os.path.join(dataset, pat_id, 'Segmentation_modified.nrrd')
+            train_img.append(data_file)
+            train_label.append(label_file)
         
-        ## Input training data
-        train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
-        train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
+        train_img = sorted(glob.glob(train_img))
+        train_label = sorted(glob.glob(train_label))
+
+
 
         if not args.no_split:
-            if args.dataset == "flare":
+            if args.dataset == "tc":
+                print(f'Training on fold:{args.fold}')
+                validation_per_fold = 77
+                start_index = validation_per_fold * args.fold
+                end_index = validation_per_fold * args.fold + validation_per_fold
+
+            elif args.dataset == "flare":
                 print(f'Training on fold:{args.fold}')
                 validation_per_fold = 69
                 start_index = validation_per_fold * args.fold
