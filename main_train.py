@@ -37,7 +37,7 @@ parser.add_argument('--output', type=str, default='/orange/r.forghani/results', 
 parser.add_argument('--dataset', type=str, default='kits', required=False, help='Currently supporting datasets: {flare, amos, kits}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
-parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
+parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET, Auto3dseg}')
 parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
 parser.add_argument('--pretrained_weights', type=str, default=None, help='Path of pretrained weights')
@@ -47,7 +47,9 @@ parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for 
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
-parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
+## Resume training hyperparameters
+# parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
+parser.add_argument('--resume_model_path', type=str, default=None, help='Path to the model to resume training from')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
@@ -311,15 +313,30 @@ epoch_loss_values = []
 # metric_values = []
 
 
-### if you need to resume from a previous checkpoint.
-### run with python main_train.py --resume True
-### Then set model_path here
-if args.resume:
-    # model_path = '/orange/r.forghani/results/06-26-24_2259/model_36500.pth'
-    if args.fold == 0:
-        model_path = '/orange/r.forghani/results/07-11-24_2054/model_36500.pth'
+# ### if you need to resume from a previous checkpoint.
+# ### run with python main_train.py --resume True
+# ### Then set model_path here
+# if args.resume:
+#     # model_path = '/orange/r.forghani/results/06-26-24_2259/model_36500.pth'
+#     if args.fold == 0:
+#         model_path = '/orange/r.forghani/results/07-11-24_2054/model_36500.pth'
 
-    state_dict = torch.load(model_path)
+#     state_dict = torch.load(model_path)
+#     model.load_state_dict(state_dict['model'])
+#     optimizer.load_state_dict(state_dict['optimizer'])
+#     scheduler.load_state_dict(state_dict['lr_scheduler'])
+#     global_step = state_dict['global_step'] + 1
+#     # global_step_best = state_dict['global_step']
+#     run_id = state_dict['run_id']
+#     dice_val_best = state_dict['dice_score']
+#     print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
+#     print(f'starting from global step:{global_step}')
+#     print(f'best val dice:{dice_val_best} at step:{global_step_best}')
+#     # exit()
+
+        
+if args.resume_model_path:
+    state_dict = torch.load(args.resume_model_path)
     model.load_state_dict(state_dict['model'])
     optimizer.load_state_dict(state_dict['optimizer'])
     scheduler.load_state_dict(state_dict['lr_scheduler'])
@@ -330,7 +347,7 @@ if args.resume:
     print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
     print(f'starting from global step:{global_step}')
     print(f'best val dice:{dice_val_best} at step:{global_step_best}')
-    # exit()
+
 
 root_dir = os.path.join(args.output, run_id)
 if os.path.exists(root_dir) == False:
