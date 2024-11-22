@@ -8,7 +8,7 @@ Created on Sat Jul  3 11:06:19 2021
 
 from monai.utils import set_determinism
 from monai.transforms import AsDiscrete
-# from networks.UXNet_3D.network_backbone import UXNET
+from networks.UXNet_3D.network_backbone import UXNET
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from monai.networks.nets import UNETR, SwinUNETR
 # from networks.nnFormer.nnFormer_seg import nnFormer
@@ -143,6 +143,17 @@ elif args.network == 'UNETR':
         norm_name="instance",
         res_block=True,
         dropout_rate=0.0,
+    ).to(device)
+
+if args.network == '3DUXNET':
+    model = UXNET(
+        in_chans=1,
+        out_chans=out_classes,
+        depths=[2, 2, 2, 2],
+        feat_size=[48, 96, 192, 384],
+        drop_path_rate=0,
+        layer_scale_init_value=1e-6,
+        spatial_dims=3,
     ).to(device)
 
 print('Chosen Network Architecture: {}'.format(args.network))

@@ -62,7 +62,7 @@ class ux_block(nn.Module):
         input = x
         x = self.dwconv(x)
         #print(f'dwconv:{x.shape}')
-        x = x.permute(0, 2, 3, 4, 1) # (N, C, H, W, D) -> (N, H, W, D, C)
+        x = x.permute(0, 2, 3, 4, 1) # (N, C, D, H, W) -> (N, D, H, W, C)
         #print(f'x_perm:{x.shape}')
         x = self.norm(x)
         #print(f'norm:{x.shape}')
