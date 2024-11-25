@@ -296,8 +296,8 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                     "Not Best Model. Current Best Avg. Dice: {} from step:{}, Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
                 )
 
-            if global_step == max_iterations - 1:
-                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
+                if (global_step % (eval_num*2)) == 0 or global_step == max_iterations-1:
+                    save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
             # scheduler.step(dice_val)
 
             # setting model to train mode again
@@ -354,7 +354,7 @@ if args.resume_model_path:
     optimizer.load_state_dict(state_dict['optimizer'])
     scheduler.load_state_dict(state_dict['lr_scheduler'])
     global_step = state_dict['global_step'] + 1
-    # global_step_best = state_dict['global_step']
+    global_step_best = state_dict['global_step']
     run_id = state_dict['run_id']
     dice_val_best = state_dict['dice_score']
     print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
