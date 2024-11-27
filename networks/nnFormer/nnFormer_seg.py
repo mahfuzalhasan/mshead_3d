@@ -350,14 +350,14 @@ class SwinTransformerBlock(nn.Module):
 
         B, L, C = x.shape
         S, H, W = self.input_resolution
-        print(f'x:{x.shape} input resolution:{self.input_resolution}')
+        # print(f'x:{x.shape} input resolution:{self.input_resolution}')
 
         assert L == S * H * W, "input feature has wrong size"
         
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, S, H, W, C)
-        print(f'x view:{x.shape}')
+        # print(f'x view:{x.shape}')
 
         # pad feature maps to multiples of window size
         pad_r = (self.window_size - W % self.window_size) % self.window_size
@@ -366,7 +366,7 @@ class SwinTransformerBlock(nn.Module):
 
         x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b, 0, pad_g))  
         _, Sp, Hp, Wp, _ = x.shape
-        print(f'x padding: {x.shape}')
+        # print(f'x padding: {x.shape}')
 
         # cyclic shift
         if self.shift_size > 0:
@@ -378,18 +378,18 @@ class SwinTransformerBlock(nn.Module):
        
         # partition windows
         x_windows = window_partition(shifted_x, self.window_size)  # nW*B, window_size, window_size, C
-        print(f'xw shape:{x_windows.shape}')
+        # print(f'xw shape:{x_windows.shape}')
         x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size,
                                    C)  
-        print(f'xw view shape:{x_windows.shape}')
+        # print(f'xw view shape:{x_windows.shape}')
 
         # W-MSA/SW-MSA
         attn_windows = self.attn(x_windows, mask=attn_mask,pos_embed=None)
-        print(f'attn: {attn_windows.shape}') 
+        # print(f'attn: {attn_windows.shape}') 
 
         # merge windows
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C)
-        print(f'merge attn: {attn_windows.shape}') 
+        # print(f'merge attn: {attn_windows.shape}') 
         shifted_x = window_reverse(attn_windows, self.window_size, Sp, Hp, Wp) 
 
         # reverse cyclic shift
@@ -431,7 +431,7 @@ class PatchMerging(nn.Module):
         x=x.permute(0,4,1,2,3).contiguous()
         x=self.reduction(x)
         x=x.permute(0,2,3,4,1).contiguous().view(B,-1,2*C)
-        print(f'patch merging x:{x.shape}')
+        # print(f'patch merging x:{x.shape}')
         return x
 class Patch_Expanding(nn.Module):
     def __init__(self, dim, norm_layer=nn.LayerNorm):
@@ -532,14 +532,14 @@ class BasicLayer(nn.Module):
         attn_mask = attn_mask.masked_fill(attn_mask != 0, float(-100.0)).masked_fill(attn_mask == 0, float(0.0))
         count = 1
         for blk in self.blocks:
-            print(f'swin transformer block: {count}')
+            # print(f'swin transformer block: {count}')
             x = blk(x, attn_mask)
             # exit()
             count += 1
         if self.downsample is not None:
             x_down = self.downsample(x, S, H, W)
             Ws, Wh, Ww = (S + 1) // 2, (H + 1) // 2, (W + 1) // 2
-            print(f'x:{x.shape} S:{S} H:{H} W:{W} x_down:{x_down.shape} Ws:{Ws} Wh:{Wh} Ww:{Ww}')
+            # print(f'x:{x.shape} S:{S} H:{H} W:{W} x_down:{x_down.shape} Ws:{Ws} Wh:{Wh} Ww:{Ww}')
             return x, S, H, W, x_down, Ws, Wh, Ww
         else:
             return x, S, H, W, x, S, H, W
@@ -793,31 +793,31 @@ class Encoder(nn.Module):
 
     def forward(self, x):
         """Forward function."""
-        print(f'input x:{x.shape}')
+        # print(f'input x:{x.shape}')
         x = self.patch_embed(x)
         down=[]
        
         Ws, Wh, Ww = x.size(2), x.size(3), x.size(4)
-        print(f'x after patch embed: {x.shape}')
+        # print(f'x after patch embed: {x.shape}')
         
         x = x.flatten(2).transpose(1, 2).contiguous()
         x = self.pos_drop(x)
-        print(f'x after pos drop:{x.shape}')
+        # print(f'x after pos drop:{x.shape}')
 
         # exit()
         
       
         for i in range(self.num_layers):
-            print(f'############ layers:{i} ###################')
+            # print(f'############ layers:{i} ###################')
             layer = self.layers[i]
             x_out, S, H, W, x, Ws, Wh, Ww = layer(x, Ws, Wh, Ww)
-            print(f'x_out:{x_out.shape} x:{x.shape} S:{S} H:{H} W:{W} Ws:{Ws} Wh:{Wh} Ww:{Ww}')
+            # print(f'x_out:{x_out.shape} x:{x.shape} S:{S} H:{H} W:{W} Ws:{Ws} Wh:{Wh} Ww:{Ww}')
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
                 x_out = norm_layer(x_out)
                 out = x_out.view(-1, S, H, W, self.num_features[i]).permute(0, 4, 1, 2, 3).contiguous()
                 down.append(out)
-            exit()
+            # exit()
         return down
 
    
