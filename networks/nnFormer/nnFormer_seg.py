@@ -983,7 +983,7 @@ if __name__=="__main__":
     x = torch.randn(B, C, D, H, W)
     model = nnFormer()
     y = model(x)
-
+    print(y.shape)
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Total trainable parameters: {total_params}")
     macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
