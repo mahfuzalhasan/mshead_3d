@@ -166,6 +166,7 @@ if args.network == 'nnFormer':
     ).to(device)
 
 if args.network == 'TransBTS':
+    print(f'network: {args.network} loading')
     _, model = TransBTS(dataset=args.dataset, _conv_repr=True, _pe_type='learned')
     model = model.to(device)
 
