@@ -53,7 +53,7 @@ parser.add_argument('--resume_model_path', type=str, default=None, help='Path to
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
-parser.add_argument('--num_workers', type=int, default=8, help='Number of workers')
+parser.add_argument('--num_workers', type=int, default=16, help='Number of workers')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
 parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
 
