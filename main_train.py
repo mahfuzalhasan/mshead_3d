@@ -12,7 +12,7 @@ from networks.UXNet_3D.network_backbone import UXNET
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from monai.networks.nets import UNETR, SwinUNETR
 from networks.nnFormer.nnFormer_seg import nnFormer
-# from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
+from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from monai.metrics import DiceMetric
 from monai.losses import DiceCELoss
 from monai.inferers import sliding_window_inference
@@ -164,6 +164,10 @@ if args.network == 'nnFormer':
         num_classes=out_classes,
         depths=[2, 2, 2, 2]
     ).to(device)
+
+if args.network == 'TransBTS':
+    _, model = TransBTS(dataset=args.dataset, _conv_repr=True, _pe_type='learned')
+    model = model.to(device)
 
 print('Chosen Network Architecture: {}'.format(args.network))
 

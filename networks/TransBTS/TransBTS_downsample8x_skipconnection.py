@@ -331,6 +331,11 @@ def TransBTS(dataset='renal', _conv_repr=True, _pe_type="learned"):
     elif dataset.lower() == 'amos':
         img_dim = 96
         num_classes = 17
+    
+    elif dataset.lower() == 'kits':
+        img_dim = 96
+        num_classes = 3
+    
 
     print(num_classes)
 
