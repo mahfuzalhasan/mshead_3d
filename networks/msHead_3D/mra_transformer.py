@@ -59,7 +59,7 @@ class MRATransformer(nn.Module):
         self.block1 = nn.ModuleList([Block(
             dim=embed_dims[0], num_heads=num_heads[0], mlp_ratio=mlp_ratios[0], qkv_bias=qkv_bias, qk_scale=qk_scale,
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = {-3: 1, -2:3, -1:3},
-            img_size=(img_size[0]// 2, img_size[1]//2, img_size[2]//2))
+            img_size=(img_size[0]// 1, img_size[1]//4, img_size[2]//4))
             for i in range(depths[0])])
         self.norm1 = norm_layer(embed_dims[0])
         cur += depths[0]
@@ -68,7 +68,7 @@ class MRATransformer(nn.Module):
         self.block2 = nn.ModuleList([Block(
             dim=embed_dims[1], num_heads=num_heads[1], mlp_ratio=mlp_ratios[1], qkv_bias=qkv_bias, qk_scale=qk_scale,
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = {-3: 1, -2:2, -1:2},
-            img_size=(img_size[0]//4, img_size[1]//4, img_size[2]//4))
+            img_size=(img_size[0]//1, img_size[1]//8, img_size[2]//8))
             for i in range(depths[1])])
         self.norm2 = norm_layer(embed_dims[1])
         cur += depths[1]
@@ -77,7 +77,7 @@ class MRATransformer(nn.Module):
         self.block3 = nn.ModuleList([Block(
             dim=embed_dims[2], num_heads=num_heads[2], mlp_ratio=mlp_ratios[2], qkv_bias=qkv_bias, qk_scale=qk_scale,
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = {-3: 1, -2:1, -1:1},
-            img_size=(img_size[0]//8, img_size[1]//8, img_size[2]//8))
+            img_size=(img_size[0]//1, img_size[1]//16, img_size[2]//16))
             for i in range(depths[2])])
         self.norm3 = norm_layer(embed_dims[2])
         cur += depths[2]
@@ -86,7 +86,7 @@ class MRATransformer(nn.Module):
         self.block4 = nn.ModuleList([Block(
             dim=embed_dims[3], num_heads=num_heads[3], mlp_ratio=mlp_ratios[3], qkv_bias=qkv_bias, qk_scale=qk_scale,
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = {},
-            img_size=(img_size[0]//16, img_size[1]//16, img_size[2]//16))
+            img_size=(img_size[0]//2, img_size[1]//32, img_size[2]//32))
             for i in range(depths[3])])             
         self.norm4 = norm_layer(embed_dims[3])
 
