@@ -16,7 +16,7 @@ model_dir = os.path.abspath(os.path.join(parent_dir, os.pardir))
 sys.path.append(model_dir)
 
 from multi_scale_head import WindowAttention
-from timm.models.layers import DropPath, to_2tuple, trunc_normal_
+from timm.models.layers import DropPath, to_2tuple, trunc_normal_, to_3tuple
 # from configs.config_imagenet import config
 
 
@@ -216,64 +216,55 @@ class Mlp(nn.Module):
         return flops_mlp
     
 class WaveletTransform3D(torch.nn.Module):
-    def __init__(self, wavelet='db1', level=5, mode='zero'):
+    def __init__(self, wavelet='db1', levels=5, mode='reflect'):
         super(WaveletTransform3D, self).__init__()
         self.wavelet = wavelet #pywt.Wavelet(wavelet)
-        self.level = level
+        self.levels = levels
         self.mode = mode
+        self.decom_values = list(self.levels.values())
+       
+    def multi_axis_wavelet_decomposition_torch(self, tensor, wavelet, levels, axes=(-3,-2,-1)):
+        transformed_tensor = tensor
+
+        for axis in axes:
+            level = levels.get(axis, 1)  # Default to level 1 if not specified
+            # Move the target axis to the last position
+            reshaped_tensor = transformed_tensor.transpose(axis, -1)
+            # Perform wavelet decomposition
+            coeffs = ptwt.wavedec(reshaped_tensor, wavelet, level=level, mode=self.mode, axis=-1)
+            # Keep approximation coefficients (low-frequency part)
+            transformed_tensor = coeffs[0]
+            # Restore original axis order
+            transformed_tensor = transformed_tensor.transpose(axis, -1)
+
+        return transformed_tensor
 
     def forward(self, x):
         # print(f'x:{x.shape}  ')
-        coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
-        Yl = coeffs[0]  # Extracting the approximation coefficients
+        if len(set(self.decom_values)) == 1:
+            coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.decom_values[0], mode=self.mode)
+            Yl = coeffs[0]  # Extracting the approximation coefficients
+        else:
+            Y1 = self.multi_axis_wavelet_decomposition_torch(x, self.wavelet, self.levels, axes=(-3,-2,-1))
         return Yl
     
-def multi_axis_wavelet_decomposition_torch(tensor, wavelet, levels, axes):
-    """
-    Perform wavelet decomposition on different axes with different levels in PyTorch.
 
-    Args:
-        tensor (torch.Tensor): Input tensor of shape (B, C, D, H, W).
-        wavelet (str): The wavelet to use for decomposition.
-        levels (dict): Dictionary specifying the decomposition level for each axis (e.g., {-3: 2, -2: 1, -1: 3}).
-        axes (list): List of axes to decompose (e.g., [-3, -2, -1] for D, H, W).
-
-    Returns:
-        torch.Tensor: The transformed tensor after applying wavelet decomposition.
-    """
-    transformed_tensor = tensor
-
-    for axis in axes:
-        level = levels.get(axis, 1)  # Default to level 1 if not specified
-        # Move the target axis to the last position
-        reshaped_tensor = transformed_tensor.transpose(axis, -1)
-        # Convert to NumPy for wavelet operations
-        reshaped_numpy = reshaped_tensor.cpu().numpy()
-        # Perform wavelet decomposition
-        coeffs = pywt.wavedec(reshaped_numpy, wavelet, level=level, axis=-1)
-        # Keep approximation coefficients (low-frequency part)
-        transformed_numpy = coeffs[0]
-        # Convert back to PyTorch
-        transformed_tensor = torch.from_numpy(transformed_numpy).to(tensor.device)
-        # Restore original axis order
-        transformed_tensor = transformed_tensor.transpose(axis, -1)
-
-    return transformed_tensor
 
 
 class Block(nn.Module):
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, level=0, img_size=(48, 48, 48)):
+                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, level={}, window_size = (7,7,7), img_size=(48, 48, 48)):
         super().__init__()
         self.dim = dim 
         self.img_size = img_size
         self.mlp_ratio = mlp_ratio
         self.level = level
         mlp_hidden_dim = int(dim * mlp_ratio)
+        
+        if bool(self.level):
+            self.dwt_downsamples = WaveletTransform3D(wavelet='db1', level=self.level)
 
-        if self.level > 0:
-            self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=self.level)
-        self.window_size = self.img_size[0]//pow(2, level)
+        self.window_size = window_size
 
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
@@ -320,7 +311,7 @@ class Block(nn.Module):
         return windows
 
     def forward(self, x):
-        D,H,W = self.img_size
+        D, H, W = self.img_size
         B, N, C = x.shape
         assert N==D*H*W
 
@@ -328,10 +319,9 @@ class Block(nn.Module):
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
         # print(f'input x:{x.shape}')
-        if self.level > 0:
+        if bool(self.level):
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             x = self.dwt_downsamples(x)
-            x = multi_axis_wavelet_decomposition_torch(x, levels)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
         # print(f'DWT_x:{x.shape} shortcut:{shortcut.shape}')
         output_size = (x.shape[1], x.shape[2], x.shape[3])
@@ -348,7 +338,7 @@ class Block(nn.Module):
         # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
         x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
         # print(f'attn reshape:{x.shape}')
-        if self.level > 0:
+        if bool(self.level) > 0:
             x = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
         
         
@@ -370,64 +360,6 @@ class Block(nn.Module):
         return total_flops
 
 
-class OverlapPatchEmbed(nn.Module):
-    """ Image to Patch Embedding
-    """
-
-    def __init__(self, patch_size=7, stride=4, in_chans=3, embed_dim=768):
-        super().__init__()
-        patch_size = to_2tuple(patch_size)
-        self.stride = stride
-        self.in_chans = in_chans
-        self.embed_dim = embed_dim
-        self.input_shape = None
-
-        self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=stride,
-                              padding=(patch_size[0] // 2, patch_size[1] // 2))
-        self.norm = nn.LayerNorm(embed_dim)
-        self.patch_size = patch_size
-        self.apply(self._init_weights)
-
-    def _init_weights(self, m):
-        if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.LayerNorm):
-            nn.init.constant_(m.bias, 0)
-            nn.init.constant_(m.weight, 1.0)
-        elif isinstance(m, nn.Conv2d):
-            fan_out = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-            fan_out //= m.groups
-            m.weight.data.normal_(0, math.sqrt(2.0 / fan_out))
-            if m.bias is not None:
-                m.bias.data.zero_()
-
-    def forward(self, x):
-        # B C H W
-        self.input_shape = x.shape
-        x = self.proj(x)
-        _, _, H, W = x.shape
-        x = x.flatten(2).transpose(1, 2)
-        # B H*W/16 C
-        x = self.norm(x)
-        return x, H, W
-
-    def flops(self):
-        # Correct calculation for output dimensions
-        padding = (self.patch_size[0] // 2, self.patch_size[1] // 2)
-        output_height = ((self.input_shape[2] + 2 * padding[0] - self.patch_size[0]) // self.stride) + 1
-        output_width = ((self.input_shape[3] + 2 * padding[1] - self.patch_size[1]) // self.stride) + 1
-
-        # Convolution layer FLOPs
-        conv_flops = 2 * self.embed_dim * output_height * output_width * self.patch_size[0] * self.patch_size[1] * self.in_chans
-
-        # Layer normalization FLOPs
-        norm_flops = 2 * self.embed_dim * output_height * output_width
-
-        total_flops = conv_flops + norm_flops
-        return total_flops
-
     
 class PatchEmbed(nn.Module):
     r""" Image to Patch Embedding
@@ -443,11 +375,11 @@ class PatchEmbed(nn.Module):
         is_stem (bool): Whether current patch embedding is stem. Default: False
     """
 
-    def __init__(self, img_size=(96, 96, 96), patch_size=2, in_chans=1, embed_dim=48, 
-                    use_conv_embed=False, norm_layer=None, use_pre_norm=False, is_stem=False):
+    def __init__(self, img_size=(14, 224, 224), patch_size=(1, 4, 4), in_chans=1, embed_dim=48, 
+                    use_conv_embed=False, norm_layer=None, use_pre_norm=False, is_stem=False, tag = 0):
         super().__init__()
         # patch_size = to_2tuple(patch_size)
-        patches_resolution = [img_size[0] // patch_size, img_size[1] // patch_size,  img_size[2] // patch_size]
+        patches_resolution = [img_size[0] // patch_size[0], img_size[1] // patch_size[1],  img_size[2] // patch_size[2]]
         self.img_size = img_size
         self.patch_size = patch_size
         self.patches_resolution = patches_resolution
@@ -457,6 +389,7 @@ class PatchEmbed(nn.Module):
         self.embed_dim = embed_dim
         self.use_pre_norm = use_pre_norm
         self.use_conv_embed = use_conv_embed
+        self.kernel_size = to_3tuple(self.patch_size[1])
 
         if use_conv_embed:
             # if we choose to use conv embedding, then we treat the stem and non-stem differently
@@ -467,7 +400,7 @@ class PatchEmbed(nn.Module):
             self.kernel_size = kernel_size
             self.proj = nn.Conv3d(in_chans, embed_dim, kernel_size=kernel_size, stride=stride, padding=padding)
         else:
-            self.proj = nn.Conv3d(in_chans, embed_dim, kernel_size=(patch_size, patch_size, patch_size), stride=(patch_size, patch_size, patch_size))
+            self.proj = nn.Conv3d(in_chans, embed_dim, kernel_size=self.kernel_size, stride=self.patch_size)
             # self.conv1=nn.Conv3d(in_chans, embed_dim, kernel_size=3,stride=patch_size,padding=1)
             # self.conv2=nn.Conv3d(embed_dim, embed_dim,kernel_size=3,stride=1,padding=1)
         
@@ -488,8 +421,8 @@ class PatchEmbed(nn.Module):
     def forward(self, x):
         B, C, D, H, W = x.shape
         # # FIXME look at relaxing size constraints
-        # assert H == self.img_size[0] and W == self.img_size[1], \
-        #     f"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]})."
+        assert D == self.img_size[0] and H == self.img_size[1] and W == self.img_size[2], \
+            f"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]})."
         if self.use_pre_norm:
             x = self.pre_norm(x)
 
