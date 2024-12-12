@@ -262,7 +262,7 @@ class Block(nn.Module):
         mlp_hidden_dim = int(dim * mlp_ratio)
         
         if bool(self.level):
-            self.dwt_downsamples = WaveletTransform3D(wavelet='db1', level=self.level)
+            self.dwt_downsamples = WaveletTransform3D(wavelet='db1', levels=self.level)
 
         self.window_size = window_size
 
