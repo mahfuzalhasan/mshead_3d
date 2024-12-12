@@ -240,12 +240,12 @@ class WaveletTransform3D(torch.nn.Module):
         return transformed_tensor
 
     def forward(self, x):
-        # print(f'x:{x.shape}  ')
+        print(f'x:{x.shape} levels: {self.decom_values} ')
         if len(set(self.decom_values)) == 1:
             coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.decom_values[0], mode=self.mode)
             Yl = coeffs[0]  # Extracting the approximation coefficients
         else:
-            Y1 = self.multi_axis_wavelet_decomposition_torch(x, self.wavelet, self.levels, axes=(-3,-2,-1))
+            Yl = self.multi_axis_wavelet_decomposition_torch(x, self.wavelet, self.levels, axes=(-3,-2,-1))
         return Yl
     
 
