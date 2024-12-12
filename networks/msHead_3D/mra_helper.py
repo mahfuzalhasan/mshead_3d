@@ -400,7 +400,7 @@ class PatchEmbed(nn.Module):
             self.kernel_size = kernel_size
             self.proj = nn.Conv3d(in_chans, embed_dim, kernel_size=kernel_size, stride=stride, padding=padding)
         else:
-            self.proj = nn.Conv3d(in_chans, embed_dim, kernel_size=self.kernel_size, stride=self.patch_size)
+            self.proj = nn.Conv3d(in_chans, embed_dim, kernel_size=3, stride=self.patch_size, padding=1)
             # self.conv1=nn.Conv3d(in_chans, embed_dim, kernel_size=3,stride=patch_size,padding=1)
             # self.conv2=nn.Conv3d(embed_dim, embed_dim,kernel_size=3,stride=1,padding=1)
         
