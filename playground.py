@@ -57,61 +57,65 @@ from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from monai.networks.nets import UNETR, SwinUNETR
 import ptwt
 
-wavelet = 'db1'
-level = 1
-mode = 'reflect'
-B, C, D, H, W = 2, 1, 56, 56, 56
-x= torch.randn(B, C, D, H, W)
-coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
-y1 = coeffs[0]
-print(y1.shape)
+# wavelet = 'db1'
+# level = 1
+# mode = 'reflect'
+# B, C, D, H, W = 2, 1, 56, 56, 56
+# x= torch.randn(B, C, D, H, W)
+# coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
+# y1 = coeffs[0]
+# print(y1.shape)
 
 
 
 
 out_classes = 4
 
-# device = torch.device("cuda")
-# print(f'--- device:{device} ---')
-# model_1 = UNETR(
-#         in_channels=1,
-#         out_channels=out_classes,
-#         img_size=(96, 96, 96),
-#         feature_size=16,
-#         hidden_size=768,
-#         mlp_dim=3072,
-#         num_heads=12,
-#         pos_embed="perceptron",
-#         norm_name="instance",
-#         res_block=True,
-#         dropout_rate=0.0,
-#     ).to(device)
+import pywt
+import torch
 
-# data = torch.randn(2, 1, 96, 96, 96)  # Example tensor with B=1, C=3, D=64, H=64, W=64
-# data = data.to(device)
-# y = model_1(data)
-# print(f'y from UNETR: {y.shape}')
+def multi_axis_wavelet_decomposition_torch(tensor, wavelet, levels, axes):
+    """
+    Perform wavelet decomposition on different axes with different levels in PyTorch.
 
-# model_2 = SwinUNETR(
-#         img_size=(96, 96, 96),
-#         in_channels=1,
-#         out_channels=out_classes,
-#         feature_size=48,
-#         use_checkpoint=False,
-#     ).to(device)
+    Args:
+        tensor (torch.Tensor): Input tensor of shape (B, C, D, H, W).
+        wavelet (str): The wavelet to use for decomposition.
+        levels (dict): Dictionary specifying the decomposition level for each axis (e.g., {-3: 2, -2: 1, -1: 3}).
+        axes (list): List of axes to decompose (e.g., [-3, -2, -1] for D, H, W).
 
-# y = model_2(data)
-# print(f'y from SwinUNETR: {y.shape}')
+    Returns:
+        torch.Tensor: The transformed tensor after applying wavelet decomposition.
+    """
+    transformed_tensor = tensor
 
-# model_3 = UXNET(
-#         in_chans=1,
-#         out_chans=out_classes,
-#         depths=[2, 2, 2, 2],
-#         feat_size=[48, 96, 192, 384],
-#         drop_path_rate=0,
-#         layer_scale_init_value=1e-6,
-#         spatial_dims=3,
-#     ).to(device)
+    for axis in axes:
+        level = levels.get(axis, 1)  # Default to level 1 if not specified
+        # Move the target axis to the last position
+        reshaped_tensor = transformed_tensor.transpose(axis, -1)
+        # Convert to NumPy for wavelet operations
+        reshaped_numpy = reshaped_tensor.cpu().numpy()
+        # Perform wavelet decomposition
+        coeffs = pywt.wavedec(reshaped_numpy, wavelet, level=level, axis=-1)
+        # Keep approximation coefficients (low-frequency part)
+        transformed_numpy = coeffs[0]
+        # Convert back to PyTorch
+        transformed_tensor = torch.from_numpy(transformed_numpy).to(tensor.device)
+        # Restore original axis order
+        transformed_tensor = transformed_tensor.transpose(axis, -1)
 
-# y = model_3(data)
-# print(f'y from 3D UXNET: {y.shape}')
+    return transformed_tensor
+
+# Parameters
+wavelet = 'db1'
+B, C, D, H, W = 2, 1, 56, 56, 56
+x = torch.randn(B, C, D, H, W)
+
+# Specify decomposition levels for each axis
+levels = {-3: 2, -2: 1, -1: 3}  # Levels for D, H, W
+
+# Decompose tensor
+result = multi_axis_wavelet_decomposition_torch(x, wavelet, levels, axes=[-3, -2, -1])
+print(f"Transformed tensor shape: {result.shape}")
+
+
