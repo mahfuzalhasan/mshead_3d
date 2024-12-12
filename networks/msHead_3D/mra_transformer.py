@@ -15,7 +15,7 @@ sys.path.append(model_dir)
 import torch
 import torch.nn as nn
 import torch.nn.init as init
-from mra_helper import OverlapPatchEmbed, Block, PosCNN, PatchEmbed, PatchMerging3D
+from mra_helper import Block, PatchEmbed
 from ptflops import get_model_complexity_info
 # import sys
 # sys.path.append('..')
