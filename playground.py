@@ -58,8 +58,8 @@ from monai.networks.nets import UNETR, SwinUNETR
 import ptwt
 
 wavelet = 'db1'
-level = 2
-mode = 'zero'
+level = 1
+mode = 'reflect'
 B, C, D, H, W = 2, 1, 56, 56, 56
 x= torch.randn(B, C, D, H, W)
 coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
