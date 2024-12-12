@@ -108,11 +108,11 @@ def multi_axis_wavelet_decomposition_torch(tensor, wavelet, levels, axes):
 
 # Parameters
 wavelet = 'db1'
-B, C, D, H, W = 2, 1, 56, 56, 56
+B, C, D, H, W = 2, 1, 14, 56, 56
 x = torch.randn(B, C, D, H, W)
 
 # Specify decomposition levels for each axis
-levels = {-3: 2, -2: 1, -1: 3}  # Levels for D, H, W
+levels = {-3: 1, -2: 3, -1: 3}  # Levels for D, H, W
 
 # Decompose tensor
 result = multi_axis_wavelet_decomposition_torch(x, wavelet, levels, axes=[-3, -2, -1])
