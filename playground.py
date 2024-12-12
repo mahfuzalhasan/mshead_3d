@@ -55,51 +55,63 @@ import torch.nn.functional as F
 from networks.UXNet_3D.network_backbone import UXNET
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from monai.networks.nets import UNETR, SwinUNETR
+import ptwt
+
+wavelet = 'db1'
+level = 2
+mode = 'zero'
+B, C, D, H, W = 2, 1, 14, 56, 56
+x= torch.randn(B, C, D, H, W)
+coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
+y1 = coeffs[0]
+print(y1.shape)
+
+
 
 
 out_classes = 4
 
-device = torch.device("cuda")
-print(f'--- device:{device} ---')
-model_1 = UNETR(
-        in_channels=1,
-        out_channels=out_classes,
-        img_size=(96, 96, 96),
-        feature_size=16,
-        hidden_size=768,
-        mlp_dim=3072,
-        num_heads=12,
-        pos_embed="perceptron",
-        norm_name="instance",
-        res_block=True,
-        dropout_rate=0.0,
-    ).to(device)
+# device = torch.device("cuda")
+# print(f'--- device:{device} ---')
+# model_1 = UNETR(
+#         in_channels=1,
+#         out_channels=out_classes,
+#         img_size=(96, 96, 96),
+#         feature_size=16,
+#         hidden_size=768,
+#         mlp_dim=3072,
+#         num_heads=12,
+#         pos_embed="perceptron",
+#         norm_name="instance",
+#         res_block=True,
+#         dropout_rate=0.0,
+#     ).to(device)
 
-data = torch.randn(2, 1, 96, 96, 96)  # Example tensor with B=1, C=3, D=64, H=64, W=64
-data = data.to(device)
-y = model_1(data)
-print(f'y from UNETR: {y.shape}')
+# data = torch.randn(2, 1, 96, 96, 96)  # Example tensor with B=1, C=3, D=64, H=64, W=64
+# data = data.to(device)
+# y = model_1(data)
+# print(f'y from UNETR: {y.shape}')
 
-model_2 = SwinUNETR(
-        img_size=(96, 96, 96),
-        in_channels=1,
-        out_channels=out_classes,
-        feature_size=48,
-        use_checkpoint=False,
-    ).to(device)
+# model_2 = SwinUNETR(
+#         img_size=(96, 96, 96),
+#         in_channels=1,
+#         out_channels=out_classes,
+#         feature_size=48,
+#         use_checkpoint=False,
+#     ).to(device)
 
-y = model_2(data)
-print(f'y from SwinUNETR: {y.shape}')
+# y = model_2(data)
+# print(f'y from SwinUNETR: {y.shape}')
 
-model_3 = UXNET(
-        in_chans=1,
-        out_chans=out_classes,
-        depths=[2, 2, 2, 2],
-        feat_size=[48, 96, 192, 384],
-        drop_path_rate=0,
-        layer_scale_init_value=1e-6,
-        spatial_dims=3,
-    ).to(device)
+# model_3 = UXNET(
+#         in_chans=1,
+#         out_chans=out_classes,
+#         depths=[2, 2, 2, 2],
+#         feat_size=[48, 96, 192, 384],
+#         drop_path_rate=0,
+#         layer_scale_init_value=1e-6,
+#         spatial_dims=3,
+#     ).to(device)
 
-y = model_3(data)
-print(f'y from 3D UXNET: {y.shape}')
+# y = model_3(data)
+# print(f'y from 3D UXNET: {y.shape}')
