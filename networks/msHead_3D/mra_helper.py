@@ -306,7 +306,7 @@ class Block(nn.Module):
             windows: (num_windows*B, window_size, window_size, window_size C)
         """
         B, D, H, W, C = x.shape
-        x = x.view(B,  D // window_size, window_size, H // window_size, window_size, W // window_size, window_size, C)
+        x = x.view(B,  D // window_size[0], window_size[0], H // window_size[1], window_size[1], W // window_size[2], window_size[2], C)
         windows = x.permute(0, 1, 3, 5, 2, 4, 6, 7).contiguous().view(-1, window_size, window_size, window_size, C)
         return windows
 
@@ -318,14 +318,14 @@ class Block(nn.Module):
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
-        # print(f'input x:{x.shape}')
+        print(f'input x:{x.shape}')
         if bool(self.level):
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             x = self.dwt_downsamples(x)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
-        # print(f'DWT_x:{x.shape} shortcut:{shortcut.shape}')
+        print(f'DWT_x:{x.shape} shortcut:{shortcut.shape}')
         output_size = (x.shape[1], x.shape[2], x.shape[3])
-        nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
+        nW = (output_size[0]//self.window_size[0]) * (output_size[1]//self.window_size[1]) * (output_size[2]//self.window_size[2])
 
         x_windows = self.window_partition(x, self.window_size)
         
