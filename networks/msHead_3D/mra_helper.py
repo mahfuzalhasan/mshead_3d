@@ -227,6 +227,38 @@ class WaveletTransform3D(torch.nn.Module):
         coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
         Yl = coeffs[0]  # Extracting the approximation coefficients
         return Yl
+    
+def multi_axis_wavelet_decomposition_torch(tensor, wavelet, levels, axes):
+    """
+    Perform wavelet decomposition on different axes with different levels in PyTorch.
+
+    Args:
+        tensor (torch.Tensor): Input tensor of shape (B, C, D, H, W).
+        wavelet (str): The wavelet to use for decomposition.
+        levels (dict): Dictionary specifying the decomposition level for each axis (e.g., {-3: 2, -2: 1, -1: 3}).
+        axes (list): List of axes to decompose (e.g., [-3, -2, -1] for D, H, W).
+
+    Returns:
+        torch.Tensor: The transformed tensor after applying wavelet decomposition.
+    """
+    transformed_tensor = tensor
+
+    for axis in axes:
+        level = levels.get(axis, 1)  # Default to level 1 if not specified
+        # Move the target axis to the last position
+        reshaped_tensor = transformed_tensor.transpose(axis, -1)
+        # Convert to NumPy for wavelet operations
+        reshaped_numpy = reshaped_tensor.cpu().numpy()
+        # Perform wavelet decomposition
+        coeffs = pywt.wavedec(reshaped_numpy, wavelet, level=level, axis=-1)
+        # Keep approximation coefficients (low-frequency part)
+        transformed_numpy = coeffs[0]
+        # Convert back to PyTorch
+        transformed_tensor = torch.from_numpy(transformed_numpy).to(tensor.device)
+        # Restore original axis order
+        transformed_tensor = transformed_tensor.transpose(axis, -1)
+
+    return transformed_tensor
 
 
 class Block(nn.Module):
@@ -299,6 +331,7 @@ class Block(nn.Module):
         if self.level > 0:
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             x = self.dwt_downsamples(x)
+            x = multi_axis_wavelet_decomposition_torch(x, levels)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
         # print(f'DWT_x:{x.shape} shortcut:{shortcut.shape}')
         output_size = (x.shape[1], x.shape[2], x.shape[3])

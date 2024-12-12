@@ -94,13 +94,13 @@ def multi_axis_wavelet_decomposition_torch(tensor, wavelet, levels, axes):
         # Move the target axis to the last position
         reshaped_tensor = transformed_tensor.transpose(axis, -1)
         # Convert to NumPy for wavelet operations
-        reshaped_numpy = reshaped_tensor.cpu().numpy()
+        # reshaped_numpy = reshaped_tensor.cpu().numpy()
         # Perform wavelet decomposition
-        coeffs = pywt.wavedec(reshaped_numpy, wavelet, level=level, axis=-1)
+        coeffs = ptwt.wavedec(reshaped_tensor, wavelet, level=level, axis=-1)
         # Keep approximation coefficients (low-frequency part)
-        transformed_numpy = coeffs[0]
+        transformed_tensor = coeffs[0]
         # Convert back to PyTorch
-        transformed_tensor = torch.from_numpy(transformed_numpy).to(tensor.device)
+        # transformed_tensor = torch.from_numpy(transformed_numpy).to(tensor.device)
         # Restore original axis order
         transformed_tensor = transformed_tensor.transpose(axis, -1)
 
