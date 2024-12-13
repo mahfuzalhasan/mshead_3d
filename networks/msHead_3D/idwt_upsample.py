@@ -7,7 +7,7 @@ import ptwt
 
 from monai.networks.blocks.dynunet_block import UnetBasicBlock, UnetResBlock, get_conv_layer
 
-class UnetrUpBlock(nn.Module):
+class UnetrIDWTBlock(nn.Module):
     """
     An upsampling module that can be used for UNETR: "Hatamizadeh et al.,
     UNETR: Transformers for 3D Medical Image Segmentation <https://arxiv.org/abs/2103.10504>"
@@ -35,7 +35,7 @@ class UnetrUpBlock(nn.Module):
 
         """
 
-        super(UnetrUpBlock, self).__init__()
+        super(UnetrIDWTBlock, self).__init__()
         upsample_stride = upsample_kernel_size
         # self.transp_conv = get_conv_layer(
         #     spatial_dims,
@@ -70,7 +70,9 @@ class UnetrUpBlock(nn.Module):
     def forward(self, inp, skip, hf_coeffs):
             # number of channels for skip should equals to out_channels
             # out = self.transp_conv(inp)
+            print(f'input: {inp.shape}')
             out = ptwt.waverec3((inp, hf_coeffs))
+            print(f'out:{out.shape}')
             out = torch.cat((out, skip), dim=1)
             out = self.conv_block(out)
             return out

@@ -17,6 +17,7 @@ import torch.nn as nn
 
 from monai.networks.blocks.dynunet_block import UnetOutBlock
 from monai.networks.blocks.unetr_block import UnetrBasicBlock, UnetrUpBlock
+from idwt_upsample import UnetrIDWTBlock
 from typing import Union
 import torch.nn.functional as F
 from ptflops import get_model_complexity_info
@@ -174,7 +175,7 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        self.decoder4 = UnetrUpBlock(
+        self.decoder4 = UnetrIDWTBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[3],
             out_channels=self.feat_size[2],
@@ -183,7 +184,7 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        self.decoder3 = UnetrUpBlock(
+        self.decoder3 = UnetrIDWTBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[2],
             out_channels=self.feat_size[1],
@@ -192,7 +193,7 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        self.decoder2 = UnetrUpBlock(
+        self.decoder2 = UnetrIDWTBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[1],
             out_channels=self.feat_size[0],
@@ -245,11 +246,11 @@ class MSHEAD_ATTN(nn.Module):
         
         dec3 = self.decoder5(dec4, outs[3])
         print(f'dec3: {dec3.shape}')
-        dec2 = self.decoder4(dec3, enc3)
+        dec2 = self.decoder4(dec3, enc3, outs_hf[-1])
         print(f'dec2: {dec2.shape}')
-        dec1 = self.decoder3(dec2, enc2)
+        dec1 = self.decoder3(dec2, enc2, outs_hf[-2])
         print(f'dec1: {dec1.shape}')
-        dec0 = self.decoder2(dec1, enc1)
+        dec0 = self.decoder2(dec1, enc1, outs_hf[-3])
         print(f'dec0: {dec0.shape}')
         out = self.decoder1(dec0, enc0)
         print(f'out: {out.shape}')
