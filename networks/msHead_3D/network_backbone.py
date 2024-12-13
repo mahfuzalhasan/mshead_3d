@@ -275,8 +275,8 @@ if __name__=="__main__":
     #     feature_size=48,
     #     use_checkpoint=False,
     # )
-    model.cuda()
-    x = torch.randn(B, C, D, H, W).cuda()
+    # model.cuda()
+    x = torch.randn(B, C, D, H, W)
     outputs = model(x)
     print(f'outputs: {outputs.shape}')
     # # Assuming 'model' is your PyTorch model
