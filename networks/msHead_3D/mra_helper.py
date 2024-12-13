@@ -307,7 +307,7 @@ class Block(nn.Module):
         """
         B, D, H, W, C = x.shape
         x = x.view(B,  D // window_size[0], window_size[0], H // window_size[1], window_size[1], W // window_size[2], window_size[2], C)
-        windows = x.permute(0, 1, 3, 5, 2, 4, 6, 7).contiguous().view(-1, window_size, window_size, window_size, C)
+        windows = x.permute(0, 1, 3, 5, 2, 4, 6, 7).contiguous().view(-1, window_size[0], window_size[1], window_size[2], C)
         return windows
 
     def forward(self, x):
