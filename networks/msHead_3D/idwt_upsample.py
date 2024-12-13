@@ -18,6 +18,7 @@ class UnetrIDWTBlock(nn.Module):
         spatial_dims: int,
         in_channels: int,
         out_channels: int,
+        wavelet:str,
         kernel_size: Union[Sequence[int], int],
         upsample_kernel_size: Union[Sequence[int], int],
         norm_name: Union[Tuple, str],
@@ -37,6 +38,7 @@ class UnetrIDWTBlock(nn.Module):
 
         super(UnetrIDWTBlock, self).__init__()
         upsample_stride = upsample_kernel_size
+        self.wavelet = wavelet
         # self.transp_conv = get_conv_layer(
         #     spatial_dims,
         #     in_channels,
@@ -71,7 +73,7 @@ class UnetrIDWTBlock(nn.Module):
             # number of channels for skip should equals to out_channels
             # out = self.transp_conv(inp)
             print(f'input: {inp.shape}')
-            out = ptwt.waverec3((inp, hf_coeffs))
+            out = ptwt.waverec3((inp, hf_coeffs), wavelet=self.wavelet)
             print(f'out:{out.shape}')
             out = torch.cat((out, skip), dim=1)
             out = self.conv_block(out)
