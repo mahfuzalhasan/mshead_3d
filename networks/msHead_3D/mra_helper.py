@@ -228,11 +228,9 @@ class WaveletTransform3D(torch.nn.Module):
 
         for axis in axes:
             level = levels.get(axis, 1)  # Default to level 1 if not specified
-            print(f'level:{level}')
             # Move the target axis to the last position
             reshaped_tensor = transformed_tensor.transpose(axis, -1)
             reshaped_tensor = reshaped_tensor.contiguous()
-            print(f"Tensor on GPU: {reshaped_tensor.device} -- {reshaped_tensor.shape}")
             # Perform wavelet decomposition
             coeffs = ptwt.wavedec(reshaped_tensor, wavelet=self.wavelet, level=level, mode=self.mode, axis=-1)
             # Keep approximation coefficients (low-frequency part)
