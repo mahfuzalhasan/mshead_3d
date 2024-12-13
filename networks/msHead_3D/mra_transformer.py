@@ -259,6 +259,6 @@ if __name__=="__main__":
     total_params = sum(p.numel() for p in backbone.parameters() if p.requires_grad)
     print(f"Total trainable parameters: {total_params}")
 
-    macs, params = get_model_complexity_info(backbone, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
-    print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
-    print('{:<30}  {:<8}'.format('Number of parameters: ', params))
+    # macs, params = get_model_complexity_info(backbone, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
+    # print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
+    # print('{:<30}  {:<8}'.format('Number of parameters: ', params))
