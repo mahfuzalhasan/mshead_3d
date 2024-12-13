@@ -14,7 +14,7 @@ import time
 
 class WindowAttention(nn.Module):
     def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., 
-                    proj_drop=0., window_size=6, img_size=(48, 48, 48)):
+                    proj_drop=0., window_size=(7,7,7), img_size=(48, 48, 48)):
         super().__init__()
         assert dim % num_heads == 0, f"dim {dim} should be divided by num_heads {num_heads}."
 
@@ -33,23 +33,23 @@ class WindowAttention(nn.Module):
         
         # define a parameter table of relative position bias
         self.relative_position_bias_table = nn.Parameter(
-            torch.zeros((2 * self.window_size - 1) * (2 * self.window_size - 1) * (2 * self.window_size - 1),
+            torch.zeros((2 * self.window_size[0] - 1) * (2 * self.window_size[1] - 1) * (2 * self.window_size[2] - 1),
                         self.num_heads))  
 
         # get pair-wise relative position index for each token inside the window
-        coords_s = torch.arange(self.window_size)
-        coords_h = torch.arange(self.window_size)
-        coords_w = torch.arange(self.window_size)
+        coords_s = torch.arange(self.window_size[0])
+        coords_h = torch.arange(self.window_size[1])
+        coords_w = torch.arange(self.window_size[2])
         coords = torch.stack(torch.meshgrid([coords_s, coords_h, coords_w])) 
         coords_flatten = torch.flatten(coords, 1) 
         relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]  
         relative_coords = relative_coords.permute(1, 2, 0).contiguous() 
-        relative_coords[:, :, 0] += self.window_size - 1  # shift to start from 0
-        relative_coords[:, :, 1] += self.window_size - 1
-        relative_coords[:, :, 2] += self.window_size - 1
+        relative_coords[:, :, 0] += self.window_size[0] - 1  # shift to start from 0
+        relative_coords[:, :, 1] += self.window_size[1] - 1
+        relative_coords[:, :, 2] += self.window_size[2] - 1
 
-        relative_coords[:, :, 0] *= 3 * self.window_size - 1
-        relative_coords[:, :, 1] *= 2 * self.window_size - 1
+        relative_coords[:, :, 0] *= 3 * self.window_size[0] - 1
+        relative_coords[:, :, 1] *= 2 * self.window_size[1] - 1
 
         relative_position_index = relative_coords.sum(-1)  
         self.register_buffer("relative_position_index", relative_position_index)

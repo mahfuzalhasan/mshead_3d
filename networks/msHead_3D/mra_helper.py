@@ -260,6 +260,7 @@ class Block(nn.Module):
         self.mlp_ratio = mlp_ratio
         self.level = level
         mlp_hidden_dim = int(dim * mlp_ratio)
+        self.window_size = window_size
         
         if bool(self.level):
             self.dwt_downsamples = WaveletTransform3D(wavelet='db1', levels=self.level)
@@ -269,7 +270,7 @@ class Block(nn.Module):
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
             dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
-            attn_drop=attn_drop, proj_drop=drop, img_size=img_size)
+            attn_drop=attn_drop, proj_drop=drop, window_size=self.window_size, img_size=img_size)
 
         
 
