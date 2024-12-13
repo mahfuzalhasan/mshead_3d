@@ -223,10 +223,10 @@ class WaveletTransform3D(torch.nn.Module):
         self.mode = mode
 
     def forward(self, x):
-        print(f'x:{x.shape}  ')
-        coeffs = ptwt.wavedec(x, wavelet=self.wavelet, level=self.level, mode=self.mode, axis=-1)
+        # print(f'x:{x.shape}  ')
+        coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
         Yl = coeffs[0]  # Extracting the approximation coefficients
-        print(f'Yl:{Yl.shape}')
+        # print(f'Yl:{Yl.shape}')
         return Yl
 
 
@@ -301,7 +301,7 @@ class Block(nn.Module):
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             x = self.dwt_downsamples(x)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
-        print(f'DWT_x:{x.shape} shortcut:{shortcut.shape}')
+        # print(f'DWT_x:{x.shape} shortcut:{shortcut.shape}')
         output_size = (x.shape[1], x.shape[2], x.shape[3])
         nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
 
