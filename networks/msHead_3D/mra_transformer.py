@@ -153,6 +153,7 @@ class MRATransformer(nn.Module):
         """
         # print(f'input: {x_rgb.shape}')
         outs = []
+        outs_hf = []
         B, C, _, _, _ = x_rgb.shape
         stage = 0
         # B, N, C = B, Pd*Ph*Pw, C  --> Pd=(D//2), Ph=(H//2), Pw=(W//2)
@@ -161,31 +162,34 @@ class MRATransformer(nn.Module):
         # stage 1
         stage += 1        
         for j,blk in enumerate(self.block1):
-            x_rgb = blk(x_rgb)
+            x_rgb, x_h = blk(x_rgb)
         # print('########### Stage 1 - Output: {}'.format(x_rgb.shape))
         x_out = self.norm1(x_rgb)
         x_out = x_out.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         outs.append(x_out)
+        outs_hf.append(x_h)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         x_rgb, D, H, W = self.patch_embed2(x_rgb)       # There is norm at the end of PatchEMbed
         
         # stage 2
         stage += 1
         for j,blk in enumerate(self.block2):
-            x_rgb = blk(x_rgb)
+            x_rgb, x_h = blk(x_rgb)
         x_out = self.norm2(x_rgb)
         x_out = x_out.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         outs.append(x_out)
+        outs_hf.append(x_h)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         x_rgb, D, H, W = self.patch_embed3(x_rgb)       # There is norm at the end of PatchEMbed
 
         # stage 3
         stage += 1
         for j,blk in enumerate(self.block3):
-            x_rgb = blk(x_rgb)
+            x_rgb, x_h = blk(x_rgb)
         x_out = self.norm3(x_rgb)
         x_out = x_out.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         outs.append(x_out)
+        outs_hf.append(x_h)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         x_rgb, D, H, W = self.patch_embed4(x_rgb)       # There is norm at the end of PatchEMbed
 

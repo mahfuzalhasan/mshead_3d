@@ -226,8 +226,9 @@ class WaveletTransform3D(torch.nn.Module):
         # print(f'x:{x.shape}  ')
         coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
         Yl = coeffs[0]  # Extracting the approximation coefficients
+        Yh = coeffs[1:]
         # print(f'Yl:{Yl.shape}')
-        return Yl
+        return Yl, Yh
 
 
 class Block(nn.Module):
@@ -299,7 +300,7 @@ class Block(nn.Module):
         # print(f'input x:{x.shape}')
         if self.level > 0:
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
-            x = self.dwt_downsamples(x)
+            x, x_h = self.dwt_downsamples(x)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
         # print(f'DWT_x:{x.shape} shortcut:{shortcut.shape}')
         output_size = (x.shape[1], x.shape[2], x.shape[3])
@@ -324,7 +325,8 @@ class Block(nn.Module):
         x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))
         # print(f'final output:{x.shape}')
-
+        if self.level > 0:
+            return x, x_h
         return x
     
     def flops(self):
