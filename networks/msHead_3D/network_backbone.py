@@ -267,7 +267,7 @@ if __name__=="__main__":
     H = 224
     W = 224
     num_classes = 5
-    model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes)
+    model = MSHEAD_ATTN(img_size=(D,H,W), in_chans=C, out_chans=num_classes)
     # model = SwinUNETR(
     #     img_size=(96, 96, 96),
     #     in_channels=1,
