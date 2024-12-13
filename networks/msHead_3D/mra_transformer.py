@@ -201,7 +201,7 @@ class MRATransformer(nn.Module):
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         outs.append(x_rgb)
 
-        return outs
+        return outs, outs_hf
 
     def forward(self, x_rgb):
         # print()
