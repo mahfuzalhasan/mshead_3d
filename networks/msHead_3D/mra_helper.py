@@ -226,6 +226,7 @@ class WaveletTransform3D(torch.nn.Module):
         print(f'x:{x.shape}  ')
         coeffs = ptwt.wavedec(x, wavelet=self.wavelet, level=self.level, mode=self.mode, axis=-1)
         Yl = coeffs[0]  # Extracting the approximation coefficients
+        print(f'Yl:{Yl.shape}')
         return Yl
 
 
