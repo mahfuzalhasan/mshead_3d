@@ -224,35 +224,35 @@ class MSHEAD_ATTN(nn.Module):
     def forward(self, x_in):
         outs = self.multiscale_transformer(x_in)
         
-        #print(f'output from ms transformer: \n')
-        # for i,out in enumerate(outs):
-            #print(f'{i}:{out.shape}')
+        print(f'output from ms transformer: \n')
+        for i,out in enumerate(outs):
+            print(f'{i}:{out.shape}')
 
         enc0 = self.encoder1(x_in)
-        #print(f'enc0 input:{x_in.shape} output:{enc0.size()}')
+        print(f'enc0 input:{x_in.shape} output:{enc0.size()}')
 
         enc1 = self.encoder2(outs[0])
-        #print(f'enc1 input:{outs[0].shape} output:{enc1.size()}')
+        print(f'enc1 input:{outs[0].shape} output:{enc1.size()}')
 
         enc2 = self.encoder3(outs[1])
-        #print(f'enc2:input:{outs[1].shape} output:{enc2.size()}')
+        print(f'enc2:input:{outs[1].shape} output:{enc2.size()}')
 
         enc3 = self.encoder4(outs[2])
-        #print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
+        print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
 
         dec4 = self.encoder10(outs[3])
-        #print(f'bottleneck:input:{outs[3].shape} output:{dec4.size()}')
+        print(f'bottleneck:input:{outs[3].shape} output:{dec4.size()}')
         
         dec3 = self.decoder5(dec4, outs[3])
-        #print(f'dec3: {dec3.shape}')
+        print(f'dec3: {dec3.shape}')
         dec2 = self.decoder4(dec3, enc3)
-        #print(f'dec2: {dec2.shape}')
+        print(f'dec2: {dec2.shape}')
         dec1 = self.decoder3(dec2, enc2)
-        #print(f'dec1: {dec1.shape}')
+        print(f'dec1: {dec1.shape}')
         dec0 = self.decoder2(dec1, enc1)
-        #print(f'dec0: {dec0.shape}')
+        print(f'dec0: {dec0.shape}')
         out = self.decoder1(dec0, enc0)
-        #print(f'out: {out.shape}')
+        print(f'out: {out.shape}')
         
         return self.out(out)
     
@@ -263,9 +263,9 @@ class MSHEAD_ATTN(nn.Module):
 if __name__=="__main__":
     B = 2
     C = 1
-    D = 96
-    H = 96
-    W = 96
+    D = 14
+    H = 224
+    W = 224
     num_classes = 5
     model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes)
     # model = SwinUNETR(
@@ -282,6 +282,6 @@ if __name__=="__main__":
     # # Assuming 'model' is your PyTorch model
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Total trainable parameters: {total_params}")
-    macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
+    macs, params = get_model_complexity_info(model, (1, 14, 224, 224), as_strings=True, print_per_layer_stat=True, verbose=True)
     print('{:<30}  {:<8}'.format('Computational complexity ptflops: ', macs))
     print('{:<30}  {:<8}'.format('Number of parameters from ptflops: ', params))
