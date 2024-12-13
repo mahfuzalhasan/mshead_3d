@@ -329,12 +329,12 @@ class Block(nn.Module):
 
         x_windows = self.window_partition(x, self.window_size)
         
-        x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
+        x_windows = x_windows.view(-1, self.window_size[0] * self.window_size[1] * self.window_size[2], C)
         B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
         
         # B*nW, Nr, C [Here nW = 1]
         attn_windows = self.attn(x_windows) 
-        attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
+        attn_windows = attn_windows.view(-1, self.window_size[0], self.window_size[1], self.window_size[2], C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
         # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
         x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
         # print(f'attn reshape:{x.shape}')
