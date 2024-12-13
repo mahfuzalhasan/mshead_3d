@@ -232,7 +232,7 @@ class WaveletTransform3D(torch.nn.Module):
             reshaped_tensor = transformed_tensor.transpose(axis, -1)
             print(f"Tensor on GPU: {reshaped_tensor.device}")
             # Perform wavelet decomposition
-            coeffs = ptwt.wavedec(reshaped_tensor, wavelet, level=level, mode=self.mode, axis=-1)
+            coeffs = ptwt.wavedec(reshaped_tensor, self.wavelet, level=level, mode=self.mode, axis=-1)
             # Keep approximation coefficients (low-frequency part)
             transformed_tensor = coeffs[0]
             # Restore original axis order
