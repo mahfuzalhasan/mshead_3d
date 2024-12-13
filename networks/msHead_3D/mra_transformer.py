@@ -167,7 +167,7 @@ class MRATransformer(nn.Module):
         outs.append(x_out)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         x_rgb, D, H, W = self.downsample_1(x_rgb)       # There is norm at the end of PatchEMbed
-        
+        print(f'x_out stage 1:{x_rgb.shape} D:{D} H:{H} W:{W}')
         # stage 2
         stage += 1
         for j,blk in enumerate(self.block2):
@@ -177,6 +177,7 @@ class MRATransformer(nn.Module):
         outs.append(x_out)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         x_rgb, D, H, W = self.downsample_2(x_rgb)       # There is norm at the end of PatchEMbed
+        print(f'x_out stage 2:{x_rgb.shape} D:{D} H:{H} W:{W}')
 
         # stage 3
         stage += 1
@@ -187,7 +188,7 @@ class MRATransformer(nn.Module):
         outs.append(x_out)
         x_rgb = x_rgb.reshape(B, D, H, W, -1).permute(0, 4, 1, 2, 3).contiguous()
         x_rgb, D, H, W = self.downsample_3(x_rgb)       # There is norm at the end of PatchEMbed
-
+        print(f'x_out stage 3:{x_rgb.shape} D:{D} H:{H} W:{W}')
         # stage 4
         stage += 1
         for j,blk in enumerate(self.block4):
