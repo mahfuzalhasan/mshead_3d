@@ -242,7 +242,7 @@ if __name__=="__main__":
         depths=[2,2,2,2],
         num_heads = [3,6,12,24],
         drop_path_rate=0.1
-    )
+    ).cuda()
     
     # ########print(backbone)
     B = 2
@@ -252,6 +252,7 @@ if __name__=="__main__":
     W = 224
     device = 'cuda:1'
     rgb = torch.randn(B, C, D, H, W)
+    rgb.cuda()
     outputs = backbone(rgb)
     for i,out in enumerate(outputs):
         print(f'{i}:{out.size()}')
