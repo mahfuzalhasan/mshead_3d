@@ -61,7 +61,7 @@ import torch
 wavelet = 'db1'
 level = 3
 mode = 'reflect'
-B, C, D, H, W = 2, 1, 56, 56, 56
+B, C, D, H, W = 1, 1, 56, 56, 56
 x = torch.randn(B, C, D, H, W)
 
 # Perform wavelet decomposition
