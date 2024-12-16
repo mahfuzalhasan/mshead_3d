@@ -71,7 +71,7 @@ coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
 print("Type of coeffs:", type(coeffs))
 print("Length of coeffs:", len(coeffs))
 for coeff in coeffs:
-    for k,v in coeff:
+    for k,v in coeff.items():
         print(f'key{k}::: {v}')
 
 exit()
