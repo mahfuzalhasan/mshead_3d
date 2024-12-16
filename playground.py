@@ -67,6 +67,7 @@ coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
 print(type(coeffs), len(coeffs))
 y1 = coeffs[0]
 yh = coeffs[1:]
+print(type(yh), len(yh))
 print(y1.shape)
 for coeff in yh:
     print(coeff.keys())
