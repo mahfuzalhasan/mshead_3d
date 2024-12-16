@@ -56,24 +56,34 @@ from networks.UXNet_3D.network_backbone import UXNET
 # from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 # from monai.networks.nets import UNETR, SwinUNETR
 import ptwt
+from pytorch_wavelets import DWT3DForward, DWT3DInverse
 
 wavelet = 'db1'
-level = 3
+J = 3
 mode = 'reflect'
 B, C, D, H, W = 2, 1, 56, 56, 56
 x= torch.randn(B, C, D, H, W)
-coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
+# coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
+dwt3 = DWT3DForward(J=J, wave=wavelet)
+idwt3 = DWT3DInverse(wave=wavelet)
 
-print(type(coeffs), len(coeffs))
-y1 = coeffs[0]
-yh = coeffs[1:]
-print(type(yh), len(yh))
-print(y1.shape)
-for coeff in yh:
-    print(coeff.keys())
-    # print(coeff.shape)
-yr = ptwt.waverec3((y1, yh), wavelet=wavelet)
+yL, yh = dwt3(x)
+print(yL.shape, type(yh))
+
+yr = idwt3((yL, yh))
+
 print(yr.shape)
+
+# print(type(coeffs), len(coeffs))
+# y1 = coeffs[0]
+# yh = coeffs[1:]
+# print(type(yh), len(yh))
+# print(y1.shape)
+# for coeff in yh:
+#     print(coeff.keys())
+#     # print(coeff.shape)
+# yr = ptwt.waverec3((y1, yh), wavelet=wavelet)
+# print(yr.shape)
 
 
 
