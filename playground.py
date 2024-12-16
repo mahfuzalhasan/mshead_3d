@@ -56,26 +56,37 @@ from networks.UXNet_3D.network_backbone import UXNET
 # from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 # from monai.networks.nets import UNETR, SwinUNETR
 import ptwt
-# from pytorch_wavelets import DWT3DForward, DWT3DInverse
-# import torch_dwt as dwt
+import torch
 
 wavelet = 'db1'
 level = 3
 mode = 'reflect'
 B, C, D, H, W = 2, 1, 56, 56, 56
-x= torch.randn(B, C, D, H, W)
+x = torch.randn(B, C, D, H, W)
+
+# Perform wavelet decomposition
 coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
 
-print(type(coeffs), len(coeffs))
-y1 = coeffs[0]
-yh = coeffs[1:]
-print(type(yh), len(yh))
-print(y1.shape)
+# Debugging coefficients structure
+print("Type of coeffs:", type(coeffs))
+print("Length of coeffs:", len(coeffs))
+
+y1 = coeffs[0]  # Low-frequency coefficients
+yh = coeffs[1:]  # High-frequency coefficients
+print("Low-frequency shape:", y1.shape)
+
+corrected_yh = []
 for coeff in yh:
-    print(coeff.keys())
-    # print(coeff.shape)
-yr = ptwt.waverec3((y1, yh), wavelet=wavelet)
-print(yr.shape)
+    if isinstance(coeff, tuple):
+        # Convert tuple to dict
+        coeff_dict = {f"{i}": val for i, val in enumerate(coeff)}
+        corrected_yh.append(coeff_dict)
+    else:
+        corrected_yh.append(coeff)
+
+# Perform wavelet reconstruction
+yr = ptwt.waverec3((y1, corrected_yh), wavelet=wavelet)
+print("Reconstructed shape:", yr.shape)
 
 
 
