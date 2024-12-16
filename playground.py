@@ -62,9 +62,9 @@ level = 3
 mode = 'reflect'
 B, C, D, H, W = 2, 1, 56, 56, 56
 x= torch.randn(B, C, D, H, W)
-coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
+y1, coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
 print(type(coeffs), len(coeffs))
-y1 = coeffs[0]
+# y1 = coeffs[0]
 print(y1.shape)
 for coeff in coeffs[1:]:
     print(coeff.keys())
