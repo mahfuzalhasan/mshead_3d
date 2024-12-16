@@ -224,11 +224,11 @@ class WaveletTransform3D(torch.nn.Module):
 
     def forward(self, x):
         # print(f'x:{x.shape}  ')
-        Yl, Yh = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
-        # Yl,  = coeffs[0]  # Extracting the approximation coefficients
+        coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
+        Yl  = coeffs[0]  # Extracting the approximation coefficients
         # Yh = coeffs[1:]
         # print(f'Yl:{Yl.shape}')
-        return Yl, Yh
+        return Yl, coeffs[1]
 
 
 class Block(nn.Module):
