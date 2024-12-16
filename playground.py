@@ -72,7 +72,7 @@ print("Type of coeffs:", type(coeffs))
 print("Length of coeffs:", len(coeffs))
 index = 1
 for coeff in coeffs:
-    print(f'decompose:{index}')
+    print(f'decompose:{index} -- {type(coeff)}')
     for cf in coeff:
         print(type(cf))
     index += 1
