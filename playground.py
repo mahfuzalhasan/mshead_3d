@@ -70,10 +70,12 @@ coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
 # Debugging coefficients structure
 print("Type of coeffs:", type(coeffs))
 print("Length of coeffs:", len(coeffs))
+index = 1
 for coeff in coeffs:
-    for k,v in coeff.items():
-        print(f'key{k}::: {v}')
-
+    print(f'decompose:{index}')
+    for cf in coeff:
+        print(type(cf))
+    index += 1
 exit()
 
 y1 = coeffs[0]  # Low-frequency coefficients
