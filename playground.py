@@ -56,7 +56,7 @@ from networks.UXNet_3D.network_backbone import UXNET
 # from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 # from monai.networks.nets import UNETR, SwinUNETR
 import ptwt
-from pytorch_wavelets import DWT3DForward, DWT3DInverse
+# from pytorch_wavelets import DWT3DForward, DWT3DInverse
 # import torch_dwt as dwt
 
 wavelet = 'db1'
