@@ -69,6 +69,8 @@ print(y1.shape)
 for coeff in coeffs[1:]:
     print(coeff.keys())
     print(coeff.shape)
+yr = ptwt.waverec3((y1, coeffs[1]), wavelet=wavelet)
+print(yr.shape)
 
 
 
