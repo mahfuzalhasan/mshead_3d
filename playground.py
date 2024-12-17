@@ -89,16 +89,18 @@ print("Type of hfs:", type(yh))
 
 corrected_yh = []
 for coeff in yh:
-    if isinstance(coeff, tuple):
-        # Convert tuple to dict
-        coeff_dict = {f"{i}": val for i, val in enumerate(coeff)}
-        corrected_yh.append(coeff_dict)
-    else:
-        corrected_yh.append(coeff)
+    for cf in coeff:
+        print(type(cf))
+    # if isinstance(coeff, tuple):
+    #     # Convert tuple to dict
+    #     coeff_dict = {f"{i}": val for i, val in enumerate(coeff)}
+    #     corrected_yh.append(coeff_dict)
+    # else:
+    #     corrected_yh.append(coeff)
 
-# Perform wavelet reconstruction
-yr = ptwt.waverec3((y1, corrected_yh), wavelet=wavelet)
-print("Reconstructed shape:", yr.shape)
+# # Perform wavelet reconstruction
+# yr = ptwt.waverec3((y1, corrected_yh), wavelet=wavelet)
+# print("Reconstructed shape:", yr.shape)
 
 
 
