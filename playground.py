@@ -71,15 +71,14 @@ coeffs = ptwt.wavedec3(x, wavelet=wavelet, level=level, mode=mode)
 print("Type of coeffs:", type(coeffs))
 print("Length of coeffs:", len(coeffs))
 index = 1
-for coeff in coeffs:
+for i,coeff in enumerate(coeffs):
     print(f'decompose:{index} -- {type(coeff)}')
-    if index == 1:
+    if i == 0:
         print(f'coeff shape: {coeff.shape}')
     for cf in coeff:
-        if index == 1:
+        if i == 0:
             print(cf.shape)
         print(type(cf))
-    index += 1
 # exit()
 
 y1 = coeffs[0]  # Low-frequency coefficients
