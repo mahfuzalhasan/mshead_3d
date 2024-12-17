@@ -237,7 +237,7 @@ class MSHEAD_ATTN(nn.Module):
             for coeff in hfs:
                 print(f'type {type(coeff)}')
                 for k,cf in coeff.items():
-                    print(cf.shape)
+                    print(f'key: {k} - {cf.shape}')
                     # print(type(cf))
 
         enc0 = self.encoder1(x_in)

@@ -48,7 +48,14 @@ class UnetrIDWTBlock(nn.Module):
         #     conv_only=True,
         #     is_transposed=True,
         # )
-
+        self.conv_hf_block = UnetBasicBlock(  # type: ignore
+                spatial_dims,
+                out_channels + out_channels,
+                out_channels,
+                kernel_size=kernel_size,
+                stride=1,
+                norm_name=norm_name,
+            )
         if res_block:
             self.conv_block = UnetResBlock(
                 spatial_dims,
@@ -70,12 +77,12 @@ class UnetrIDWTBlock(nn.Module):
 
 
     def forward(self, inp, skip, hf_coeffs):
-            # number of channels for skip should equals to out_channels
-            # out = self.transp_conv(inp)
-            print(f'input: {inp.shape}')
-            inp_tuple = (inp, ) + hf_coeffs
-            out = ptwt.waverec3(inp_tuple, wavelet=self.wavelet)
-            print(f'out:{out.shape}')
-            out = torch.cat((out, skip), dim=1)
-            out = self.conv_block(out)
-            return out
+        # number of channels for skip should equals to out_channels
+        # out = self.transp_conv(inp)
+        print(f'input: {inp.shape}')
+        inp_tuple = (inp, ) + hf_coeffs
+        out = ptwt.waverec3(inp_tuple, wavelet=self.wavelet)
+        print(f'out:{out.shape}')
+        out = torch.cat((out, skip), dim=1)
+        out = self.conv_block(out)
+        return out
