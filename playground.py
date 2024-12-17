@@ -74,7 +74,7 @@ index = 1
 for coeff in coeffs:
     print(f'decompose:{index} -- {type(coeff)}')
     if index == 1:
-        print(coeff.shape)
+        print(f'coeff shape: {coeff.shape}')
     for cf in coeff:
         if index == 1:
             print(cf.shape)
