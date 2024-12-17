@@ -72,7 +72,7 @@ print("Type of coeffs:", type(coeffs))
 print("Length of coeffs:", len(coeffs))
 index = 1
 for i,coeff in enumerate(coeffs):
-    print(f'decompose:{index} -- {type(coeff)}')
+    print(f'decompose:{i} -- {type(coeff)}')
     if i == 0:
         print(f'coeff shape: {coeff.shape}')
     for cf in coeff:
@@ -87,7 +87,8 @@ print("Low-frequency shape:", y1.shape)
 print("Type of hfs:", type(yh))
 
 corrected_yh = []
-for coeff in yh:
+for i, coeff in yh:
+    print(f'hf index:{i} -- {type(coeff)}')
     for cf in coeff:
         print(type(cf))
     # if isinstance(coeff, tuple):
@@ -96,7 +97,7 @@ for coeff in yh:
     #     corrected_yh.append(coeff_dict)
     # else:
     #     corrected_yh.append(coeff)
-
+new_tuple = (y1,) + yh
 # # Perform wavelet reconstruction
 # yr = ptwt.waverec3((y1, corrected_yh), wavelet=wavelet)
 # print("Reconstructed shape:", yr.shape)
