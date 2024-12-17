@@ -81,6 +81,11 @@ class UnetrIDWTBlock(nn.Module):
     def forward(self, inp, skip, hf_coeffs):
         # number of channels for skip should equals to out_channels
         # out = self.transp_conv(inp)
+        for coeff in hf_coeffs:
+            print(f'type {type(coeff)}')
+            for k,cf in coeff.items():
+                print(f'key: {k} - {cf.shape}')
+                
         print(f'input: {inp.shape} skip:{skip.shape} in:{self.in_channels} out:{self.out_channels}')
         inp = self.conv_lf_block(inp)
         print(f'input after conv: {inp.shape}')
