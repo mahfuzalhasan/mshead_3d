@@ -50,14 +50,14 @@ class UnetrIDWTBlock(nn.Module):
         #     conv_only=True,
         #     is_transposed=True,
         # )
-        self.conv_hf_block = UnetBasicBlock(  # type: ignore
+        self.conv_lf_block = UnetBasicBlock(  # type: ignore
                 spatial_dims,
-                out_channels + out_channels,
+                in_channels,
                 out_channels,
                 kernel_size=kernel_size,
                 stride=1,
                 norm_name=norm_name,
-            )
+        )
         if res_block:
             self.conv_block = UnetResBlock(
                 spatial_dims,
@@ -82,6 +82,8 @@ class UnetrIDWTBlock(nn.Module):
         # number of channels for skip should equals to out_channels
         # out = self.transp_conv(inp)
         print(f'input: {inp.shape} skip:{skip.shape} in:{self.in_channels} out:{self.out_channels}')
+        inp = self.conv_lf_block(inp)
+        print(f'input after conv: {inp.shape}')
         inp_tuple = (inp,) + hf_coeffs
         out = ptwt.waverec3(inp_tuple, wavelet=self.wavelet)
         print(f'out:{out.shape}')
