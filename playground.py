@@ -87,7 +87,7 @@ print("Low-frequency shape:", y1.shape)
 print("Type of hfs:", type(yh))
 
 corrected_yh = []
-for i, coeff in yh:
+for i, coeff in enumerate(yh):
     print(f'hf index:{i} -- {type(coeff)}')
     for cf in coeff:
         print(type(cf))
