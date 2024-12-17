@@ -35,8 +35,10 @@ class UnetrIDWTBlock(nn.Module):
             res_block: bool argument to determine if residual block is used.
 
         """
-
+        
         super(UnetrIDWTBlock, self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
         upsample_stride = upsample_kernel_size
         self.wavelet = wavelet
         # self.transp_conv = get_conv_layer(
@@ -79,8 +81,8 @@ class UnetrIDWTBlock(nn.Module):
     def forward(self, inp, skip, hf_coeffs):
         # number of channels for skip should equals to out_channels
         # out = self.transp_conv(inp)
-        print(f'input: {inp.shape}')
-        inp_tuple = (inp, ) + hf_coeffs
+        print(f'input: {inp.shape} skip:{skip.shape} in:{self.in_channels} out:{self.out_channels}')
+        inp_tuple = (inp,) + hf_coeffs
         out = ptwt.waverec3(inp_tuple, wavelet=self.wavelet)
         print(f'out:{out.shape}')
         out = torch.cat((out, skip), dim=1)
