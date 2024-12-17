@@ -98,9 +98,18 @@ for i, coeff in enumerate(yh):
     # else:
     #     corrected_yh.append(coeff)
 new_tuple = (y1,) + yh
+print(f'checking new tuple: {len(new_tuple)}')
+for i,coeff in enumerate(new_tuple):
+    print(f'decompose:{i} -- {type(coeff)}')
+    if i == 0:
+        print(f'coeff shape: {coeff.shape}')
+    for cf in coeff:
+        if i == 0:
+            print(cf.shape)
+        print(type(cf))
 # # Perform wavelet reconstruction
-# yr = ptwt.waverec3((y1, corrected_yh), wavelet=wavelet)
-# print("Reconstructed shape:", yr.shape)
+yr = ptwt.waverec3(new_tuple, wavelet=wavelet)
+print("Reconstructed shape:", yr.shape)
 
 
 
