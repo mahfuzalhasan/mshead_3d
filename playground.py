@@ -86,27 +86,27 @@ yh = coeffs[1:]  # High-frequency coefficients
 print("Low-frequency shape:", y1.shape)
 print("Type of hfs:", type(yh))
 
-corrected_yh = []
-for i, coeff in enumerate(yh):
-    print(f'hf index:{i} -- {type(coeff)}')
-    for cf in coeff:
-        print(type(cf))
-    # if isinstance(coeff, tuple):
-    #     # Convert tuple to dict
-    #     coeff_dict = {f"{i}": val for i, val in enumerate(coeff)}
-    #     corrected_yh.append(coeff_dict)
-    # else:
-    #     corrected_yh.append(coeff)
+# corrected_yh = []
+# for i, coeff in enumerate(yh):
+#     print(f'hf index:{i} -- {type(coeff)}')
+#     for cf in coeff:
+#         print(type(cf))
+#     # if isinstance(coeff, tuple):
+#     #     # Convert tuple to dict
+#     #     coeff_dict = {f"{i}": val for i, val in enumerate(coeff)}
+#     #     corrected_yh.append(coeff_dict)
+#     # else:
+#     #     corrected_yh.append(coeff)
 new_tuple = (y1,) + yh
-print(f'checking new tuple: {len(new_tuple)}')
-for i,coeff in enumerate(new_tuple):
-    print(f'decompose:{i} -- {type(coeff)}')
-    if i == 0:
-        print(f'coeff shape: {coeff.shape}')
-    for cf in coeff:
-        if i == 0:
-            print(cf.shape)
-        print(type(cf))
+# print(f'checking new tuple: {len(new_tuple)}')
+# for i,coeff in enumerate(new_tuple):
+#     print(f'decompose:{i} -- {type(coeff)}')
+#     if i == 0:
+#         print(f'coeff shape: {coeff.shape}')
+#     for cf in coeff:
+#         if i == 0:
+#             print(cf.shape)
+#         print(type(cf))
 # # Perform wavelet reconstruction
 yr = ptwt.waverec3(new_tuple, wavelet=wavelet)
 print("Reconstructed shape:", yr.shape)

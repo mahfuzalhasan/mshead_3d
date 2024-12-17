@@ -231,6 +231,14 @@ class MSHEAD_ATTN(nn.Module):
         #print(f'output from ms transformer: \n')
         # for i,out in enumerate(outs):
             #print(f'{i}:{out.shape}')
+        
+        for i,hfs in enumerate(outs_hf):
+            print(f'layer {i} hfs')
+            for coeff in hfs:
+                print(f'type {type(coeff)}')
+                for cf in coeff:
+                    print(cf.shape)
+                    print(type(cf))
 
         enc0 = self.encoder1(x_in)
         print(f'enc0 input:{x_in.shape} output:{enc0.size()}')
