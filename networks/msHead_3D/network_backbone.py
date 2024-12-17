@@ -236,7 +236,7 @@ class MSHEAD_ATTN(nn.Module):
             print(f'layer {i} hfs')
             for coeff in hfs:
                 print(f'type {type(coeff)}')
-                for k,cf in coeff:
+                for k,cf in coeff.items():
                     print(cf.shape)
                     # print(type(cf))
 
