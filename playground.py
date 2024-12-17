@@ -80,11 +80,12 @@ for coeff in coeffs:
             print(cf.shape)
         print(type(cf))
     index += 1
-exit()
+# exit()
 
 y1 = coeffs[0]  # Low-frequency coefficients
 yh = coeffs[1:]  # High-frequency coefficients
 print("Low-frequency shape:", y1.shape)
+print("Type of hfs:", type(yh))
 
 corrected_yh = []
 for coeff in yh:
