@@ -290,25 +290,36 @@ if __name__=="__main__":
     H = 96
     W = 96
     num_classes = 5
-    # model = MSHEAD_ATTN(in_chans=C, out_chans=num_classes)
-    model = SwinUNETR(
+    img_size = (D,H,W)
+    model = MSHEAD_ATTN(
         img_size=(D, H, W),
-        in_channels=1,
-        out_channels=num_classes,
-        feature_size=48,
+        patch_size=2,
+        in_chans=1,
+        out_chans=num_classes,
+        depths=[2,2,2,2],
+        feat_size=[48,96,192,384],
+        num_heads = [3,6,12,24],
+        drop_path_rate=0.1,
         use_checkpoint=False,
     )
+    # model = SwinUNETR(
+    #     img_size=(D, H, W),
+    #     in_channels=1,
+    #     out_channels=num_classes,
+    #     feature_size=48,
+    #     use_checkpoint=False,
+    # )
     model.cuda()
     x = torch.randn(B, C, D, H, W).cuda()
-    # Hook to record input and output shapes
-    def hook_fn(module, input, output):
-        print(f"{module.__class__.__name__}:")
-        print(f"    Input Shape: {input[0].shape}")
-        print(f"    Output Shape: {output[0].shape}")
+    # # Hook to record input and output shapes
+    # def hook_fn(module, input, output):
+    #     print(f"{module.__class__.__name__}:")
+    #     print(f"    Input Shape: {input[0].shape}")
+    #     print(f"    Output Shape: {output[0].shape}")
 
-    # Register the hook for all layers
-    for layer in model.children():
-        layer.register_forward_hook(hook_fn)
+    # # Register the hook for all layers
+    # for layer in model.children():
+    #     layer.register_forward_hook(hook_fn)
     outputs = model(x)
     print(f'outputs: {outputs.shape}')
 
