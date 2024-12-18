@@ -223,7 +223,7 @@ class MRATransformer(nn.Module):
         x3 = rearrange(x2, "b c d h w -> b d h w c")
         b,d,h,w,c = x3.shape
         print(f'x3:{x3.shape}')
-        for j,blk in enumerate(self.block2):
+        for j,blk in enumerate(self.block3):
             x3, x_h = blk(x3)
             # x3 = x3.view(b, d, h, w, -1)
         x3 = self.downsample_3(x3)
@@ -237,7 +237,7 @@ class MRATransformer(nn.Module):
         # stage 4
         x4 = rearrange(x3, "b c d h w -> b d h w c")
         b,d,h,w,c = x4.shape
-        for j,blk in enumerate(self.block2):
+        for j,blk in enumerate(self.block4):
             x4 = blk(x4)
             # x4 = x4.view(b, d, h, w, -1)
         x4 = self.downsample_4(x4)
