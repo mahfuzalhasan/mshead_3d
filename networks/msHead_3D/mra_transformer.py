@@ -203,8 +203,8 @@ class MRATransformer(nn.Module):
             x1, x_h = blk(x1)       # B, d, h, w, c
             # x1 = x1.view(b, d, h, w, -1)
         # print('########### Stage 1 - Output: {}'.format(x_rgb.shape))
-        x1 = self.downsample_1(x1)
         x1 = rearrange(x1, "b d h w c -> b c d h w")
+        x1 = self.downsample_1(x1)
         x1_out = self.proj_out(x1, normalize)
         print(f'x1_out:{x1_out.shape}')
         outs.append(x1_out)
@@ -218,8 +218,8 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block2):
             x2, x_h = blk(x2)
             # x2 = x2.view(b, d, h, w, -1)
-        x2 = self.downsample_2(x2)
         x2 = rearrange(x2, "b d h w c -> b c d h w")
+        x2 = self.downsample_2(x2)
         x2_out = self.proj_out(x2, normalize)
         print(f'x2_out:{x2_out.shape}')
         outs.append(x2_out)
@@ -234,8 +234,8 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block3):
             x3, x_h = blk(x3)
             # x3 = x3.view(b, d, h, w, -1)
-        x3 = self.downsample_3(x3)
         x3 = rearrange(x3, "b d h w c -> b c d h w")
+        x3 = self.downsample_3(x3)
         x3_out = self.proj_out(x3, normalize)
         print(f'x3_out:{x3_out.shape}')
         outs.append(x3_out)
@@ -248,9 +248,9 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block4):
             x4 = blk(x4)
             # x4 = x4.view(b, d, h, w, -1)
+        x4 = rearrange(x4, "b d h w c -> b c d h w")
         x4 = self.downsample_4(x4)
         print(f'x4:{x4.shape}')
-        x4 = rearrange(x4, "b d h w c -> b c d h w")
         x4_out = self.proj_out(x4, normalize)
         print(f'x4_out:{x4_out.shape}')
         outs.append(x4_out)
