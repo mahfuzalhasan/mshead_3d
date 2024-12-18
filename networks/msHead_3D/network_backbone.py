@@ -305,7 +305,7 @@ if __name__=="__main__":
     # # Assuming 'model' is your PyTorch model
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Total trainable parameters: {total_params}")
-    summary(model, (1, 96, 96, 96))
+    summary(model, (1, 96, 96, 96), verbose=2)
     # macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
     # print('{:<30}  {:<8}'.format('Computational complexity ptflops: ', macs))
     # print('{:<30}  {:<8}'.format('Number of parameters from ptflops: ', params))
