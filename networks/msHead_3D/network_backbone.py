@@ -25,7 +25,7 @@ import torch.nn as nn
 from monai.networks.nets import UNETR, SwinUNETR
 from monai.networks.blocks.dynunet_block import UnetOutBlock
 from monai.networks.blocks.unetr_block import UnetrBasicBlock, UnetrUpBlock
-from .idwt_upsample import UnetrIDWTBlock
+from idwt_upsample import UnetrIDWTBlock
 from typing import Union
 import torch.nn.functional as F
 from ptflops import get_model_complexity_info
