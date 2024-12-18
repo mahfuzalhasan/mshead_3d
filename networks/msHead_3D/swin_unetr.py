@@ -335,16 +335,28 @@ class SwinUNETR(nn.Module):
         if not torch.jit.is_scripting() and not torch.jit.is_tracing():
             self._check_input_size(x_in.shape[2:])
         hidden_states_out = self.swinViT(x_in, self.normalize)
+        for i, output in enumerate(hidden_states_out):
+            print(f'i:{i} - {output.shape}')
         enc0 = self.encoder1(x_in)
+        print(f'enc0:{enc0.shape}')
         enc1 = self.encoder2(hidden_states_out[0])
+        print(f'enc1:{enc1.shape}')
         enc2 = self.encoder3(hidden_states_out[1])
+        print(f'enc2:{enc2.shape}')
         enc3 = self.encoder4(hidden_states_out[2])
+        print(f'enc3:{enc3.shape}')
         dec4 = self.encoder10(hidden_states_out[4])
+        print(f'dec4/enc10:{dec4.shape}')
         dec3 = self.decoder5(dec4, hidden_states_out[3])
+        print(f'dec3:{dec3.shape}')
         dec2 = self.decoder4(dec3, enc3)
+        print(f'dec2:{dec2.shape}')
         dec1 = self.decoder3(dec2, enc2)
+        print(f'dec1:{dec1.shape}')
         dec0 = self.decoder2(dec1, enc1)
+        print(f'dec0:{dec0.shape}')
         out = self.decoder1(dec0, enc0)
+        print(f'out:{out.shape}')
         logits = self.out(out)
         return logits
 
