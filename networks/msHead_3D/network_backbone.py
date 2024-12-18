@@ -304,7 +304,7 @@ if __name__=="__main__":
     def hook_fn(module, input, output):
         print(f"{module.__class__.__name__}:")
         print(f"    Input Shape: {input[0].shape}")
-        print(f"    Output Shape: {output.shape}")
+        print(f"    Output Shape: {output[0].shape}")
 
     # Register the hook for all layers
     for layer in model.children():
