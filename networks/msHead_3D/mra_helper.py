@@ -63,49 +63,78 @@ class DWConv(nn.Module):
         total_flops = conv_flops
         return total_flops
 
-class PatchMerging3D(nn.Module):
-    """ 
-    Patch Merging layer for 3D inputs.
-    It performs downsampling by merging 2x2x2 patches and applying a linear transformation.
+class PatchMergingV2(nn.Module):
     """
-    def __init__(self, dim, norm_layer=nn.LayerNorm):
-        """
-        Args:
-            dim (int): Input feature dimension (number of input channels).
-            norm_layer (nn.Module): Normalization layer (default is LayerNorm).
-        """
-        super(PatchMerging3D, self).__init__()
-        self.reduction = nn.Linear(8 * dim, 2 * dim, bias=False)  # Reducing by 2 (8 -> 2)
-        self.norm = norm_layer(8 * dim)
+    Patch merging layer based on: "Liu et al.,
+    Swin Transformer: Hierarchical Vision Transformer using Shifted Windows
+    <https://arxiv.org/abs/2103.14030>"
+    https://github.com/microsoft/Swin-Transformer
+    """
 
-    def forward(self, x, D, H, W):
+    def __init__(self, dim: int, norm_layer: type[LayerNorm] = nn.LayerNorm, spatial_dims: int = 3) -> None:
         """
-        Forward pass for patch merging.
-        
         Args:
-            x (torch.Tensor): Input tensor of shape (B, L, C), where B is batch size, L is the total number of patches, and C is the feature dimension.
-            D (int): Depth of the 3D input.
-            H (int): Height of the 3D input.
-            W (int): Width of the 3D input.
-        
-        Returns:
-            torch.Tensor: Downsampled feature map.
+            dim: number of feature channels.
+            norm_layer: normalization layer.
+            spatial_dims: number of spatial dims.
         """
-        B, L, C = x.shape
-        assert L == D * H * W, "Input feature has incorrect size"
-        
-        # Reshape x into a 3D form with separate depth, height, and width dimensions
-        x = x.view(B, D, H, W, C)
-        
-        # Merging neighboring 2x2x2 patches
-        x = rearrange(x, 'b (d p1) (h p2) (w p3) c -> b (d h w) (p1 p2 p3 c)', p1=2, p2=2, p3=2)
-        
-        # Apply layer normalization
+
+        super().__init__()
+        self.dim = dim
+        if spatial_dims == 3:
+            self.reduction = nn.Linear(8 * dim, 2 * dim, bias=False)
+            self.norm = norm_layer(8 * dim)
+        elif spatial_dims == 2:
+            self.reduction = nn.Linear(4 * dim, 2 * dim, bias=False)
+            self.norm = norm_layer(4 * dim)
+
+    def forward(self, x):
+        x_shape = x.size()
+        if len(x_shape) == 5:
+            b, d, h, w, c = x_shape
+            pad_input = (h % 2 == 1) or (w % 2 == 1) or (d % 2 == 1)
+            if pad_input:
+                x = F.pad(x, (0, 0, 0, w % 2, 0, h % 2, 0, d % 2))
+            x = torch.cat(
+                [x[:, i::2, j::2, k::2, :] for i, j, k in itertools.product(range(2), range(2), range(2))], -1
+            )
+
+        elif len(x_shape) == 4:
+            b, h, w, c = x_shape
+            pad_input = (h % 2 == 1) or (w % 2 == 1)
+            if pad_input:
+                x = F.pad(x, (0, 0, 0, w % 2, 0, h % 2))
+            x = torch.cat([x[:, j::2, i::2, :] for i, j in itertools.product(range(2), range(2))], -1)
+
         x = self.norm(x)
-        
-        # Reduce the channel dimension
         x = self.reduction(x)
-        
+        return x
+
+
+class PatchMerging(PatchMergingV2):
+    """The `PatchMerging` module previously defined in v0.9.0."""
+
+    def forward(self, x):
+        x_shape = x.size()
+        if len(x_shape) == 4:
+            return super().forward(x)
+        if len(x_shape) != 5:
+            raise ValueError(f"expecting 5D x, got {x.shape}.")
+        b, d, h, w, c = x_shape
+        pad_input = (h % 2 == 1) or (w % 2 == 1) or (d % 2 == 1)
+        if pad_input:
+            x = F.pad(x, (0, 0, 0, w % 2, 0, h % 2, 0, d % 2))
+        x0 = x[:, 0::2, 0::2, 0::2, :]
+        x1 = x[:, 1::2, 0::2, 0::2, :]
+        x2 = x[:, 0::2, 1::2, 0::2, :]
+        x3 = x[:, 0::2, 0::2, 1::2, :]
+        x4 = x[:, 1::2, 0::2, 1::2, :]
+        x5 = x[:, 0::2, 1::2, 0::2, :]
+        x6 = x[:, 0::2, 0::2, 1::2, :]
+        x7 = x[:, 1::2, 1::2, 1::2, :]
+        x = torch.cat([x0, x1, x2, x3, x4, x5, x6, x7], -1)
+        x = self.norm(x)
+        x = self.reduction(x)
         return x
 
 class CCF_FFN(nn.Module):
@@ -291,13 +320,15 @@ class Block(nn.Module):
 
     def forward(self, x):
         D,H,W = self.img_size
-        B, N, C = x.shape
-        assert N==D*H*W
+        B,_,_,_,C = x.shape
+
+        assert D == x.shape[1]
+        assert H == x.shape[2]
+        assert W == x.shape[3]
 
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
-        # print(f'input x:{x.shape}')
         if self.level > 0:
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             x, x_h = self.dwt_downsamples(x)
