@@ -240,8 +240,8 @@ class MSHEAD_ATTN(nn.Module):
         outs, outs_hf = self.multiscale_transformer(x_in)
         
         #print(f'output from ms transformer: \n')
-        # for i,out in enumerate(outs):
-            #print(f'{i}:{out.shape}')
+        for i,out in enumerate(outs):
+            print(f'{i}:{out.shape}')
         
         # for i,hfs in enumerate(outs_hf):
         #     print(f'layer {i} hfs')
@@ -264,7 +264,7 @@ class MSHEAD_ATTN(nn.Module):
         print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
 
         dec4 = self.encoder10(outs[4])
-        print(f'bottleneck:input:{outs[3].shape} output:{dec4.size()}')
+        print(f'bottleneck:input:{outs[4].shape} output:{dec4.size()}')
         
         dec3 = self.decoder5(dec4, outs[3])
         print(f'dec5: {dec3.shape}')
