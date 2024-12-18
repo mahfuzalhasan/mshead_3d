@@ -75,9 +75,7 @@ class MRATransformer(nn.Module):
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 3,
             img_size=(img_size[0]// 2, img_size[1]//2, img_size[2]//2))
             for i in range(depths[0])])
-        # self.downsample_1 = PatchMerging(dim = embed_dims[0], norm_layer=norm_layer, spatial_dims=len(img_size))
-        self.downsample_1 = PatchEmbed( patch_size=self.patch_size, in_chans=embed_dims[0], embed_dim=embed_dims[1],
-            norm_layer=norm_layer if self.patch_norm else None,  spatial_dims=spatial_dims)
+        self.downsample_1 = PatchMerging(dim = embed_dims[0], norm_layer=norm_layer, spatial_dims=len(img_size))
         # self.norm1 = norm_layer(embed_dims[0])
         cur += depths[0]
 
@@ -86,9 +84,7 @@ class MRATransformer(nn.Module):
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 2,
             img_size=(img_size[0]//4, img_size[1]//4, img_size[2]//4))
             for i in range(depths[1])])
-        # self.downsample_2 = PatchMerging(dim = embed_dims[1], norm_layer=norm_layer, spatial_dims=len(img_size))
-        self.downsample_2 = PatchEmbed( patch_size=self.patch_size, in_chans=embed_dims[1], embed_dim=embed_dims[2],
-            norm_layer=norm_layer if self.patch_norm else None,  spatial_dims=spatial_dims)
+        self.downsample_2 = PatchMerging(dim = embed_dims[1], norm_layer=norm_layer, spatial_dims=len(img_size))
         # self.norm2 = norm_layer(embed_dims[1])
         cur += depths[1]
 
@@ -97,9 +93,7 @@ class MRATransformer(nn.Module):
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 1,
             img_size=(img_size[0]//8, img_size[1]//8, img_size[2]//8))
             for i in range(depths[2])])
-        # self.downsample_3 = PatchMerging(dim = embed_dims[2], norm_layer=norm_layer, spatial_dims=len(img_size))
-        self.downsample_3 = PatchEmbed( patch_size=self.patch_size, in_chans=embed_dims[2], embed_dim=embed_dims[3],
-            norm_layer=norm_layer if self.patch_norm else None,  spatial_dims=spatial_dims)
+        self.downsample_3 = PatchMerging(dim = embed_dims[2], norm_layer=norm_layer, spatial_dims=len(img_size))
         # self.norm3 = norm_layer(embed_dims[2])
         cur += depths[2]
 
@@ -108,9 +102,7 @@ class MRATransformer(nn.Module):
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 0,
             img_size=(img_size[0]//16, img_size[1]//16, img_size[2]//16))
             for i in range(depths[3])])
-        # self.downsample_4 = PatchMerging(dim = embed_dims[3], norm_layer=norm_layer, spatial_dims=len(img_size))             
-        self.downsample_4 = PatchEmbed( patch_size=self.patch_size, in_chans=embed_dims[3], embed_dim=embed_dims[3]*2,
-            norm_layer=norm_layer if self.patch_norm else None,  spatial_dims=spatial_dims)
+        self.downsample_4 = PatchMerging(dim = embed_dims[3], norm_layer=norm_layer, spatial_dims=len(img_size))             
         # self.norm4 = norm_layer(embed_dims[3])
         cur += depths[3]
 
@@ -203,8 +195,8 @@ class MRATransformer(nn.Module):
             x1, x_h = blk(x1)       # B, d, h, w, c
             # x1 = x1.view(b, d, h, w, -1)
         # print('########### Stage 1 - Output: {}'.format(x_rgb.shape))
-        x1 = rearrange(x1, "b d h w c -> b c d h w")
         x1 = self.downsample_1(x1)
+        x1 = rearrange(x1, "b d h w c -> b c d h w")
         x1_out = self.proj_out(x1, normalize)
         print(f'x1_out:{x1_out.shape}')
         outs.append(x1_out)
@@ -218,8 +210,8 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block2):
             x2, x_h = blk(x2)
             # x2 = x2.view(b, d, h, w, -1)
-        x2 = rearrange(x2, "b d h w c -> b c d h w")
         x2 = self.downsample_2(x2)
+        x2 = rearrange(x2, "b d h w c -> b c d h w")
         x2_out = self.proj_out(x2, normalize)
         print(f'x2_out:{x2_out.shape}')
         outs.append(x2_out)
@@ -234,8 +226,8 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block3):
             x3, x_h = blk(x3)
             # x3 = x3.view(b, d, h, w, -1)
-        x3 = rearrange(x3, "b d h w c -> b c d h w")
         x3 = self.downsample_3(x3)
+        x3 = rearrange(x3, "b d h w c -> b c d h w")
         x3_out = self.proj_out(x3, normalize)
         print(f'x3_out:{x3_out.shape}')
         outs.append(x3_out)
@@ -248,9 +240,9 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block4):
             x4 = blk(x4)
             # x4 = x4.view(b, d, h, w, -1)
-        x4 = rearrange(x4, "b d h w c -> b c d h w")
         x4 = self.downsample_4(x4)
         print(f'x4:{x4.shape}')
+        x4 = rearrange(x4, "b d h w c -> b c d h w")
         x4_out = self.proj_out(x4, normalize)
         print(f'x4_out:{x4_out.shape}')
         outs.append(x4_out)
