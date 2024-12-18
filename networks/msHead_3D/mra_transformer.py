@@ -184,7 +184,7 @@ class MRATransformer(nn.Module):
         x0 = self.pos_drop(x0)
         ########################
         x1 = rearrange(x0, "b c d h w -> b d h w c")
-        
+
         # stage 1
         b,d,h,w,c = x1.shape        
         for j,blk in enumerate(self.block1):
@@ -228,7 +228,7 @@ class MRATransformer(nn.Module):
             x4 = blk(x4)
         x4_out = rearrange(x4, "b d h w c -> b c d h w")
         x4_out = self.proj_out(x4_out, normalize)
-        outs.append(x3_out)
+        outs.append(x4_out)
         ########################
 
         return outs, outs_hf
