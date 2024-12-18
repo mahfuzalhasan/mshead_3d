@@ -186,7 +186,6 @@ class MRATransformer(nn.Module):
         ########################
 
         # stage 1
-        stage += 1
         x1 = rearrange(x0, "b c d h w -> b d h w c")
         b,d,h,w,c = x1.shape        
         for j,blk in enumerate(self.block1):
@@ -201,7 +200,6 @@ class MRATransformer(nn.Module):
         #######################
         
         # stage 2
-        stage += 1
         x2 = rearrange(x1, "b c d h w -> b d h w c")
         b,d,h,w,c = x2.shape
         for j,blk in enumerate(self.block2):
@@ -216,7 +214,6 @@ class MRATransformer(nn.Module):
         
 
         # stage 3
-        stage += 1
         x3 = rearrange(x2, "b c d h w -> b d h w c")
         b,d,h,w,c = x3.shape
         for j,blk in enumerate(self.block2):
@@ -230,7 +227,6 @@ class MRATransformer(nn.Module):
         ########################
 
         # stage 4
-        stage += 1
         x4 = rearrange(x3, "b c d h w -> b d h w c")
         b,d,h,w,c = x4.shape
         for j,blk in enumerate(self.block2):
