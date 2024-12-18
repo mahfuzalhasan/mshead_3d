@@ -10,6 +10,7 @@ from typing import Tuple
 
 import sys
 import os
+from ptflops import get_model_complexity_info
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -22,17 +23,16 @@ sys.path.append(model_dir)
 import torch
 import torch.nn as nn
 from torchinfo import summary
+import torch.nn.functional as F
 
 from monai.networks.nets import UNETR, SwinUNETR
 from monai.networks.blocks.dynunet_block import UnetOutBlock
 from monai.networks.blocks.unetr_block import UnetrBasicBlock, UnetrUpBlock
+
 from idwt_upsample import UnetrIDWTBlock
 from typing import Union
-import torch.nn.functional as F
-from ptflops import get_model_complexity_info
-# from lib.utils.tools.logger import Logger as Log
+
 from lib.models.tools.module_helper import ModuleHelper
-# from networks.UXNet_3D.uxnet_encoder import uxnet_conv
 from networks.msHead_3D.mra_transformer import mra_b0
 
 
