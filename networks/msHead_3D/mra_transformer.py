@@ -75,7 +75,9 @@ class MRATransformer(nn.Module):
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 3,
             img_size=(img_size[0]// 2, img_size[1]//2, img_size[2]//2))
             for i in range(depths[0])])
-        self.downsample_1 = PatchMerging(dim = embed_dims[0], norm_layer=norm_layer, spatial_dims=len(img_size))
+        # self.downsample_1 = PatchMerging(dim = embed_dims[0], norm_layer=norm_layer, spatial_dims=len(img_size))
+        self.downsample_1 = PatchEmbed( patch_size=self.patch_size, in_chans=embed_dims[0], embed_dim=embed_dims[1],
+            norm_layer=norm_layer if self.patch_norm else None,  spatial_dims=spatial_dims)
         # self.norm1 = norm_layer(embed_dims[0])
         cur += depths[0]
 
@@ -84,7 +86,9 @@ class MRATransformer(nn.Module):
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 2,
             img_size=(img_size[0]//4, img_size[1]//4, img_size[2]//4))
             for i in range(depths[1])])
-        self.downsample_2 = PatchMerging(dim = embed_dims[1], norm_layer=norm_layer, spatial_dims=len(img_size))
+        # self.downsample_2 = PatchMerging(dim = embed_dims[1], norm_layer=norm_layer, spatial_dims=len(img_size))
+        self.downsample_2 = PatchEmbed( patch_size=self.patch_size, in_chans=embed_dims[1], embed_dim=embed_dims[2],
+            norm_layer=norm_layer if self.patch_norm else None,  spatial_dims=spatial_dims)
         # self.norm2 = norm_layer(embed_dims[1])
         cur += depths[1]
 
@@ -93,7 +97,9 @@ class MRATransformer(nn.Module):
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 1,
             img_size=(img_size[0]//8, img_size[1]//8, img_size[2]//8))
             for i in range(depths[2])])
-        self.downsample_3 = PatchMerging(dim = embed_dims[2], norm_layer=norm_layer, spatial_dims=len(img_size))
+        # self.downsample_3 = PatchMerging(dim = embed_dims[2], norm_layer=norm_layer, spatial_dims=len(img_size))
+        self.downsample_3 = PatchEmbed( patch_size=self.patch_size, in_chans=embed_dims[2], embed_dim=embed_dims[3],
+            norm_layer=norm_layer if self.patch_norm else None,  spatial_dims=spatial_dims)
         # self.norm3 = norm_layer(embed_dims[2])
         cur += depths[2]
 
@@ -102,7 +108,9 @@ class MRATransformer(nn.Module):
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 0,
             img_size=(img_size[0]//16, img_size[1]//16, img_size[2]//16))
             for i in range(depths[3])])
-        self.downsample_4 = PatchMerging(dim = embed_dims[3], norm_layer=norm_layer, spatial_dims=len(img_size))             
+        # self.downsample_4 = PatchMerging(dim = embed_dims[3], norm_layer=norm_layer, spatial_dims=len(img_size))             
+        self.downsample_4 = PatchEmbed( patch_size=self.patch_size, in_chans=embed_dims[3], embed_dim=embed_dims[3]*2,
+            norm_layer=norm_layer if self.patch_norm else None,  spatial_dims=spatial_dims)
         # self.norm4 = norm_layer(embed_dims[3])
         cur += depths[3]
 
