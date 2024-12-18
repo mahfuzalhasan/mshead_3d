@@ -113,6 +113,7 @@ print(f'--- device:{device} ---')
 if args.network == 'MSHEAD':
     model = MSHEAD_ATTN(
         img_size=(96, 96, 96),
+        patch_size=2,
         in_chans=1,
         out_chans=out_classes,
         depths=[2,2,2,2],
