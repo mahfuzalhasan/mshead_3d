@@ -57,9 +57,7 @@ class ProjectionHead(nn.Module):
     def forward(self, x):
         return F.normalize(self.proj(x), p=2, dim=1)
 
-
 class MSHEAD_ATTN(nn.Module):
-
     def __init__(
         self,
         img_size = (96,96,96),
@@ -175,7 +173,7 @@ class MSHEAD_ATTN(nn.Module):
             in_channels=self.hidden_size,
             out_channels=self.hidden_size,
             kernel_size=3,
-            stride=2,
+            stride=1,
             norm_name=norm_name,
             res_block=res_block,
         )
@@ -237,7 +235,7 @@ class MSHEAD_ATTN(nn.Module):
         new_axes = (0, len(x.shape) - 1) + tuple(d + 1 for d in range(len(feat_size)))
         x = x.permute(new_axes).contiguous()
         return x
-    
+
     def forward(self, x_in):
         outs, outs_hf = self.multiscale_transformer(x_in)
         
@@ -324,3 +322,7 @@ if __name__=="__main__":
     # macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
     # print('{:<30}  {:<8}'.format('Computational complexity ptflops: ', macs))
     # print('{:<30}  {:<8}'.format('Number of parameters from ptflops: ', params))
+
+
+
+        
