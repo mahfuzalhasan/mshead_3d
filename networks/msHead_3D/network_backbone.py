@@ -175,7 +175,7 @@ class MSHEAD_ATTN(nn.Module):
             in_channels=self.hidden_size,
             out_channels=self.hidden_size,
             kernel_size=3,
-            stride=2,
+            stride=1,
             norm_name=norm_name,
             res_block=res_block,
         )
