@@ -4,7 +4,7 @@ import torch.nn.init as init
 import torch.nn.functional as F
 from torch.nn import LayerNorm
 
-
+import itertools
 from functools import partial
 from einops import rearrange
 import os

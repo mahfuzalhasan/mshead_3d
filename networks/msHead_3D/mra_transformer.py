@@ -40,9 +40,9 @@ class MRATransformer(nn.Module):
         self.num_classes = num_classes
         self.depths = depths
         self.patch_norm = patch_norm
-        # self.logger = get_logger()
+        self.patch_size = patch_size
         self.img_size = img_size
-        # print('img_size: ',img_size)
+        print('img_size: ',img_size)
 
         self.patch_embed = PatchEmbed(
             patch_size=self.patch_size,
@@ -68,7 +68,7 @@ class MRATransformer(nn.Module):
         dpr = [x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))]  # stochastic depth decay rule
         cur = 0
         # print(f'dpr: {dpr}')
-        # 56x56
+        
         
         self.block1 = nn.ModuleList([Block(
             dim=embed_dims[0], num_heads=num_heads[0], mlp_ratio=mlp_ratios[0], qkv_bias=qkv_bias, qk_scale=qk_scale,
@@ -79,7 +79,6 @@ class MRATransformer(nn.Module):
         # self.norm1 = norm_layer(embed_dims[0])
         cur += depths[0]
 
-        # 28x28
         self.block2 = nn.ModuleList([Block(
             dim=embed_dims[1], num_heads=num_heads[1], mlp_ratio=mlp_ratios[1], qkv_bias=qkv_bias, qk_scale=qk_scale,
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 2,
@@ -89,7 +88,6 @@ class MRATransformer(nn.Module):
         # self.norm2 = norm_layer(embed_dims[1])
         cur += depths[1]
 
-        # 14x14
         self.block3 = nn.ModuleList([Block(
             dim=embed_dims[2], num_heads=num_heads[2], mlp_ratio=mlp_ratios[2], qkv_bias=qkv_bias, qk_scale=qk_scale,
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 1,
@@ -99,7 +97,6 @@ class MRATransformer(nn.Module):
         # self.norm3 = norm_layer(embed_dims[2])
         cur += depths[2]
 
-        #7x7
         self.block4 = nn.ModuleList([Block(
             dim=embed_dims[3], num_heads=num_heads[3], mlp_ratio=mlp_ratios[3], qkv_bias=qkv_bias, qk_scale=qk_scale,
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 0,
@@ -305,6 +302,6 @@ if __name__=="__main__":
     total_params = sum(p.numel() for p in backbone.parameters() if p.requires_grad)
     print(f"Total trainable parameters: {total_params}")
 
-    macs, params = get_model_complexity_info(backbone, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
-    print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
-    print('{:<30}  {:<8}'.format('Number of parameters: ', params))
+    # macs, params = get_model_complexity_info(backbone, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
+    # print('{:<30}  {:<8}'.format('Computational complexity: ', macs))
+    # print('{:<30}  {:<8}'.format('Number of parameters: ', params))
