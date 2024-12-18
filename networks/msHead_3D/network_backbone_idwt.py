@@ -33,7 +33,7 @@ from idwt_upsample import UnetrIDWTBlock
 from typing import Union
 
 from lib.models.tools.module_helper import ModuleHelper
-from networks.msHead_3D.mra_transformer import mra_b0
+from networks.msHead_3D.mra_transformer_swin_like import mra_b0
 
 
 
