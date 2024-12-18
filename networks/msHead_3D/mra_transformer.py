@@ -183,9 +183,9 @@ class MRATransformer(nn.Module):
         x0 = self.patch_embed(x_rgb)                # B, c, d, h, w         
         x0 = self.pos_drop(x0)
         ########################
-
-        # stage 1
         x1 = rearrange(x0, "b c d h w -> b d h w c")
+        
+        # stage 1
         b,d,h,w,c = x1.shape        
         for j,blk in enumerate(self.block1):
             x1, x_h = blk(x1)       # B, d, h, w, c
@@ -219,7 +219,7 @@ class MRATransformer(nn.Module):
         outs.append(x3_out)
         outs_hf.append(x_h)
 
-        x4 = self.downsample_2(x3)
+        x4 = self.downsample_3(x3)
         ########################
 
         # stage 4
