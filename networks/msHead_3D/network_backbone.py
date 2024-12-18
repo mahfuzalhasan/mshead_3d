@@ -21,7 +21,7 @@ sys.path.append(model_dir)
 
 import torch
 import torch.nn as nn
-from torchsummary import summary
+from torchinfo import summary
 
 from monai.networks.nets import UNETR, SwinUNETR
 from monai.networks.blocks.dynunet_block import UnetOutBlock
