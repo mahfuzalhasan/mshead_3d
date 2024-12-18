@@ -1080,7 +1080,7 @@ class SwinTransformer(nn.Module):
             x0 = self.layers1c[0](x0.contiguous())
         x1 = self.layers1[0](x0.contiguous())
         x1_out = self.proj_out(x1, normalize)
-        print(f'x_1:{x1.shape} x1_out:{x0_out.shape}')
+        print(f'x_1:{x1.shape} x1_out:{x1_out.shape}')
         if self.use_v2:
             x1 = self.layers2c[0](x1.contiguous())
         x2 = self.layers2[0](x1.contiguous())
@@ -1095,7 +1095,7 @@ class SwinTransformer(nn.Module):
             x3 = self.layers4c[0](x3.contiguous())
         x4 = self.layers4[0](x3.contiguous())
         x4_out = self.proj_out(x4, normalize)
-        print(f'x_4:{x4.shape} x4_out:{x0_out.shape}')
+        print(f'x_4:{x4.shape} x4_out:{x4_out.shape}')
         return [x0_out, x1_out, x2_out, x3_out, x4_out]
 
 
