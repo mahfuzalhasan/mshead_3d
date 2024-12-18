@@ -184,10 +184,10 @@ class CCF_FFN(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        D, H, W = self.D, self.H, self.W
-        B, N, C = x.shape
-        assert N == D * H * W
-        x_perm = x.permute(0, 2, 1).contiguous().view(B, C, D, H, W)
+        B, D, H, W, C = x.shape
+        N = D * H * W
+        assert N == self.D * self.H * self.W
+        x_perm = x.permute(0, 4, 1, 2, 3).contiguous().view(B, C, D, H, W)
         
         p_out = self.pwconv(x_perm).reshape(B, self.C_hid, N).permute(0, 2, 1).contiguous()
         p_out = self.act(self.norm1(p_out))
@@ -197,6 +197,7 @@ class CCF_FFN(nn.Module):
         d_out = self.act(self.norm2(d_out))
         
         x_out = self.fc(d_out)
+        x_out = x_out.view(B, D, H, W, -1)
         x = x + x_out
         return x
 
@@ -283,8 +284,6 @@ class Block(nn.Module):
             dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
             attn_drop=attn_drop, proj_drop=drop, img_size=img_size)
 
-        
-
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
         self.norm2 = norm_layer(dim)
@@ -356,9 +355,9 @@ class Block(nn.Module):
             x = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
         
         
-        x = x.permute(0, 2, 3, 4, 1).contiguous().view(B, D * H * W, C)
+        x = x.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
         x = shortcut + self.drop_path(x)
-        x = x + self.drop_path(self.mlp(self.norm2(x)))
+        x = x + self.drop_path(self.mlp(self.norm2(x)))              # B, D, H, W, C
         # print(f'final output:{x.shape}')
         if self.level > 0:
             return x, x_h

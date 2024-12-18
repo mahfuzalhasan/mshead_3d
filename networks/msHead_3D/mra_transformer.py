@@ -108,17 +108,18 @@ class MRATransformer(nn.Module):
 
         self.apply(self._init_weights)
 
+    # x --> B, C, D, H, W
     def proj_out(self, x, normalize=False):
         if normalize:
             x_shape = x.shape
             # Force trace() to generate a constant by casting to int
             ch = int(x_shape[1])
             if len(x_shape) == 5:
-                # x = rearrange(x, "n c d h w -> n d h w c")
+                x = rearrange(x, "n c d h w -> n d h w c")
                 x = F.layer_norm(x, [ch])
                 x = rearrange(x, "n d h w c -> n c d h w")
             elif len(x_shape) == 4:
-                # x = rearrange(x, "n c h w -> n h w c")
+                x = rearrange(x, "n c h w -> n h w c")
                 x = F.layer_norm(x, [ch])
                 x = rearrange(x, "n h w c -> n c h w")
         return x
@@ -181,7 +182,7 @@ class MRATransformer(nn.Module):
         ######## Patch Embedding
         x0 = self.patch_embed(x_rgb)                # B, c, d, h, w          
         x0 = self.pos_drop(x0)
-        x0_out = self.proj_out(x0, normalize)       # B,c,d,h,w
+        x0_out = self.proj_out(x0, normalize)       # B, c, d, h, w
         outs.append(x0_out)
         ########################
 
@@ -189,8 +190,8 @@ class MRATransformer(nn.Module):
         x1 = rearrange(x0, "b c d h w -> b d h w c")
         b,d,h,w,c = x1.shape        
         for j,blk in enumerate(self.block1):
-            x1, x_h = blk(x1)       # B, N, c where N = d*h*w
-            x1 = x1.view(b, d, h, w, -1)
+            x1, x_h = blk(x1)       # B, d, h, w, c
+            # x1 = x1.view(b, d, h, w, -1)
         # print('########### Stage 1 - Output: {}'.format(x_rgb.shape))
         x1 = self.downsample_1(x1)
         x1 = rearrange(x1, "b d h w c -> b c d h w")
@@ -204,7 +205,7 @@ class MRATransformer(nn.Module):
         b,d,h,w,c = x2.shape
         for j,blk in enumerate(self.block2):
             x2, x_h = blk(x2)
-            x2 = x2.view(b, d, h, w, -1)
+            # x2 = x2.view(b, d, h, w, -1)
         x2 = self.downsample_2(x2)
         x2 = rearrange(x2, "b d h w c -> b c d h w")
         x2_out = self.proj_out(x2, normalize)
@@ -218,7 +219,7 @@ class MRATransformer(nn.Module):
         b,d,h,w,c = x3.shape
         for j,blk in enumerate(self.block2):
             x3, x_h = blk(x3)
-            x3 = x3.view(b, d, h, w, -1)
+            # x3 = x3.view(b, d, h, w, -1)
         x3 = self.downsample_3(x3)
         x3 = rearrange(x3, "b d h w c -> b c d h w")
         x3_out = self.proj_out(x3, normalize)
@@ -231,7 +232,7 @@ class MRATransformer(nn.Module):
         b,d,h,w,c = x4.shape
         for j,blk in enumerate(self.block2):
             x4 = blk(x4)
-            x4 = x4.view(b, d, h, w, -1)
+            # x4 = x4.view(b, d, h, w, -1)
         x4 = self.downsample_4(x4)
         x4 = rearrange(x4, "b d h w c -> b c d h w")
         x4_out = self.proj_out(x4, normalize)
