@@ -175,12 +175,13 @@ class MRATransformer(nn.Module):
         """
         x_rgb: B x C x D x H x W
         """
-        # print(f'input: {x_rgb.shape}')
+        print(f'input: {x_rgb.shape}')
         outs = []
         outs_hf = []
         B, C, D, H, W = x_rgb.shape
         ######## Patch Embedding
-        x0 = self.patch_embed(x_rgb)                # B, c, d, h, w          
+        x0 = self.patch_embed(x_rgb)                # B, c, d, h, w    
+        print(f'patch embed:{x0.shape}')      
         x0 = self.pos_drop(x0)
         x0_out = self.proj_out(x0, normalize)       # B, c, d, h, w
         outs.append(x0_out)
@@ -189,6 +190,7 @@ class MRATransformer(nn.Module):
         # stage 1
         x1 = rearrange(x0, "b c d h w -> b d h w c")
         b,d,h,w,c = x1.shape        
+        print(f'x1:{x1.shape}')
         for j,blk in enumerate(self.block1):
             x1, x_h = blk(x1)       # B, d, h, w, c
             # x1 = x1.view(b, d, h, w, -1)
