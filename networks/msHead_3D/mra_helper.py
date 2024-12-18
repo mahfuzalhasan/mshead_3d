@@ -324,7 +324,6 @@ class Block(nn.Module):
     def forward(self, x):
         D,H,W = self.img_size
         B,_,_,_,C = x.shape
-        print(f'img:{self.img_size} inp_shape:{x.shape}')
         assert D == x.shape[1]
         assert H == x.shape[2]
         assert W == x.shape[3]
@@ -354,11 +353,9 @@ class Block(nn.Module):
         if self.level > 0:
             x = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
         
-        
         x = x.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
         x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))              # B, D, H, W, C
-        print(f'final output:{x.shape}')
         if self.level > 0:
             return x, x_h
         return x
