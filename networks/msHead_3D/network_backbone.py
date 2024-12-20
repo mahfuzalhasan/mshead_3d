@@ -363,6 +363,7 @@ class MSHEAD_ATTN(nn.Module):
         combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
         print(f'combined shape:{combined.shape}')
         proj = self.projection(combined)
+        print(f'proj:{proj.shape}')
         dec1 = self.decoder1(proj, enc0)
         print(f'dec1: {dec1.shape}')
         
