@@ -252,20 +252,21 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        self.encoder10 = ChannelCalibration(
-                in_channels=self.feat_size[3], 
-                reduction_ratio=4,
-        )
-
-        # self.encoder10 = UnetrBasicBlock(
-        #     spatial_dims=spatial_dims,
-        #     in_channels=self.hidden_size,
-        #     out_channels=self.hidden_size,
-        #     kernel_size=3,
-        #     stride=1,
-        #     norm_name=norm_name,
-        #     res_block=res_block,
+        # self.encoder10 = ChannelCalibration(
+        #         in_channels=self.feat_size[3], 
+        #         reduction_ratio=4,
+        #         norm_layer=nn.InstanceNorm3d
         # )
+
+        self.encoder10 = UnetrBasicBlock(
+            spatial_dims=spatial_dims,
+            in_channels=self.feat_size[3],
+            out_channels=self.feat_size[3],
+            kernel_size=3,
+            stride=1,
+            norm_name=norm_name,
+            res_block=res_block,
+        )
 
         self.decoder4 = UnetrIDWTBlock(
             spatial_dims=spatial_dims,
@@ -296,15 +297,6 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        # self.reduce = get_conv_layer(
-        #     spatial_dims,
-        #     in_channels=self.feat_size[2]+self.feat_size[1]+self.feat_size[0] ,
-        #     out_channels=self.feat_size[0],
-        #     kernel_size=1,
-        #     stride=1,
-        #     conv_only=True,
-        #     is_transposed=False,
-        # )
 
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
