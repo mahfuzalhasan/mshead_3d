@@ -266,7 +266,7 @@ class MSHEAD_ATTN(nn.Module):
         # Upsample dec4 and dec3 to match dec2 resolution
         dec4_upsampled = F.interpolate(dec4, size=dec2.shape[2:], mode="trilinear", align_corners=False)
         dec3_upsampled = F.interpolate(dec3, size=dec2.shape[2:], mode="trilinear", align_corners=False)
-        print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled}')
+        print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled.shape}')
 
         # Fuse all decoder features
         combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
