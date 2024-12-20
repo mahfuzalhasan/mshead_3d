@@ -307,7 +307,7 @@ class MSHEAD_ATTN(nn.Module):
             kernel_size=3,
             upsample_kernel_size=2,
             norm_name=norm_name,
-            res_block=False,
+            res_block=res_block,
         )
 
         self.learnable_up3 = UnetrUpBlock(
@@ -317,7 +317,7 @@ class MSHEAD_ATTN(nn.Module):
             kernel_size=3,
             upsample_kernel_size=2,
             norm_name=norm_name,
-            res_block=False,
+            res_block=res_block,
         )
         
         self.decoder1 = UnetrUpBlock(
