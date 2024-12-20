@@ -26,7 +26,7 @@ import torch.nn.functional as F
 from ptflops import get_model_complexity_info
 
 from monai.networks.nets import UNETR, SwinUNETR
-from monai.networks.blocks.dynunet_block import UnetOutBlock
+from monai.networks.blocks.dynunet_block import UnetOutBlock, get_conv_layer
 from monai.networks.blocks.unetr_block import UnetrBasicBlock, UnetrUpBlock
 
 from typing import Union
@@ -210,6 +210,16 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
+        self.reduce = get_conv_layer(
+            spatial_dims,
+            in_channels=self.feat_size[2]+self.feat_size[1]+self.feat_size[0] ,
+            out_channels=self.feat_size[0],
+            kernel_size=1,
+            stride=1,
+            conv_only=True,
+            is_transposed=False,
+        )
+
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[0],
@@ -271,9 +281,11 @@ class MSHEAD_ATTN(nn.Module):
         # Fuse all decoder features
         combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
         print(f'combined shape:{combined.shape}')
-
         
-        dec1 = self.decoder1(combined, enc0)
+        dec2_reduced = self.reduce(combined)
+        print(f'dec2 reduced:{dec2_reduced.shape}')
+
+        dec1 = self.decoder1(dec2_reduced, enc0)
         print(f'dec1: {dec1.shape}')
         
         return self.out(dec1)
