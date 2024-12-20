@@ -297,8 +297,28 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        self.learnable_up4 = nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=3, stride=4)
-        self.learnable_up3 = nn.ConvTranspose3d(self.feat_size[1], self.feat_size[1], kernel_size=3, stride=2)
+        # self.learnable_up4 = nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=3, stride=4)
+        # self.learnable_up3 = nn.ConvTranspose3d(self.feat_size[1], self.feat_size[1], kernel_size=3, stride=2)
+
+        self.learnable_up4 = UnetrUpBlock(
+            spatial_dims=spatial_dims,
+            in_channels=self.feat_size[2],
+            out_channels=self.feat_size[2],
+            kernel_size=3,
+            upsample_kernel_size=2,
+            norm_name=norm_name,
+            res_block=False,
+        )
+
+        self.learnable_up3 = UnetrUpBlock(
+            spatial_dims=spatial_dims,
+            in_channels=self.feat_size[1],
+            out_channels=self.feat_size[1],
+            kernel_size=3,
+            upsample_kernel_size=2,
+            norm_name=norm_name,
+            res_block=False,
+        )
         
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
