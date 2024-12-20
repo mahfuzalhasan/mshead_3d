@@ -27,9 +27,6 @@ rearrange, _ = optional_import("einops", name="rearrange")
 from mra_helper import Block, PatchMerging
 # from utils.logger import get_logger
 
-
-
-
 # How to apply multihead multiscale
 class MRATransformer(nn.Module):
     def __init__(self, img_size=(96, 96, 96), patch_size=2, in_chans=1, num_classes=5, embed_dims=[48, 96, 192, 384], 
@@ -88,8 +85,7 @@ class MRATransformer(nn.Module):
             dim=embed_dims[3], num_heads=num_heads[3], mlp_ratio=mlp_ratios[3], qkv_bias=qkv_bias, qk_scale=qk_scale,
             drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 0,
             img_size=(img_size[0]//16, img_size[1]//16, img_size[2]//16))
-            for i in range(depths[3])])
-        # self.downsample_4 = PatchMerging(dim = embed_dims[3], norm_layer=norm_layer, spatial_dims=len(img_size))             
+            for i in range(depths[3])])             
         # self.norm4 = norm_layer(embed_dims[3])
         cur += depths[3]
 

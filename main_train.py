@@ -146,6 +146,8 @@ elif args.network == 'UNETR':
     ).to(device)
 
 print('Chosen Network Architecture: {}'.format(args.network))
+total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+print(f"Total trainable parameters: {total_params}")
 
 if args.dataset == 'amos' and args.pretrained_weights is not None:
     print('Pretrained weight is found! Start to load weight from: {}'.format(args.pretrained_weights), flush=True)
