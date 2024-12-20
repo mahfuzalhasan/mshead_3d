@@ -210,19 +210,19 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        self.reduce = get_conv_layer(
-            spatial_dims,
-            in_channels=self.feat_size[2]+self.feat_size[1]+self.feat_size[0] ,
-            out_channels=self.feat_size[0],
-            kernel_size=1,
-            stride=1,
-            conv_only=True,
-            is_transposed=False,
-        )
+        # self.reduce = get_conv_layer(
+        #     spatial_dims,
+        #     in_channels=self.feat_size[2]+self.feat_size[1]+self.feat_size[0] ,
+        #     out_channels=self.feat_size[0],
+        #     kernel_size=1,
+        #     stride=1,
+        #     conv_only=True,
+        #     is_transposed=False,
+        # )
 
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.feat_size[0],
+            in_channels=self.feat_size[2]+self.feat_size[1]+self.feat_size[0],
             out_channels=self.feat_size[0],
             kernel_size=3,
             upsample_kernel_size=2,
@@ -282,10 +282,10 @@ class MSHEAD_ATTN(nn.Module):
         combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
         print(f'combined shape:{combined.shape}')
         
-        dec2_reduced = self.reduce(combined)
-        print(f'dec2 reduced:{dec2_reduced.shape}')
+        # dec2_reduced = self.reduce(combined)
+        # print(f'dec2 reduced:{dec2_reduced.shape}')
 
-        dec1 = self.decoder1(dec2_reduced, enc0)
+        dec1 = self.decoder1(combined, enc0)
         print(f'dec1: {dec1.shape}')
         
         return self.out(dec1)

@@ -96,7 +96,7 @@ class UnetrIDWTBlock(nn.Module):
         print(f'input: {inp.shape} skip:{skip.shape} in:{self.in_channels} out:{self.out_channels}')
         inp = self.conv_lf_block(inp)
         print(f'input after conv: {inp.shape}')
-        inp_tuple = (inp,) + (hf_coeffs,)
+        inp_tuple = (inp,) + hf_coeffs
         out = ptwt.waverec3(inp_tuple, wavelet=self.wavelet)
         # print(f'out:{out.shape}')
         out = torch.cat((out, skip), dim=1)
