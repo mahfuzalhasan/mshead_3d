@@ -262,10 +262,21 @@ class MSHEAD_ATTN(nn.Module):
         print(f'dec3: {dec3.shape}')
         dec2 = self.decoder2(outs[3], enc1, outs_hf[-3])
         print(f'dec2: {dec2.shape}')
-        dec1 = self.decoder1(dec2, enc0)
+
+        # Upsample dec4 and dec3 to match dec2 resolution
+        dec4_upsampled = F.interpolate(dec4, size=dec2.shape[2:], mode="trilinear", align_corners=False)
+        dec3_upsampled = F.interpolate(dec3, size=dec2.shape[2:], mode="trilinear", align_corners=False)
+        print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled}')
+
+        # Fuse all decoder features
+        combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
+        print(f'combined shape:{combined.shape}')
+
+        
+        dec1 = self.decoder1(combined, enc0)
         print(f'dec1: {dec1.shape}')
         
-        return self.out(dec2)
+        return self.out(dec1)
     
     
     
