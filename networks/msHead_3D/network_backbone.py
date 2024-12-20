@@ -57,6 +57,88 @@ class ProjectionHead(nn.Module):
 
     def forward(self, x):
         return F.normalize(self.proj(x), p=2, dim=1)
+    
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class ChannelCalibration(nn.Module):
+    def __init__(self, in_channels=384, reduction_ratio=4, norm_layer=nn.BatchNorm3d):
+        """
+        SENet-style bottleneck with normalization.
+        Args:
+            in_channels: Number of input channels.
+            reduction_ratio: Reduction ratio for channel squeeze.
+            norm_layer: Normalization layer to use (e.g., BatchNorm3d or InstanceNorm3d).
+        """
+        super(ChannelCalibration, self).__init__()
+        reduced_channels = in_channels // reduction_ratio
+
+        # Dimensionality Reduction and Expansion
+        self.reduce = nn.Conv3d(in_channels, reduced_channels, kernel_size=1)
+        self.norm_reduce = norm_layer(reduced_channels)
+
+        self.conv = nn.Conv3d(reduced_channels, reduced_channels, kernel_size=3, padding=1)
+        self.norm_conv = norm_layer(reduced_channels)
+
+        self.expand = nn.Conv3d(reduced_channels, in_channels, kernel_size=1)
+        self.norm_expand = norm_layer(in_channels)
+
+        # Squeeze-and-Excitation (Global Attention)
+        self.global_pool = nn.AdaptiveAvgPool3d(1)  # Global average pooling
+        self.fc1 = nn.Linear(in_channels, reduced_channels)
+        self.fc2 = nn.Linear(reduced_channels, in_channels)
+
+        # Residual connection
+        self.residual = nn.Conv3d(in_channels, in_channels, kernel_size=1)
+
+        # Activation functions
+        self.sigmoid = nn.Sigmoid()
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        """
+        Args:
+            x: Input tensor of shape (B, in_channels, D, H, W).
+        Returns:
+            Output tensor of shape (B, in_channels, D, H, W).
+        """
+        identity = self.residual(x)  # Residual connection
+
+        # Dimensionality reduction and spatial refinement
+        x = self.reduce(x)
+        x = self.norm_reduce(x)  # Normalize reduced features
+        x = self.relu(x)
+
+        x = self.conv(x)
+        x = self.norm_conv(x)  # Normalize after spatial convolution
+        x = self.relu(x)
+
+        x = self.expand(x)
+        x = self.norm_expand(x)  # Normalize expanded features
+
+        # Squeeze-and-Excitation
+        b, c, _, _, _ = x.shape
+        se = self.global_pool(x).view(b, c)  # Global pooling to (B, C)
+        se = F.relu(self.fc1(se))  # First FC layer
+        se = self.sigmoid(self.fc2(se))  # Second FC layer + sigmoid
+        se = se.view(b, c, 1, 1, 1)  # Reshape to (B, C, 1, 1, 1)
+        x = x * se  # Scale channels
+
+        # Add residual and return
+        return self.relu(x + identity)
+
+
+
 
 
 class MSHEAD_ATTN(nn.Module):
@@ -170,6 +252,10 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
+        self.encoder10 = ChannelCalibration(
+                in_channels=self.feat_size[3], 
+                reduction_ratio=4,
+        )
 
         # self.encoder10 = UnetrBasicBlock(
         #     spatial_dims=spatial_dims,
@@ -266,29 +352,29 @@ class MSHEAD_ATTN(nn.Module):
         enc3 = self.encoder4(outs[2])
         print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
 
-        dec4 = self.decoder4(outs[3], enc3, outs_hf[-1])
-        print(f'dec4: {dec4.shape}')
-        dec3 = self.decoder3(outs[3], enc2, outs_hf[-2])
-        print(f'dec3: {dec3.shape}')
-        dec2 = self.decoder2(outs[3], enc1, outs_hf[-3])
-        print(f'dec2: {dec2.shape}')
+        dec4 = self.encoder10(outs[3])
+        print(f'bottleneck:{dec4.shape}')
+
+        dec3 = self.decoder4(dec4, enc3, outs_hf[-1])
+        print(f'dec4: {dec3.shape}')
+        dec2 = self.decoder3(dec4, enc2, outs_hf[-2])
+        print(f'dec3: {dec2.shape}')
+        dec1 = self.decoder2(dec4, enc1, outs_hf[-3])
+        print(f'dec2: {dec1.shape}')
 
         # Upsample dec4 and dec3 to match dec2 resolution
-        dec4_upsampled = F.interpolate(dec4, size=dec2.shape[2:], mode="trilinear", align_corners=False)
         dec3_upsampled = F.interpolate(dec3, size=dec2.shape[2:], mode="trilinear", align_corners=False)
-        print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled.shape}')
+        dec2_upsampled = F.interpolate(dec2, size=dec2.shape[2:], mode="trilinear", align_corners=False)
+        print(f'upsampled dec4:{dec3_upsampled.shape} dec3:{dec2_upsampled.shape}')
 
         # Fuse all decoder features
-        combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
+        combined = torch.cat([dec3_upsampled, dec2_upsampled, dec1], dim=1)  # Concatenate along channel dimension
         print(f'combined shape:{combined.shape}')
-        
-        # dec2_reduced = self.reduce(combined)
-        # print(f'dec2 reduced:{dec2_reduced.shape}')
 
-        dec1 = self.decoder1(combined, enc0)
-        print(f'dec1: {dec1.shape}')
+        dec0 = self.decoder1(combined, enc0)
+        print(f'dec1: {dec0.shape}')
         
-        return self.out(dec1)
+        return self.out(dec0)
     
     
     
