@@ -351,21 +351,18 @@ class MSHEAD_ATTN(nn.Module):
         dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
         #print(f'dec2: {dec2.shape}')
 
-        # Upsample dec4 and dec3 to match dec2 resolution
-        # dec4_upsampled = F.interpolate(dec4, size=dec2.shape[2:], mode="trilinear", align_corners=False)
-        # dec3_upsampled = F.interpolate(dec3, size=dec2.shape[2:], mode="trilinear", align_corners=False)
         # Learnable upsampling
         dec4_upsampled = self.learnable_up4(dec4)
         dec3_upsampled = self.learnable_up3(dec3)
-        print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled.shape}')
+        # print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled.shape}')
 
         # Fuse all decoder features
         combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
-        print(f'combined shape:{combined.shape}')
+        # print(f'combined shape:{combined.shape}')
         proj = self.projection(combined)
-        print(f'proj:{proj.shape}')
+        # print(f'proj:{proj.shape}')
         dec1 = self.decoder1(proj, enc0)
-        print(f'dec1: {dec1.shape}')
+        # print(f'dec1: {dec1.shape}')
         
         return self.out(dec1)
     
