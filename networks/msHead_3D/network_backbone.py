@@ -252,21 +252,21 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        # self.encoder10 = ChannelCalibration(
-        #         in_channels=self.feat_size[3], 
-        #         reduction_ratio=4,
-        #         norm_layer=nn.InstanceNorm3d
-        # )
-
-        self.encoder10 = UnetrBasicBlock(
-            spatial_dims=spatial_dims,
-            in_channels=self.feat_size[3],
-            out_channels=self.feat_size[3],
-            kernel_size=1,
-            stride=1,
-            norm_name=norm_name,
-            res_block=res_block,
+        self.encoder10 = ChannelCalibration(
+                in_channels=self.feat_size[3], 
+                reduction_ratio=4,
+                norm_layer=nn.InstanceNorm3d
         )
+
+        # self.encoder10 = UnetrBasicBlock(
+        #     spatial_dims=spatial_dims,
+        #     in_channels=self.feat_size[3],
+        #     out_channels=self.feat_size[3],
+        #     kernel_size=1,
+        #     stride=1,
+        #     norm_name=norm_name,
+        #     res_block=res_block,
+        # )
 
         self.decoder4 = UnetrIDWTBlock(
             spatial_dims=spatial_dims,
