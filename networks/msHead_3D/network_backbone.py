@@ -22,18 +22,19 @@ sys.path.append(model_dir)
 import torch
 import torch.nn as nn
 from torchinfo import summary
+import torch.nn.functional as F
+from ptflops import get_model_complexity_info
 
 from monai.networks.nets import UNETR, SwinUNETR
 from monai.networks.blocks.dynunet_block import UnetOutBlock
 from monai.networks.blocks.unetr_block import UnetrBasicBlock, UnetrUpBlock
-from idwt_upsample import UnetrIDWTBlock
+
 from typing import Union
-import torch.nn.functional as F
-from ptflops import get_model_complexity_info
-# from lib.utils.tools.logger import Logger as Log
+
 from lib.models.tools.module_helper import ModuleHelper
 # from networks.UXNet_3D.uxnet_encoder import uxnet_conv
-from networks.msHead_3D.mra_transformer_swin_like import mra_b0
+from networks.msHead_3D.mra_transformer import mra_b0
+from idwt_upsample import UnetrIDWTBlock
 
 
 
@@ -261,6 +262,8 @@ class MSHEAD_ATTN(nn.Module):
         print(f'dec3: {dec3.shape}')
         dec2 = self.decoder2(outs[3], enc1, outs_hf[-1])
         print(f'dec2: {dec2.shape}')
+        dec1 = self.decoder1(dec2, enc0)
+        print(f'dec1: {dec1.shape}')
         
         return self.out(dec2)
     
