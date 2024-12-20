@@ -352,29 +352,29 @@ class MSHEAD_ATTN(nn.Module):
         enc3 = self.encoder4(outs[2])
         print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
 
-        dec4 = self.encoder10(outs[3])
-        print(f'bottleneck:{dec4.shape}')
+        dec5 = self.encoder10(outs[3])
+        print(f'bottleneck:{dec5.shape}')
 
-        dec3 = self.decoder4(dec4, enc3, outs_hf[-1])
-        print(f'dec4: {dec3.shape}')
-        dec2 = self.decoder3(dec4, enc2, outs_hf[-2])
-        print(f'dec3: {dec2.shape}')
-        dec1 = self.decoder2(dec4, enc1, outs_hf[-3])
-        print(f'dec2: {dec1.shape}')
+        dec4 = self.decoder4(dec5, enc3, outs_hf[-1])
+        print(f'dec4: {dec4.shape}')
+        dec3 = self.decoder3(dec5, enc2, outs_hf[-2])
+        print(f'dec3: {dec3.shape}')
+        dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
+        print(f'dec2: {dec2.shape}')
 
         # Upsample dec4 and dec3 to match dec2 resolution
+        dec4_upsampled = F.interpolate(dec4, size=dec2.shape[2:], mode="trilinear", align_corners=False)
         dec3_upsampled = F.interpolate(dec3, size=dec2.shape[2:], mode="trilinear", align_corners=False)
-        dec2_upsampled = F.interpolate(dec2, size=dec2.shape[2:], mode="trilinear", align_corners=False)
-        print(f'upsampled dec4:{dec3_upsampled.shape} dec3:{dec2_upsampled.shape}')
+        print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled.shape}')
 
         # Fuse all decoder features
-        combined = torch.cat([dec3_upsampled, dec2_upsampled, dec1], dim=1)  # Concatenate along channel dimension
+        combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
         print(f'combined shape:{combined.shape}')
 
-        dec0 = self.decoder1(combined, enc0)
-        print(f'dec1: {dec0.shape}')
+        dec1 = self.decoder1(combined, enc0)
+        print(f'dec1: {dec1.shape}')
         
-        return self.out(dec0)
+        return self.out(dec1)
     
     
     
