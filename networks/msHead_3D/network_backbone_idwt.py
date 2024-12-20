@@ -193,7 +193,6 @@ class MSHEAD_ATTN(nn.Module):
             out_channels=self.feat_size[2],
             wavelet='db1',
             kernel_size=3,
-            upsample_kernel_size=2,
             norm_name=norm_name,
             res_block=res_block,
         )
@@ -203,7 +202,6 @@ class MSHEAD_ATTN(nn.Module):
             out_channels=self.feat_size[1],
             wavelet='db1',
             kernel_size=3,
-            upsample_kernel_size=2,
             norm_name=norm_name,
             res_block=res_block,
         )
@@ -213,7 +211,6 @@ class MSHEAD_ATTN(nn.Module):
             out_channels=self.feat_size[0],
             wavelet='db1',
             kernel_size=3,
-            upsample_kernel_size=2,
             norm_name=norm_name,
             res_block=res_block,
         )
