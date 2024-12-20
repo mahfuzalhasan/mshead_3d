@@ -20,7 +20,6 @@ class UnetrIDWTBlock(nn.Module):
         out_channels: int,
         wavelet:str,
         kernel_size: Union[Sequence[int], int],
-        upsample_kernel_size: Union[Sequence[int], int],
         norm_name: Union[Tuple, str],
         res_block: bool = False,
     ) -> None:
