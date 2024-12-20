@@ -39,7 +39,6 @@ class UnetrIDWTBlock(nn.Module):
         super(UnetrIDWTBlock, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
-        upsample_stride = upsample_kernel_size
         self.wavelet = wavelet
         # self.transp_conv = get_conv_layer(
         #     spatial_dims,
@@ -67,24 +66,24 @@ class UnetrIDWTBlock(nn.Module):
         #         stride=1,
         #         norm_name=norm_name,
         # )
-        # if res_block:
-        #     self.conv_block = UnetResBlock(
-        #         spatial_dims,
-        #         out_channels + out_channels,
-        #         out_channels,
-        #         kernel_size=kernel_size,
-        #         stride=1,
-        #         norm_name=norm_name,
-        #     )
-        # else:
-        #     self.conv_block = UnetBasicBlock(  # type: ignore
-        #         spatial_dims,
-        #         out_channels + out_channels,
-        #         out_channels,
-        #         kernel_size=kernel_size,
-        #         stride=1,
-        #         norm_name=norm_name,
-        #     )
+        if res_block:
+            self.conv_block = UnetResBlock(
+                spatial_dims,
+                out_channels + out_channels,
+                out_channels,
+                kernel_size=kernel_size,
+                stride=1,
+                norm_name=norm_name,
+            )
+        else:
+            self.conv_block = UnetBasicBlock(  # type: ignore
+                spatial_dims,
+                out_channels + out_channels,
+                out_channels,
+                kernel_size=kernel_size,
+                stride=1,
+                norm_name=norm_name,
+            )
 
 
     def forward(self, inp, skip, hf_coeffs):
@@ -98,9 +97,9 @@ class UnetrIDWTBlock(nn.Module):
         print(f'input: {inp.shape} skip:{skip.shape} in:{self.in_channels} out:{self.out_channels}')
         inp = self.conv_lf_block(inp)
         print(f'input after conv: {inp.shape}')
-        inp_tuple = (inp,) + (hf_coeffs,)
+        inp_tuple = (inp,) + hf_coeffs
         out = ptwt.waverec3(inp_tuple, wavelet=self.wavelet)
         # print(f'out:{out.shape}')
-        # out = torch.cat((out, skip), dim=1)
-        # out = self.conv_block(out)
+        out = torch.cat((out, skip), dim=1)
+        out = self.conv_block(out)
         return out

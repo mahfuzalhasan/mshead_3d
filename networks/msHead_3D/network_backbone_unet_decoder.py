@@ -33,7 +33,7 @@ from ptflops import get_model_complexity_info
 # from lib.utils.tools.logger import Logger as Log
 from lib.models.tools.module_helper import ModuleHelper
 # from networks.UXNet_3D.uxnet_encoder import uxnet_conv
-from networks.msHead_3D.mra_transformer import mra_b0
+from networks.msHead_3D.mra_transformer_swin_like import mra_b0
 
 
 

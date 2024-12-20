@@ -170,52 +170,42 @@ class MSHEAD_ATTN(nn.Module):
             res_block=res_block,
         )
 
-        self.encoder10 = UnetrBasicBlock(
+        # self.encoder10 = UnetrBasicBlock(
+        #     spatial_dims=spatial_dims,
+        #     in_channels=self.hidden_size,
+        #     out_channels=self.hidden_size,
+        #     kernel_size=3,
+        #     stride=1,
+        #     norm_name=norm_name,
+        #     res_block=res_block,
+        # )
+
+        self.decoder4 = UnetrIDWTBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.hidden_size,
-            out_channels=self.hidden_size,
+            in_channels=self.feat_size[3],
+            out_channels=self.feat_size[2],
+            wavelet='db1',
             kernel_size=3,
-            stride=1,
             norm_name=norm_name,
             res_block=res_block,
         )
 
-        self.decoder5 = UnetrUpBlock(
-            spatial_dims=spatial_dims,
-            in_channels=self.hidden_size,
-            out_channels=self.feat_size[3],
-            kernel_size=3,
-            upsample_kernel_size=2,
-            norm_name=norm_name,
-            res_block=res_block,
-        )
-        self.decoder4 = UnetrUpBlock(
+        self.decoder3 = UnetrIDWTBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[3],
-            out_channels=self.feat_size[2],
-            # wavelet='db1',
-            kernel_size=3,
-            upsample_kernel_size=2,
-            norm_name=norm_name,
-            res_block=res_block,
-        )
-        self.decoder3 = UnetrUpBlock(
-            spatial_dims=spatial_dims,
-            in_channels=self.feat_size[2],
             out_channels=self.feat_size[1],
-            # wavelet='db1',
+            wavelet='db1',
             kernel_size=3,
-            upsample_kernel_size=2,
             norm_name=norm_name,
             res_block=res_block,
         )
-        self.decoder2 = UnetrUpBlock(
+
+        self.decoder2 = UnetrIDWTBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.feat_size[1],
+            in_channels=self.feat_size[3],
             out_channels=self.feat_size[0],
-            # wavelet='db1',
+            wavelet='db1',
             kernel_size=3,
-            upsample_kernel_size=2,
             norm_name=norm_name,
             res_block=res_block,
         )
@@ -265,21 +255,14 @@ class MSHEAD_ATTN(nn.Module):
         enc3 = self.encoder4(outs[2])
         print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
 
-        dec4 = self.encoder10(outs[4])
-        print(f'bottleneck:input:{outs[4].shape} output:{dec4.size()}')
+        dec4 = self.decoder4(outs[3], enc3, outs_hf[-1])
+        print(f'dec4: {dec4.shape}')
+        dec3 = self.decoder3(outs[3], enc2, outs_hf[-2])
+        print(f'dec3: {dec3.shape}')
+        dec2 = self.decoder2(outs[3], enc1, outs_hf[-1])
+        print(f'dec2: {dec2.shape}')
         
-        dec3 = self.decoder5(dec4, outs[3])
-        print(f'dec5: {dec3.shape}')
-        dec2 = self.decoder4(dec3, enc3)
-        print(f'dec4: {dec2.shape}')
-        dec1 = self.decoder3(dec2, enc2)
-        print(f'dec3: {dec1.shape}')
-        dec0 = self.decoder2(dec1, enc1)
-        print(f'dec2: {dec0.shape}')
-        out = self.decoder1(dec0, enc0)
-        print(f'dec1: {out.shape}')
-        
-        return self.out(out)
+        return self.out(dec2)
     
     
     
