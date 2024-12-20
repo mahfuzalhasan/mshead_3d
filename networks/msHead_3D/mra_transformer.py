@@ -158,7 +158,7 @@ class MRATransformer(nn.Module):
         """
         x_rgb: B x C x D x H x W
         """
-        print(f'input: {x_rgb.shape}')
+        # print(f'input: {x_rgb.shape}')
         outs = []
         outs_hf = []
         B, C, D, H, W = x_rgb.shape
