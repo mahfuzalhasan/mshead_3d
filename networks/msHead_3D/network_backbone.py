@@ -262,7 +262,7 @@ class MSHEAD_ATTN(nn.Module):
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[3],
             out_channels=self.feat_size[3],
-            kernel_size=3,
+            kernel_size=1,
             stride=1,
             norm_name=norm_name,
             res_block=res_block,
