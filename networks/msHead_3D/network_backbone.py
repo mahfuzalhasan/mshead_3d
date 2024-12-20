@@ -260,7 +260,7 @@ class MSHEAD_ATTN(nn.Module):
         print(f'dec4: {dec4.shape}')
         dec3 = self.decoder3(outs[3], enc2, outs_hf[-2])
         print(f'dec3: {dec3.shape}')
-        dec2 = self.decoder2(outs[3], enc1, outs_hf[-1])
+        dec2 = self.decoder2(outs[3], enc1, outs_hf[-3])
         print(f'dec2: {dec2.shape}')
         dec1 = self.decoder1(dec2, enc0)
         print(f'dec1: {dec1.shape}')
