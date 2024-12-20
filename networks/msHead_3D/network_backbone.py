@@ -252,6 +252,7 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
+
         self.encoder10 = ChannelCalibration(
                 in_channels=self.feat_size[3], 
                 reduction_ratio=4,
@@ -297,18 +298,24 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
+        
         self.learnable_up4 = nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=4, stride=4)
         self.learnable_up3 = nn.ConvTranspose3d(self.feat_size[1], self.feat_size[1], kernel_size=2, stride=2)
+        self.projection = nn.Sequential(
+                nn.Conv3d(self.feat_size[2]+self.feat_size[1]+self.feat_size[0], self.feat_size[0], kernel_size=1),
+                nn.InstanceNorm3d(self.feat_size[0])
+        )
         
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.feat_size[2]+self.feat_size[1]+self.feat_size[0],
+            in_channels=self.feat_size[0],
             out_channels=self.feat_size[0],
             kernel_size=3,
             upsample_kernel_size=2,
             norm_name=norm_name,
             res_block=res_block,
         )
+
         self.out = UnetOutBlock(spatial_dims=spatial_dims, in_channels=self.feat_size[0], out_channels=self.out_chans)
 
 
@@ -321,40 +328,28 @@ class MSHEAD_ATTN(nn.Module):
     
     def forward(self, x_in):
         outs, outs_hf = self.multiscale_transformer(x_in)
-        
-        print(f'output from ms transformer: \n')
-        for i,out in enumerate(outs):
-            print(f'{i}:{out.shape}')
-        
-        # for i,hfs in enumerate(outs_hf):
-        #     print(f'layer {i} hfs')
-        #     for coeff in hfs:
-        #         print(f'type {type(coeff)}')
-        #         for k,cf in coeff.items():
-        #             print(f'key: {k} - {cf.shape}')
-        #             # print(type(cf))
 
         enc0 = self.encoder1(x_in)
-        print(f'enc0 input:{x_in.shape} output:{enc0.size()}')
+        #print(f'enc0 input:{x_in.shape} output:{enc0.size()}')
 
         enc1 = self.encoder2(outs[0])
-        print(f'enc1 input:{outs[0].shape} output:{enc1.size()}')
+        #print(f'enc1 input:{outs[0].shape} output:{enc1.size()}')
 
         enc2 = self.encoder3(outs[1])
-        print(f'enc2:input:{outs[1].shape} output:{enc2.size()}')
+        #print(f'enc2:input:{outs[1].shape} output:{enc2.size()}')
 
         enc3 = self.encoder4(outs[2])
-        print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
+        #print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
 
         dec5 = self.encoder10(outs[3])
-        print(f'bottleneck:{dec5.shape}')
+        #print(f'bottleneck:{dec5.shape}')
 
         dec4 = self.decoder4(dec5, enc3, outs_hf[-1])
-        print(f'dec4: {dec4.shape}')
+        #print(f'dec4: {dec4.shape}')
         dec3 = self.decoder3(dec5, enc2, outs_hf[-2])
-        print(f'dec3: {dec3.shape}')
+        #print(f'dec3: {dec3.shape}')
         dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
-        print(f'dec2: {dec2.shape}')
+        #print(f'dec2: {dec2.shape}')
 
         # Upsample dec4 and dec3 to match dec2 resolution
         # dec4_upsampled = F.interpolate(dec4, size=dec2.shape[2:], mode="trilinear", align_corners=False)
@@ -367,8 +362,8 @@ class MSHEAD_ATTN(nn.Module):
         # Fuse all decoder features
         combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
         print(f'combined shape:{combined.shape}')
-
-        dec1 = self.decoder1(combined, enc0)
+        proj = self.projection(combined)
+        dec1 = self.decoder1(proj, enc0)
         print(f'dec1: {dec1.shape}')
         
         return self.out(dec1)
