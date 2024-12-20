@@ -297,7 +297,9 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-
+        self.learnable_up4 = nn.ConvTranspose3d(self.feat_size[2], self.feat_size[0], kernel_size=2, stride=2)
+        self.learnable_up3 = nn.ConvTranspose3d(self.feat_size[1], self.feat_size[0], kernel_size=2, stride=2)
+        
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[2]+self.feat_size[1]+self.feat_size[0],
@@ -355,8 +357,11 @@ class MSHEAD_ATTN(nn.Module):
         print(f'dec2: {dec2.shape}')
 
         # Upsample dec4 and dec3 to match dec2 resolution
-        dec4_upsampled = F.interpolate(dec4, size=dec2.shape[2:], mode="trilinear", align_corners=False)
-        dec3_upsampled = F.interpolate(dec3, size=dec2.shape[2:], mode="trilinear", align_corners=False)
+        # dec4_upsampled = F.interpolate(dec4, size=dec2.shape[2:], mode="trilinear", align_corners=False)
+        # dec3_upsampled = F.interpolate(dec3, size=dec2.shape[2:], mode="trilinear", align_corners=False)
+        # Learnable upsampling
+        dec4_upsampled = self.learnable_up4(dec4)
+        dec3_upsampled = self.learnable_up3(dec3)
         print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled.shape}')
 
         # Fuse all decoder features
