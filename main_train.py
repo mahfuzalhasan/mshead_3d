@@ -286,7 +286,8 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                 print(
                     "Not Best Model. Current Best Avg. Dice: {} from step:{}, Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
                 )
-                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
+                if global_step % (2*eval_num) == 0:
+                    save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
                 # scheduler.step(dice_val)
 
             # setting model to train mode again
