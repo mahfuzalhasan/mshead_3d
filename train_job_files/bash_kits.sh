@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=train_kits_wf_1111_v2
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/kits_train_1111_v2_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/kits_train_1111_v2_job.%J.err
+#SBATCH --job-name=train_kits_wf_1111_idwt_new_dec
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/kits_1111_idwt_new_dec.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/kits_1111_idwt_new_dec.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
