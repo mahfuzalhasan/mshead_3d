@@ -82,6 +82,8 @@ for label in natsorted(os.listdir(pred_dir)):
     subj = label
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
     
+    print(f'subj: {subj}')
+    print(f'label_pred: {label}')
     # Exlude data with multiple size tumors
     if '00001' in subj or '00041' in subj:
         continue
