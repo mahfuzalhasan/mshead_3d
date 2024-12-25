@@ -16,4 +16,5 @@ conda activate waveformer
 cd /blue/r.forghani/mdmahfuzalhasan/project_analysis_kits19/mshead_3d
 
 # Execute the Python script
-srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD --dataset $DATASET
+srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --network $NETWORK --fold $FOLD --dataset $DATASET
+# srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --network $NETWORK --trained_weights $TRAINED_WEIGHTS --dataset $DATASET

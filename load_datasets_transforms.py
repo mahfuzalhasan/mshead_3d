@@ -345,27 +345,6 @@ def data_transforms(args):
                 image_key="image",
                 image_threshold=0,
             ),
-            # user can also add other random transforms
-            # RandFlipd(
-            #     keys=["image", "label"],
-            #     spatial_axis=[0],
-            #     prob=0.10,
-            # ),
-            # RandFlipd(
-            #     keys=["image", "label"],
-            #     spatial_axis=[1],
-            #     prob=0.10,
-            # ),
-            # RandFlipd(
-            #     keys=["image", "label"],
-            #     spatial_axis=[2],
-            #     prob=0.10,
-            # ),
-            # RandRotate90d(
-            #     keys=["image", "label"],
-            #     prob=0.10,
-            #     max_k=3,
-            # ),
             RandShiftIntensityd(
                 keys=["image"],
                 offsets=0.10,

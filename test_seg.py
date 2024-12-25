@@ -4,7 +4,7 @@ from monai.transforms import AsDiscrete
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from networks.UXNet_3D.network_backbone import UXNET
 from monai.networks.nets import UNETR, SwinUNETR
-# from networks.nnFormer.nnFormer_seg import nnFormer
+from networks.nnFormer.nnFormer_seg import nnFormer
 # from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from monai.inferers import sliding_window_inference
 from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
@@ -110,28 +110,57 @@ elif args.network == 'SwinUNETR':
         feature_size=48,
         use_checkpoint=False,
     ).to(device)
+elif args.network == 'UNETR':
+    model = UNETR(
+        in_channels=1,
+        out_channels=out_classes,
+        img_size=(96, 96, 96),
+        feature_size=16,
+        hidden_size=768,
+        mlp_dim=3072,
+        num_heads=12,
+        pos_embed="perceptron",
+        norm_name="instance",
+        res_block=True,
+        dropout_rate=0.0,
+    ).to(device)
+
+if args.network == '3DUXNET':
+    model = UXNET(
+        in_chans=1,
+        out_chans=out_classes,
+        depths=[2, 2, 2, 2],
+        feat_size=[48, 96, 192, 384],
+        drop_path_rate=0,
+        layer_scale_init_value=1e-6,
+        spatial_dims=3,
+    ).to(device)
+
+if args.network == 'nnFormer':
+    model = nnFormer(
+        crop_size = [96, 96, 96],
+        input_channels=1,
+        embedding_dim = 192,
+        num_classes=out_classes,
+        depths=[2, 2, 2, 2]
+    ).to(device)
 
 if args.dataset != 'amos':
     if args.fold == 0:
-        # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0442/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/11-04-24_2125/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/11-04-24_2125/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-04-24_2018/model_best.pth'#SWIN
     elif args.fold == 1:
-        # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0454/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/11-03-24_0237/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/11-03-24_0237/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-08-24_0059/model_best.pth'#SWIN
     elif args.fold == 2:
-        # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0500/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/11-03-24_0331/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/11-03-24_0331/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_2219/model_best.pth'#SWIN
     elif args.fold == 3:
-        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0505/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/11-03-24_0342/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/11-03-24_0342/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-07-24_0301/model_best.pth'#SWIN
     elif args.fold == 4:
-        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0513/model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/11-03-24_0358/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/11-03-24_0358/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_0758/model_best.pth'#SWIN
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
