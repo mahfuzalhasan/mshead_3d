@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(description='KiTS Evaluation segmentation')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
 parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
-
+parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 
 args = parser.parse_args()
 
@@ -32,7 +32,10 @@ elif args.dataset == 'amos':
     model_id_dict = {}
     gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
 elif args.dataset == 'kits':
-    model_id_dict = {0: '11-04-24_2125', 1:'11-03-24_0237', 2:'11-03-24_0331', 3:'11-03-24_0342', 4:'11-03-24_0358'}
+    if args.network == 'MSHEAD':
+        model_id_dict = {0: '11-04-24_2125', 1:'11-03-24_0237', 2:'11-03-24_0331', 3:'11-03-24_0342', 4:'11-03-24_0358'}
+    elif args.network == 'SwinUNETR':
+        model_id_dict = {0: '11-04-24_2018', 1:'11-08-24_0059', 2:'11-06-24_2219', 3:'11-07-24_0301', 4:'11-06-24_0758'}
     gt_dir = '/blue/r.forghani/share/kits2019/labelsTr'
 else:
     raise NotImplementedError(f'No such dataset: {args.dataset}')
@@ -58,7 +61,7 @@ def dice_score_organ(im1, im2):
 
 ## Model Prediction
 model_id = model_id_dict[args.fold]
-pred_dir ='/orange/r.forghani/results/'+model_id+'/output_seg'
+pred_dir =f'/orange/r.forghani/results/{args.network}/{model_id}/output_seg'
 # pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
 
 
@@ -85,8 +88,8 @@ for label in natsorted(os.listdir(pred_dir)):
     print(f'subj: {subj}')
     print(f'label_pred: {label}')
     # Exlude data with multiple size tumors
-    if '00001' in subj or '00041' in subj:
-        continue
+    # if '00001' in subj or '00041' in subj:
+    #     continue
     
     
 
