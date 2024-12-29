@@ -68,7 +68,7 @@ test_files = [
     for image_name, label_name, data_path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
 
-
+print(f'test files:{test_files}')
 
 if args.dataset != 'amos':
     if args.fold == 0:
