@@ -4,7 +4,7 @@ from monai.transforms import AsDiscrete
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from networks.UXNet_3D.network_backbone import UXNET
 from monai.networks.nets import UNETR, SwinUNETR
-# from networks.nnFormer.nnFormer_seg import nnFormer
+from networks.nnFormer.nnFormer_seg import nnFormer
 # from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from monai.inferers import sliding_window_inference
 from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
@@ -68,28 +68,29 @@ test_files = [
     for image_name, label_name, data_path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
 
+
+
 if args.dataset != 'amos':
     if args.fold == 0:
-        # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0442/model_best.pth'
-        # args.pretrained_weights = '/orange/r.forghani/results/11-04-24_2125/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/11-04-24_2018/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/11-04-24_2125/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-04-24_2018/model_best.pth'#SWIN
+        args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_0/fold_0_model_best.pth'
     elif args.fold == 1:
-        # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0454/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/11-08-24_0059/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/11-03-24_0237/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-08-24_0059/model_best.pth'#SWIN
+        args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_1/fold_1_model_best.pth'
     elif args.fold == 2:
-        # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0500/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_2219/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/11-03-24_0331/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_2219/model_best.pth'#SWIN
+        args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_2/fold_2_model_best.pth'
     elif args.fold == 3:
-        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0505/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/11-07-24_0301/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/11-03-24_0342/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-07-24_0301/model_best.pth'#SWIN
+        args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_3/fold_3_model_best.pth'
     elif args.fold == 4:
-        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0513/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_0758/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/11-03-24_0358/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_0758/model_best.pth'#SWIN
+        args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_4/fold_4_model_best.pth'
 
 set_determinism(seed=0)
 ### extracting run_id of testing model
@@ -100,7 +101,8 @@ print(f'############## run id of pretrained model: {run_id} ################')
 if args.network!='MSHEAD':
     args.output = os.path.join(args.output, args.network)   # '/orange/r.forghani/results/SwinUNETR'
 
-output_seg_dir = os.path.join(args.output, run_id, 'output_seg')
+if args.network == 'nnFormer':
+    output_seg_dir = os.path.join(args.output, 'nnformer', f'fold_{args.fold}', 'output_seg')
 if not os.path.exists(output_seg_dir):
     os.makedirs(output_seg_dir)
 
@@ -134,6 +136,15 @@ elif args.network == 'SwinUNETR':
         out_channels=out_classes,
         feature_size=48,
         use_checkpoint=False,
+    ).to(device)
+
+elif args.network == 'nnFormer':
+    model = nnFormer(
+        crop_size = [96, 96, 96],
+        input_channels=1,
+        embedding_dim = 192,
+        num_classes=out_classes,
+        depths=[2, 2, 2, 2]
     ).to(device)
 
 
