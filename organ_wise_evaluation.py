@@ -142,32 +142,52 @@ elif args.network == 'UXNET':
         spatial_dims=3,
     ).to(device)
 
+elif args.network == 'UNETR':
+    model = UNETR(
+        in_channels=1,
+        out_channels=out_classes,
+        img_size=(96, 96, 96),
+        feature_size=16,
+        hidden_size=768,
+        mlp_dim=3072,
+        num_heads=12,
+        pos_embed="perceptron",
+        norm_name="instance",
+        res_block=True,
+        dropout_rate=0.0,
+    ).to(device)
+    
 if args.dataset != 'amos':
     if args.fold == 0:
         # args.trained_weights = '/orange/r.forghani/results/11-04-24_2125/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-04-24_2018/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_0/fold_0_model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_0/fold_0_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_0/fold_0_model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/UNETR/fold_0/model_best.pth'
     elif args.fold == 1:
         # args.trained_weights = '/orange/r.forghani/results/11-03-24_0237/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-08-24_0059/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_1/fold_1_model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_1/fold_1_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_1/fold_1_model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/UNETR/fold_1/model_best.pth'
     elif args.fold == 2:
         # args.trained_weights = '/orange/r.forghani/results/11-03-24_0331/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_2219/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_2/fold_2_model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_2/fold_2_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_2/fold_2_model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/UNETR/fold_2/model_best.pth'
     elif args.fold == 3:
         # args.trained_weights = '/orange/r.forghani/results/11-03-24_0342/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-07-24_0301/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_3/fold_3_model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_3/fold_3_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_3/fold_3_model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/UNETR/fold_3/model_best.pth'
     elif args.fold == 4:
         # args.trained_weights = '/orange/r.forghani/results/11-03-24_0358/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_0758/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_4/fold_4_model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_4/fold_4_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_4/fold_4_model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/UNETR/fold_4/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
