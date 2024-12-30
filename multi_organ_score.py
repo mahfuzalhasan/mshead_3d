@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(description='KiTS Evaluation segmentation')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
 parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
-
+parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 
 args = parser.parse_args()
 
@@ -32,7 +32,12 @@ elif args.dataset == 'amos':
     model_id_dict = {}
     gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
 elif args.dataset == 'kits':
-    model_id_dict = {0: '11-04-24_2125', 1:'11-03-24_0237', 2:'11-03-24_0331', 3:'11-03-24_0342', 4:'11-03-24_0358'}
+    if args.network == 'MSHEAD':
+        model_id_dict = {0: '12-22-24_1727', 1:'12-23-24_0128', 2:'12-23-24_0145', 3:'12-23-24_0240', 4:'12-23-24_0256'}
+    elif args.network == 'SwinUNETR':
+        model_id_dict = {0: '11-04-24_2018', 1:'11-08-24_0059', 2:'11-06-24_2219', 3:'11-07-24_0301', 4:'11-06-24_0758'}
+    elif args.network == 'nnFormer' or args.network=='UXNET' or args.network=='UNETR' or args.network=='TransBTS':
+        model_id_dict = {0: 'fold_0', 1:'fold_1', 2:'fold_2', 3:'fold_3', 4:'fold_4'}
     gt_dir = '/blue/r.forghani/share/kits2019/labelsTr'
 else:
     raise NotImplementedError(f'No such dataset: {args.dataset}')
@@ -58,13 +63,17 @@ def dice_score_organ(im1, im2):
 
 ## Model Prediction
 model_id = model_id_dict[args.fold]
-pred_dir ='/orange/r.forghani/results/'+model_id+'/output_seg'
+if args.network == 'nnFormer':
+    pred_dir = f'/orange/r.forghani/results/{args.network}/nnformer/{model_id}/output_seg'
+elif args.network == 'UXNET':
+    pred_dir = f'/orange/r.forghani/results/{args.network}/3duxnet/{model_id}/output_seg'
+elif args.network == 'UNETR' or args.network=='TransBTS':
+    pred_dir = f'/orange/r.forghani/results/{args.network}/{model_id}/output_seg'
+else:
+    pred_dir =f'/orange/r.forghani/results/{args.network}/{model_id}/output_seg'
 # pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
 
-
 print(f'pred:{pred_dir} ground truth:{gt_dir}')
-
-
 
 # spleen = []
 kidney = []
@@ -82,9 +91,11 @@ for label in natsorted(os.listdir(pred_dir)):
     subj = label
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
     
+    print(f'subj: {subj}')
+    print(f'label_pred: {label}')
     # Exlude data with multiple size tumors
-    if '00001' in subj or '00041' in subj:
-        continue
+    # if '00001' in subj or '00041' in subj:
+    #     continue
     
     
 
