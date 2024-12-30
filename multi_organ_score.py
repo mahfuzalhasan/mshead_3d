@@ -36,7 +36,7 @@ elif args.dataset == 'kits':
         model_id_dict = {0: '11-04-24_2125', 1:'11-03-24_0237', 2:'11-03-24_0331', 3:'11-03-24_0342', 4:'11-03-24_0358'}
     elif args.network == 'SwinUNETR':
         model_id_dict = {0: '11-04-24_2018', 1:'11-08-24_0059', 2:'11-06-24_2219', 3:'11-07-24_0301', 4:'11-06-24_0758'}
-    elif args.network == 'nnFormer' or args.network=='UXNET' or args.network=='UNETR':
+    elif args.network == 'nnFormer' or args.network=='UXNET' or args.network=='UNETR' or args.network=='TransBTS':
         model_id_dict = {0: 'fold_0', 1:'fold_1', 2:'fold_2', 3:'fold_3', 4:'fold_4'}
     gt_dir = '/blue/r.forghani/share/kits2019/labelsTr'
 else:
@@ -67,7 +67,7 @@ if args.network == 'nnFormer':
     pred_dir = f'/orange/r.forghani/results/{args.network}/nnformer/{model_id}/output_seg'
 elif args.network == 'UXNET':
     pred_dir = f'/orange/r.forghani/results/{args.network}/3duxnet/{model_id}/output_seg'
-elif args.network == 'UNETR':
+elif args.network == 'UNETR' or args.network=='TransBTS':
     pred_dir = f'/orange/r.forghani/results/{args.network}/{model_id}/output_seg'
 else:
     pred_dir =f'/orange/r.forghani/results/{args.network}/{model_id}/output_seg'

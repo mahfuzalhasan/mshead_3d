@@ -12,7 +12,7 @@ from networks.UXNet_3D.network_backbone import UXNET
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from monai.networks.nets import UNETR, SwinUNETR
 from networks.nnFormer.nnFormer_seg import nnFormer
-# from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
+from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from monai.metrics import DiceMetric
 from monai.losses import DiceCELoss
 from monai.inferers import sliding_window_inference
@@ -156,38 +156,48 @@ elif args.network == 'UNETR':
         res_block=True,
         dropout_rate=0.0,
     ).to(device)
-    
+
+if args.network == 'TransBTS':
+    print(f'network: {args.network} loading')
+    _, model = TransBTS(dataset=args.dataset, _conv_repr=True, _pe_type='learned')
+    model = model.to(device)
+
 if args.dataset != 'amos':
     if args.fold == 0:
         # args.trained_weights = '/orange/r.forghani/results/11-04-24_2125/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-04-24_2018/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_0/fold_0_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_0/fold_0_model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/UNETR/fold_0/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_0/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_0/model_best.pth'
     elif args.fold == 1:
         # args.trained_weights = '/orange/r.forghani/results/11-03-24_0237/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-08-24_0059/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_1/fold_1_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_1/fold_1_model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/UNETR/fold_1/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_1/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_1/model_best.pth'
     elif args.fold == 2:
         # args.trained_weights = '/orange/r.forghani/results/11-03-24_0331/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_2219/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_2/fold_2_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_2/fold_2_model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/UNETR/fold_2/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_2/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_2/model_best.pth'
     elif args.fold == 3:
         # args.trained_weights = '/orange/r.forghani/results/11-03-24_0342/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-07-24_0301/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_3/fold_3_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_3/fold_3_model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/UNETR/fold_3/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_3/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_3/model_best.pth'
     elif args.fold == 4:
         # args.trained_weights = '/orange/r.forghani/results/11-03-24_0358/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_0758/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_4/fold_4_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_4/fold_4_model_best.pth'
-        args.trained_weights = '/orange/r.forghani/results/UNETR/fold_4/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_4/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_4/model_best.pth'
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
