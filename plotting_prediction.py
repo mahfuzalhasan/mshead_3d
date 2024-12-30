@@ -31,7 +31,7 @@ parser.add_argument('--dataset', type=str, default='flare', required=False, help
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
-parser.add_argument('--pretrained_weights', default='', required=False, help='Path of pretrained/fine-tuned weights')
+parser.add_argument('--trained_weights', default='', required=False, help='Path of pretrained/fine-tuned weights')
 parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
 parser.add_argument('--sw_batch_size', type=int, default=4, help='Sliding window batch size for inference')
 parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overlapped percentage')
@@ -94,9 +94,9 @@ if args.dataset != 'amos':
 
 set_determinism(seed=0)
 ### extracting run_id of testing model
-splitted_text = args.pretrained_weights[:args.pretrained_weights.rindex('/')]
-run_id = splitted_text[splitted_text.rindex('/')+1:]
-print(f'############## run id of pretrained model: {run_id} ################')
+# splitted_text = args.trained_weights[:args.trained_weights.rindex('/')]
+# run_id = splitted_text[splitted_text.rindex('/')+1:]
+# print(f'############## run id of pretrained model: {run_id} ################')
 
 if args.network!='MSHEAD':
     args.output = os.path.join(args.output, args.network)   # '/orange/r.forghani/results/SwinUNETR'
@@ -148,8 +148,8 @@ elif args.network == 'nnFormer':
     ).to(device)
 
 
-print(f'fold:{args.fold} - best model path:{args.pretrained_weights} ')
-state_dict = torch.load(args.pretrained_weights)
+print(f'fold:{args.fold} - best model path:{args.trained_weights} ')
+state_dict = torch.load(args.trained_weights)
 model.load_state_dict(state_dict['model'])
 model.eval()
 
