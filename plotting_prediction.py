@@ -115,6 +115,8 @@ if args.network == 'nnFormer':
     output_seg_dir = os.path.join(args.output, 'nnformer', f'fold_{args.fold}', 'output_seg')
 elif args.network == 'UXNET':
     output_seg_dir = os.path.join(args.output, '3duxnet', f'fold_{args.fold}', 'output_seg')
+elif args.network == 'UNETR':
+    output_seg_dir = os.path.join(args.output, f'fold_{args.fold}', 'output_seg')
 
 if not os.path.exists(output_seg_dir):
     os.makedirs(output_seg_dir)
