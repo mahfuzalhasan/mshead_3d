@@ -155,7 +155,7 @@ elif args.network == 'nnFormer':
         depths=[2, 2, 2, 2]
     ).to(device)
 
-if args.network == 'UXNET':
+elif args.network == 'UXNET':
     model = UXNET(
         in_chans=1,
         out_chans=out_classes,
