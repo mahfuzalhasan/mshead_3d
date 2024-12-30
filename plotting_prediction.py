@@ -30,7 +30,7 @@ parser.add_argument('--output', type=str, default='/orange/r.forghani/results', 
 parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
-parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
+parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, UXNET}')
 parser.add_argument('--trained_weights', default='', required=False, help='Path of pretrained/fine-tuned weights')
 parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
 parser.add_argument('--sw_batch_size', type=int, default=4, help='Sliding window batch size for inference')
@@ -153,6 +153,17 @@ elif args.network == 'nnFormer':
         embedding_dim = 192,
         num_classes=out_classes,
         depths=[2, 2, 2, 2]
+    ).to(device)
+
+if args.network == 'UXNET':
+    model = UXNET(
+        in_chans=1,
+        out_chans=out_classes,
+        depths=[2, 2, 2, 2],
+        feat_size=[48, 96, 192, 384],
+        drop_path_rate=0,
+        layer_scale_init_value=1e-6,
+        spatial_dims=3,
     ).to(device)
 
 
