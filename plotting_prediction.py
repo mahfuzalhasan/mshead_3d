@@ -4,8 +4,8 @@ from monai.transforms import AsDiscrete
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from networks.UXNet_3D.network_backbone import UXNET
 from monai.networks.nets import UNETR, SwinUNETR
-# from networks.nnFormer.nnFormer_seg import nnFormer
-# from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
+from networks.nnFormer.nnFormer_seg import nnFormer
+from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from monai.inferers import sliding_window_inference
 from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
 from monai.metrics import DiceMetric
@@ -30,8 +30,8 @@ parser.add_argument('--output', type=str, default='/orange/r.forghani/results', 
 parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
-parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
-parser.add_argument('--pretrained_weights', default='', required=False, help='Path of pretrained/fine-tuned weights')
+parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, UXNET}')
+parser.add_argument('--trained_weights', default='', required=False, help='Path of pretrained/fine-tuned weights')
 parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
 parser.add_argument('--sw_batch_size', type=int, default=4, help='Sliding window batch size for inference')
 parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overlapped percentage')
@@ -68,39 +68,65 @@ test_files = [
     for image_name, label_name, data_path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
 
+print(f'test files:{test_files}')
+
 if args.dataset != 'amos':
     if args.fold == 0:
-        # args.trained_weights = '/orange/r.forghani/results/09-18-24_0219/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0442/model_best.pth'
-        # args.pretrained_weights = '/orange/r.forghani/results/11-04-24_2125/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/11-04-24_2018/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/12-22-24_1727/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-04-24_2018/model_best.pth'#SWIN
+        # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_0/fold_0_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_0/fold_0_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_0/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_0/model_best.pth'
     elif args.fold == 1:
-        # args.trained_weights = '/orange/r.forghani/results/09-20-24_0448/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0454/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/11-08-24_0059/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/12-23-24_0128/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-08-24_0059/model_best.pth'#SWIN
+        # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_1/fold_1_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_1/fold_1_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_1/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_1/model_best.pth'
     elif args.fold == 2:
-        # args.trained_weights = '/orange/r.forghani/results/09-21-24_1416/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0500/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_2219/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/12-23-24_0145/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_2219/model_best.pth'#SWIN
+        # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_2/fold_2_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_2/fold_2_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_2/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_2/model_best.pth'
     elif args.fold == 3:
-        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2221/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0505/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/11-07-24_0301/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/12-23-24_0240/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-07-24_0301/model_best.pth'#SWIN
+        # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_3/fold_3_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_3/fold_3_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_3/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_3/model_best.pth'
     elif args.fold == 4:
-        # args.trained_weights = '/orange/r.forghani/results/09-18-24_2224/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/10-30-24_0513/model_best.pth'
-        args.pretrained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_0758/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/12-23-24_0256/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_0758/model_best.pth'#SWIN
+        # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_4/fold_4_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_4/fold_4_model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_4/model_best.pth'
+        # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_4/model_best.pth'
 
 set_determinism(seed=0)
 ### extracting run_id of testing model
-splitted_text = args.pretrained_weights[:args.pretrained_weights.rindex('/')]
+splitted_text = args.trained_weights[:args.trained_weights.rindex('/')]
 run_id = splitted_text[splitted_text.rindex('/')+1:]
 print(f'############## run id of pretrained model: {run_id} ################')
 
 if args.network!='MSHEAD':
     args.output = os.path.join(args.output, args.network)   # '/orange/r.forghani/results/SwinUNETR'
 
-output_seg_dir = os.path.join(args.output, run_id, 'output_seg')
+if args.network == 'nnFormer':
+    output_seg_dir = os.path.join(args.output, 'nnformer', f'fold_{args.fold}', 'output_seg')
+elif args.network == 'UXNET':
+    output_seg_dir = os.path.join(args.output, '3duxnet', f'fold_{args.fold}', 'output_seg')
+elif args.network == 'UNETR':
+    output_seg_dir = os.path.join(args.output, f'fold_{args.fold}', 'output_seg')
+elif args.network == 'TransBTS':
+    output_seg_dir = os.path.join(args.output, f'fold_{args.fold}', 'output_seg')
+else:
+    output_seg_dir = os.path.join(args.output, f'{run_id}', 'output_seg')
+
 if not os.path.exists(output_seg_dir):
     os.makedirs(output_seg_dir)
 
@@ -136,9 +162,48 @@ elif args.network == 'SwinUNETR':
         use_checkpoint=False,
     ).to(device)
 
+elif args.network == 'nnFormer':
+    model = nnFormer(
+        crop_size = [96, 96, 96],
+        input_channels=1,
+        embedding_dim = 192,
+        num_classes=out_classes,
+        depths=[2, 2, 2, 2]
+    ).to(device)
 
-print(f'fold:{args.fold} - best model path:{args.pretrained_weights} ')
-state_dict = torch.load(args.pretrained_weights)
+elif args.network == 'UXNET':
+    model = UXNET(
+        in_chans=1,
+        out_chans=out_classes,
+        depths=[2, 2, 2, 2],
+        feat_size=[48, 96, 192, 384],
+        drop_path_rate=0,
+        layer_scale_init_value=1e-6,
+        spatial_dims=3,
+    ).to(device)
+
+elif args.network == 'UNETR':
+    model = UNETR(
+        in_channels=1,
+        out_channels=out_classes,
+        img_size=(96, 96, 96),
+        feature_size=16,
+        hidden_size=768,
+        mlp_dim=3072,
+        num_heads=12,
+        pos_embed="perceptron",
+        norm_name="instance",
+        res_block=True,
+        dropout_rate=0.0,
+    ).to(device)
+
+if args.network == 'TransBTS':
+    print(f'network: {args.network} loading')
+    _, model = TransBTS(dataset=args.dataset, _conv_repr=True, _pe_type='learned')
+    model = model.to(device)
+
+print(f'fold:{args.fold} - best model path:{args.trained_weights} ')
+state_dict = torch.load(args.trained_weights)
 model.load_state_dict(state_dict['model'])
 model.eval()
 
