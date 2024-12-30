@@ -70,7 +70,7 @@ elif args.network == 'UXNET':
 elif args.network == 'UNETR' or args.network=='TransBTS':
     pred_dir = f'/orange/r.forghani/results/{args.network}/{model_id}/output_seg'
 else:
-    pred_dir =f'/orange/r.forghani/results/{args.network}/{model_id}/output_seg'
+    pred_dir =f'/orange/r.forghani/results/{model_id}/output_seg'
 # pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
 
 print(f'pred:{pred_dir} ground truth:{gt_dir}')
