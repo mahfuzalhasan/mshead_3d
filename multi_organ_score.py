@@ -36,6 +36,8 @@ elif args.dataset == 'kits':
         model_id_dict = {0: '11-04-24_2125', 1:'11-03-24_0237', 2:'11-03-24_0331', 3:'11-03-24_0342', 4:'11-03-24_0358'}
     elif args.network == 'SwinUNETR':
         model_id_dict = {0: '11-04-24_2018', 1:'11-08-24_0059', 2:'11-06-24_2219', 3:'11-07-24_0301', 4:'11-06-24_0758'}
+    elif args.network == 'nnFormer':
+        model_id_dict = {0: 'fold_0', 1:'fold_1', 2:'fold_2', 3:'fold_3', 4:'fold_4'}
     gt_dir = '/blue/r.forghani/share/kits2019/labelsTr'
 else:
     raise NotImplementedError(f'No such dataset: {args.dataset}')
@@ -61,13 +63,13 @@ def dice_score_organ(im1, im2):
 
 ## Model Prediction
 model_id = model_id_dict[args.fold]
-pred_dir =f'/orange/r.forghani/results/{args.network}/{model_id}/output_seg'
+if args.network == 'nnFormer':
+    pred_dir = f'/orange/r.forghani/results/{args.network}/nnformer/{model_id}/output_seg'
+else:
+    pred_dir =f'/orange/r.forghani/results/{args.network}/{model_id}/output_seg'
 # pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
 
-
 print(f'pred:{pred_dir} ground truth:{gt_dir}')
-
-
 
 # spleen = []
 kidney = []
