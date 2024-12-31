@@ -72,35 +72,40 @@ print(f'test files:{test_files}')
 
 if args.dataset != 'amos':
     if args.fold == 0:
-        args.trained_weights = '/orange/r.forghani/results/12-22-24_1727/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/12-20-24_0342/model_best.pth'    #flare
+        # args.trained_weights = '/orange/r.forghani/results/12-22-24_1727/model_best.pth'  #KiTS
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-04-24_2018/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_0/fold_0_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_0/fold_0_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_0/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_0/model_best.pth'
     elif args.fold == 1:
-        args.trained_weights = '/orange/r.forghani/results/12-23-24_0128/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/12-20-24_1658/model_best.pth'    #flare
+        # args.trained_weights = '/orange/r.forghani/results/12-23-24_0128/model_best.pth'  #KiTS
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-08-24_0059/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_1/fold_1_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_1/fold_1_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_1/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_1/model_best.pth'
     elif args.fold == 2:
-        args.trained_weights = '/orange/r.forghani/results/12-23-24_0145/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/12-20-24_1836/model_best.pth'    #flare
+        # args.trained_weights = '/orange/r.forghani/results/12-23-24_0145/model_best.pth'  #KiTS
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_2219/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_2/fold_2_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_2/fold_2_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_2/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_2/model_best.pth'
     elif args.fold == 3:
-        args.trained_weights = '/orange/r.forghani/results/12-23-24_0240/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/12-20-24_1943/model_best.pth'    #flare
+        # args.trained_weights = '/orange/r.forghani/results/12-23-24_0240/model_best.pth'  #KiTS
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-07-24_0301/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_3/fold_3_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_3/fold_3_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_3/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_3/model_best.pth'
     elif args.fold == 4:
-        args.trained_weights = '/orange/r.forghani/results/12-23-24_0256/model_best.pth'
+        args.trained_weights = '/orange/r.forghani/results/12-21-24_0006/model_best.pth'    #flare
+        # args.trained_weights = '/orange/r.forghani/results/12-23-24_0256/model_best.pth'  #KiTS
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_0758/model_best.pth'#SWIN
         # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_4/fold_4_model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_4/fold_4_model_best.pth'
