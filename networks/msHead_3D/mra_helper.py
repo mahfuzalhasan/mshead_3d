@@ -351,7 +351,9 @@ class Block(nn.Module):
         x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
         # print(f'attn reshape:{x.shape}')
         if self.level > 0:
-            x = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
+            inp_tuple = (x,) + x_h
+            x = ptwt.waverec3(inp_tuple, wavelet='db1')
+            # x = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
         
         x = x.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
         x = shortcut + self.drop_path(x)
