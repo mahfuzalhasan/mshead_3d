@@ -27,7 +27,8 @@ args = parser.parse_args()
 
 if args.dataset == 'flare':
     if args.network == 'MSHEAD':
-        model_id_dict = {0: '12-20-24_0342', 1:'12-20-24_1658', 2:'12-20-24_1836', 3:'12-20-24_1943', 4:'12-21-24_0006'}
+        # model_id_dict = {0: '12-20-24_0342', 1:'12-20-24_1658', 2:'12-20-24_1836', 3:'12-20-24_1943', 4:'12-21-24_0006'}  #idwt
+        model_id_dict = {0: '01-07-25_0204', 1:'01-07-25_0102', 2:'01-07-25_1307', 3:'01-07-25_1708', 4:'01-07-25_1844'}    # idwt_v2
     gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
 elif args.dataset == 'amos':
     model_id_dict = {}
