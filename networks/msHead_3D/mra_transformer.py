@@ -161,10 +161,13 @@ class MRATransformer(nn.Module):
         # print(f'input: {x_rgb.shape}')
         outs = []
         outs_hf = []
+        print(f'x_rgb:{x_rgb.dtype}')
         B, C, D, H, W = x_rgb.shape
         ######## Patch Embedding
-        x0 = self.patch_embed(x_rgb)                # B, c, d, h, w         
+        x0 = self.patch_embed(x_rgb)                # B, c, d, h, w   
+        print(f'patch:{x0.dtype}')      
         x0 = self.pos_drop(x0)
+        print(f'pos:{x0.dtype}')   
         ########################
         x1 = rearrange(x0, "b c d h w -> b d h w c")
         print(f'x1:{x1.dtype}')
