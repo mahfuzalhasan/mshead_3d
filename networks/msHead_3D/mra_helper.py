@@ -327,7 +327,7 @@ class Block(nn.Module):
         assert D == x.shape[1]
         assert H == x.shape[2]
         assert W == x.shape[3]
-
+        print(f'input to attn:{x.dtype}')
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
@@ -335,7 +335,7 @@ class Block(nn.Module):
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             x, x_h = self.dwt_downsamples(x)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
-        print(f'DWT_x:{x.shape} shortcut:{shortcut.shape}')
+        print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
         for coeff in x_h:
             print(f'type {type(coeff)}')
             for k,cf in coeff.items():
