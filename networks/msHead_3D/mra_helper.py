@@ -327,7 +327,7 @@ class Block(nn.Module):
         assert D == x.shape[1]
         assert H == x.shape[2]
         assert W == x.shape[3]
-        print(f'input to attn:{x.dtype}')
+        # print(f'input to attn:{x.dtype}')
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
