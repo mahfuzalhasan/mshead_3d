@@ -188,6 +188,7 @@ with torch.no_grad():
     for i in range(10):
         _ = model(dummy_input)
     print(f'Warmup Iterations Over')
+    peak_memories = []
     torch.cuda.reset_peak_memory_stats(device=device)
     for step, batch in enumerate(test_loader):
         test_inputs, test_labels = (batch["image"].to(device), batch["label"].to(device))
@@ -202,6 +203,10 @@ with torch.no_grad():
         # case_time = end_infer - start_infer
         # times.append(case_time)
         # print(f'inferece for case:{step}:::: {case_time:.2f}s')
+        # 3) Get the peak memory for this iteration
+        iteration_peak = torch.cuda.max_memory_allocated(device=device)
+        peak_memories.append(iteration_peak)
+        print(f"Iteration {i+1} - Peak memory usage: {iteration_peak / 1024**2:.2f} MB")
 
 
         test_labels_list = decollate_batch(test_labels)
@@ -215,9 +220,12 @@ with torch.no_grad():
         ]
 
         dice_metric(y_pred=test_output_convert, y=test_labels_convert)
-    # Check the overall peak
-    peak_memory = torch.cuda.max_memory_allocated(device=device)
-    print(f"Peak memory usage across all iterations: {peak_memory / 1024**2:.2f} MB")
+    # # Check the overall peak
+    # peak_memory = torch.cuda.max_memory_allocated(device=device)
+    # print(f"Peak memory usage across all iterations: {peak_memory / 1024**2:.2f} MB")
+    # 4) Compute average (and other stats if desired)
+    avg_peak = sum(peak_memories) / len(peak_memories)
+    print(f"\nAverage peak memory usage across {len(test_loader)} iterations: {avg_peak / 1024**2:.2f} MB")
 
     dice = dice_metric.aggregate().item()
     dice_metric.reset()
