@@ -188,20 +188,20 @@ with torch.no_grad():
     for i in range(10):
         _ = model(dummy_input)
     print(f'Warmup Iterations Over')
-
+    torch.cuda.reset_peak_memory_stats(device=device)
     for step, batch in enumerate(test_loader):
         test_inputs, test_labels = (batch["image"].to(device), batch["label"].to(device))
         path = batch["path"]
         # print(f'path for the image {step}: {path} shape:{test_inputs.shape}')
         roi_size = (96, 96, 96)
-        start_infer = time.time()
+        # start_infer = time.time()
         test_outputs = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
-        end_infer = time.time()
-        case_time = end_infer - start_infer
-        times.append(case_time)
-        print(f'inferece for case:{step}:::: {case_time:.2f}s')
+        # end_infer = time.time()
+        # case_time = end_infer - start_infer
+        # times.append(case_time)
+        # print(f'inferece for case:{step}:::: {case_time:.2f}s')
 
 
         test_labels_list = decollate_batch(test_labels)
@@ -215,13 +215,17 @@ with torch.no_grad():
         ]
 
         dice_metric(y_pred=test_output_convert, y=test_labels_convert)
-        
+    # Check the overall peak
+    peak_memory = torch.cuda.max_memory_allocated(device=device)
+    print(f"Peak memory usage across all iterations: {peak_memory / 1024**2:.2f} MB")
+
     dice = dice_metric.aggregate().item()
     dice_metric.reset()
+
 
 test_time = time.time() - s_time
 print(f"test takes {datetime.timedelta(seconds=int(test_time))}")
 print(f'mean test dice: {dice}')
-avg_time = np.mean(times)
-print(f"Average inference time: {avg_time:.2f}s --- {avg_time*1000:.2f} ms")
+# avg_time = np.mean(times)
+# print(f"Average inference time: {avg_time:.2f}s --- {avg_time*1000:.2f} ms")
 
