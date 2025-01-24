@@ -189,8 +189,9 @@ with torch.no_grad():
         _ = model(dummy_input)
     print(f'Warmup Iterations Over')
     peak_memories = []
-    torch.cuda.reset_peak_memory_stats(device=device)
+    
     for step, batch in enumerate(test_loader):
+        torch.cuda.reset_peak_memory_stats(device=device)
         test_inputs, test_labels = (batch["image"].to(device), batch["label"].to(device))
         path = batch["path"]
         # print(f'path for the image {step}: {path} shape:{test_inputs.shape}')
