@@ -184,6 +184,7 @@ times = []
 dummy_input = torch.randn(1, 1, 96, 96, 96)
 with torch.no_grad():
     print(f'Warmup Iterations')
+    dummy_input = dummy_input.to(device)
     for i in range(10):
         _ = model(dummy_input)
     print(f'Warmup Iterations Over')
