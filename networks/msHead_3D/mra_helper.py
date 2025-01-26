@@ -335,11 +335,11 @@ class Block(nn.Module):
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             x, x_h = self.dwt_downsamples(x)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
-        # print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
-        # for coeff in x_h:
-        #     print(f'type {type(coeff)}')
-        #     for k,cf in coeff.items():
-        #         print(f'key: {k} - {cf.shape}- {cf.dtype}')
+        print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
+        for coeff in x_h:
+            print(f'type {type(coeff)}')
+            for k,cf in coeff.items():
+                print(f'key: {k} - {cf.shape}- {cf.dtype}')
         output_size = (x.shape[1], x.shape[2], x.shape[3])
         nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
 
