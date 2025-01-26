@@ -189,12 +189,7 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block1):
             x1, x_h = blk(x1)       # B, d, h, w, c
             hfs.append(x_h)
-        print(f'block 1')
         x_h = self.merge_hf_components(hfs)
-        for coeff in x_h:
-            print(f'type {type(coeff)}')
-            for k,cf in coeff.items():
-                print(f'key: {k} - {cf.shape}- {cf.dtype}')
         x1_out = rearrange(x1, "b d h w c -> b c d h w")
         x1_out = self.proj_out(x1_out, normalize)
         outs.append(x1_out)
@@ -209,12 +204,7 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block2):
             x2, x_h = blk(x2)
             hfs.append(x_h)
-        print(f'block 2')
         x_h = self.merge_hf_components(hfs)
-        for coeff in x_h:
-            print(f'type {type(coeff)}')
-            for k,cf in coeff.items():
-                print(f'key: {k} - {cf.shape}- {cf.dtype}')
         x2_out = rearrange(x2, "b d h w c -> b c d h w")
         x2_out = self.proj_out(x2_out, normalize)
         outs.append(x2_out)
@@ -230,12 +220,7 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block3):
             x3, x_h = blk(x3)
             hfs.append(x_h)
-        print(f'block 3')
         x_h = self.merge_hf_components(hfs)
-        for coeff in x_h:
-            print(f'type {type(coeff)}')
-            for k,cf in coeff.items():
-                print(f'key: {k} - {cf.shape}- {cf.dtype}')
         x3_out = rearrange(x3, "b d h w c -> b c d h w")
         x3_out = self.proj_out(x3_out, normalize)
         outs.append(x3_out)
