@@ -107,6 +107,20 @@ class MRATransformer(nn.Module):
                 x = rearrange(x, "n h w c -> n c h w")
         return x
 
+    def merge_hf_components(self, hf_list):
+        list1 = hf_list[0]
+        list2 = hf_list[1]
+
+        merged_list = []
+
+        for dict1, dict2 in zip(list1, list2):
+            merged_dict = {}
+            for key in dict1.keys():
+                merged_dict[key] = dict1[key] + dict2[key]  # Element-wise addition
+            merged_list.append(merged_dict)
+        return merged_list
+
+
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
             trunc_normal_(m.weight, std=.02)  # Assuming trunc_normal_ is defined elsewhere
@@ -174,7 +188,11 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block1):
             x1, x_h = blk(x1)       # B, d, h, w, c
             hfs.append(x_h)
-
+        x_h = self.merge_hf_components(hfs)
+        for coeff in x_h:
+            print(f'type {type(coeff)}')
+            for k,cf in coeff.items():
+                print(f'key: {k} - {cf.shape}- {cf.dtype}')
         x1_out = rearrange(x1, "b d h w c -> b c d h w")
         x1_out = self.proj_out(x1_out, normalize)
         outs.append(x1_out)
@@ -189,6 +207,11 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block2):
             x2, x_h = blk(x2)
             hfs.append(x_h)
+        x_h = self.merge_hf_components(hfs)
+        for coeff in x_h:
+            print(f'type {type(coeff)}')
+            for k,cf in coeff.items():
+                print(f'key: {k} - {cf.shape}- {cf.dtype}')
         x2_out = rearrange(x2, "b d h w c -> b c d h w")
         x2_out = self.proj_out(x2_out, normalize)
         outs.append(x2_out)
@@ -204,6 +227,11 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block3):
             x3, x_h = blk(x3)
             hfs.append(x_h)
+        x_h = self.merge_hf_components(hfs)
+        for coeff in x_h:
+            print(f'type {type(coeff)}')
+            for k,cf in coeff.items():
+                print(f'key: {k} - {cf.shape}- {cf.dtype}')
         x3_out = rearrange(x3, "b d h w c -> b c d h w")
         x3_out = self.proj_out(x3_out, normalize)
         outs.append(x3_out)
