@@ -188,6 +188,7 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block1):
             x1, x_h = blk(x1)       # B, d, h, w, c
             hfs.append(x_h)
+        print(f'block 1')
         x_h = self.merge_hf_components(hfs)
         for coeff in x_h:
             print(f'type {type(coeff)}')
@@ -207,6 +208,7 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block2):
             x2, x_h = blk(x2)
             hfs.append(x_h)
+        print(f'block 2')
         x_h = self.merge_hf_components(hfs)
         for coeff in x_h:
             print(f'type {type(coeff)}')
@@ -227,6 +229,7 @@ class MRATransformer(nn.Module):
         for j,blk in enumerate(self.block3):
             x3, x_h = blk(x3)
             hfs.append(x_h)
+        print(f'block 3')
         x_h = self.merge_hf_components(hfs)
         for coeff in x_h:
             print(f'type {type(coeff)}')
