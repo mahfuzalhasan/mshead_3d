@@ -112,14 +112,14 @@ class MRATransformer(nn.Module):
         list2 = hf_list[1]
 
         merged_list = []
-        print(f'type comps: {type(list1)} {type(list2)}')
+        # print(f'type comps: {type(list1)} {type(list2)}')
 
         for dict1, dict2 in zip(list1, list2):
             merged_dict = {}
             for key in dict1.keys():
                 merged_dict[key] = dict1[key] + dict2[key]  # Element-wise addition
             merged_list.append(merged_dict)
-        return merged_list
+        return tuple(merged_list)
 
 
     def _init_weights(self, m):
