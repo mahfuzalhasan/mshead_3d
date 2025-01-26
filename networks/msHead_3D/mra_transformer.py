@@ -112,6 +112,7 @@ class MRATransformer(nn.Module):
         list2 = hf_list[1]
 
         merged_list = []
+        print(f'type comps: {type(list1)} {type(list2)}')
 
         for dict1, dict2 in zip(list1, list2):
             merged_dict = {}
