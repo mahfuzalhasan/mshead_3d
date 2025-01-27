@@ -114,7 +114,8 @@ elif args.network == 'SwinUNETR':
     ).to(device)
 if args.dataset != 'amos':
     if args.fold == 0:
-        args.trained_weights = '/orange/r.forghani/results/01-07-25_0204/model_best.pth'    # flare idwt_v2
+        args.trained_weights = '/orange/r.forghani/results/01-26-25_1352/model_best.pth'    #flare_hf_agg
+        # args.trained_weights = '/orange/r.forghani/results/01-07-25_0204/model_best.pth'    # flare idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-20-24_0342/model_best.pth'    #flare
         # args.trained_weights = '/orange/r.forghani/results/12-22-24_1727/model_best.pth'  #KiTS
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-04-24_2018/model_best.pth'#SWIN
