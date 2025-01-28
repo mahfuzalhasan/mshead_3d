@@ -240,13 +240,11 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     for step, batch in enumerate(train_loader):     
         step += 1
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 2,1,96,96,96. y same
-        print(f'########### type image:{x.dtype} label:{y.dtype} ###################')
         print(f'########### image:{x.shape} label:{y.shape} ###################')
-        unique_labels = torch.unique(y)
-        print(unique_labels)
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
         logit_map = model(x)
+        print(f'pred:{logit_map.shape}')
         loss = loss_function(logit_map, y)
         loss.backward()
         # epoch_loss += loss.item()
