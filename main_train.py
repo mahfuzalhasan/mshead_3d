@@ -97,8 +97,8 @@ train_transforms, val_transforms = data_transforms(args)
 
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
-train_ds = CacheDataset(data=train_files[:20], transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
-val_ds = CacheDataset(data=val_files[:20], transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
+train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
+val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
 
 train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)
 val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
@@ -240,11 +240,9 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     for step, batch in enumerate(train_loader):     
         step += 1
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 2,1,96,96,96. y same
-        print(f'########### image:{x.shape} label:{y.shape} ###################')
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
         logit_map = model(x)
-        print(f'pred:{logit_map.shape}')
         loss = loss_function(logit_map, y)
         loss.backward()
         # epoch_loss += loss.item()
