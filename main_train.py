@@ -34,7 +34,7 @@ parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for me
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='kits', required=False, help='Currently supporting datasets: {flare, amos, kits}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='flare', required=False, help='Currently supporting datasets: {flare, amos, kits}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
@@ -51,7 +51,7 @@ parser.add_argument('--resume', default=False, help='resume training from an ear
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
-parser.add_argument('--num_workers', type=int, default=8, help='Number of workers')
+parser.add_argument('--num_workers', type=int, default=16, help='Number of workers')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
 parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
 
