@@ -1,14 +1,14 @@
 #!/bin/bash
-#SBATCH --job-name=plot_flare_wf_1111_idwt_dec_v2
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/flare_1111_plot_idwt_dec_v2.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/flare_1111_plot_idwt_dec_v2.%J.err
+#SBATCH --job-name=plot_flare_enc_hf_agg_idwt_dec
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/plot_flare_enc_hf_agg_idwt_dec.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/plot_flare_enc_hf_agg_idwt_dec.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=128GB
 #SBATCH --partition=hpg-ai
 #SBATCH --gpus=a100:1
-#SBATCH --time=1:00:00
+#SBATCH --time=24:00:00
 
 module load conda
 conda activate waveformer
