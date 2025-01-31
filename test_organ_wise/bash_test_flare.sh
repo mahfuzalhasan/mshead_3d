@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --job-name=test_flare_WF_2211
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d/results/test_flare_WF_2211_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d/results/test_flare_WF_2211_job.%J.err
+#SBATCH --job-name=test_flare_hf_Agg_multi_organ
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d/results/test_flare_hf_Agg_multi_organ.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d/results/test_flare_hf_Agg_multi_organ.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=64GB
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=128GB
 #SBATCH --partition=hpg-ai
 #SBATCH --gpus=a100:1
 #SBATCH --time=1:00:00
@@ -17,4 +17,4 @@ cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-
 
 # Execute the Python script
 # srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
-srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD --dataset $DATASET
+srun python multi_organ_score_flare.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD --dataset $DATASET
