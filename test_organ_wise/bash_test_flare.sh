@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=test_flare_hf_Agg_multi_organ
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d/results/test_flare_hf_Agg_multi_organ.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d/results/test_flare_hf_Agg_multi_organ.%J.err
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/test_flare_hf_Agg_multi_organ.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/test_flare_hf_Agg_multi_organ.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -13,7 +13,7 @@
 module load conda
 conda activate waveformer
 
-cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d
+cd /blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d
 
 # Execute the Python script
 # srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
