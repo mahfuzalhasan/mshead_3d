@@ -324,21 +324,23 @@ def data_transforms(args):
     elif dataset == "kits":
         train_transforms = Compose(
         [
+            # Initial Format ? (1)
             LoadImaged(keys=["image", "label"]),            # D, H, W
             AddChanneld(keys=["image", "label"]),
-            Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
+            Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),    # 1, 0.78, 0.78
             # ResizeWithPadOrCropd(keys=["image", "label"], spatial_size=(256,256,128), mode=("constant")),
             Orientationd(keys=["image", "label"], axcodes="RAS"),           # H, W, D
             Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),      # D, H, W --> PyTorch expects this    
+            # Comes in (D, H, W)? (2)
             ScaleIntensityRanged(
-                keys=["image"], a_min=-200, a_max=300,
+                keys=["image"], a_min=-200, a_max=300,  # a_min = -58, a_max = 302
                 b_min=0.0, b_max=1.0, clip=True,
-            ),
+            ),          # ScaleIntensityRanged (3)
             CropForegroundd(keys=["image", "label"], source_key="image"),
             RandCropByPosNegLabeld(
                 keys=["image", "label"],
                 label_key="label",
-                spatial_size=(96, 96, 96),
+                spatial_size=(96, 96, 96),      #(128, 128, 128)
                 pos=1,
                 neg=1,
                 num_samples=2,
@@ -376,7 +378,7 @@ def data_transforms(args):
                 mode=('bilinear', 'nearest'),
                 prob=1.0, spatial_size=(96, 96, 96),
                 rotate_range=(0, 0, np.pi/30),
-                scale_range=(0.1, 0.1, 0.1)),
+                scale_range=(0.1, 0.1, 0.1)),       # Affine Transformation????? (4)
             ToTensord(keys=["image", "label"]),
 
         ]
