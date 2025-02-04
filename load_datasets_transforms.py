@@ -49,8 +49,11 @@ def data_loader(args):
         out_classes = 5
     elif dataset == 'amos':
         out_classes = 16
-    elif dataset == 'kits' or 'kits23':
+    elif dataset == 'kits':
         out_classes = 3
+    elif dataset == 'kits23':
+        out_classes = 4
+    
 
     if args.mode == 'train':
         train_samples = {}
@@ -265,7 +268,7 @@ def data_transforms(args):
                 spatial_size=(128, 128, 128),
                 pos=2,
                 neg=1,
-                num_samples=6,
+                num_samples=3,
                 image_key="image",
                 image_threshold=0,
             ),
