@@ -212,8 +212,8 @@ class MRATransformer(nn.Module):
         return outs
 
     def forward(self, x_rgb):
-        outs, outs_hf = self.forward_features(x_rgb)
-        return outs, outs_hf
+        outs = self.forward_features(x_rgb)
+        return outs
 
     def flops(self):
         flops = 0
