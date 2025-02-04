@@ -112,38 +112,38 @@ class MRATransformer(nn.Module):
                 x = rearrange(x, "n h w c -> n c h w")
         return x
 
-    # def merge_hf_components(self, hf_list):
-    #     list1 = hf_list[0]
-    #     list2 = hf_list[1]
-
-    #     merged_list = []
-    #     # print(f'type comps: {type(list1)} {type(list2)}')
-
-    #     for dict1, dict2 in zip(list1, list2):
-    #         merged_dict = {}
-    #         for key in dict1.keys():
-    #             merged_dict[key] = dict1[key] + dict2[key]  # Element-wise addition
-    #         merged_list.append(merged_dict)
-    #     return tuple(merged_list)
-    
     def merge_hf_components(self, hf_list, stage):
-        list1 = hf_list[0]  # Features from first block
-        list2 = hf_list[1]  # Features from second block
+        list1 = hf_list[0]
+        list2 = hf_list[1]
 
         merged_list = []
+        # print(f'type comps: {type(list1)} {type(list2)}')
+
         for dict1, dict2 in zip(list1, list2):
             merged_dict = {}
             for key in dict1.keys():
-                # Pass through the learnable fusion layer
-                if stage == 1:
-                    merged_dict[key] = self.fusion1(dict1[key], dict2[key])
-                elif stage == 2:
-                    merged_dict[key] = self.fusion2(dict1[key], dict2[key])
-                elif stage == 3:
-                    merged_dict[key] = self.fusion3(dict1[key], dict2[key])
+                merged_dict[key] = dict1[key] + dict2[key]  # Element-wise addition
             merged_list.append(merged_dict)
-        
         return tuple(merged_list)
+    
+    # def merge_hf_components(self, hf_list, stage):
+    #     list1 = hf_list[0]  # Features from first block
+    #     list2 = hf_list[1]  # Features from second block
+
+    #     merged_list = []
+    #     for dict1, dict2 in zip(list1, list2):
+    #         merged_dict = {}
+    #         for key in dict1.keys():
+    #             # Pass through the learnable fusion layer
+    #             if stage == 1:
+    #                 merged_dict[key] = self.fusion1(dict1[key], dict2[key])
+    #             elif stage == 2:
+    #                 merged_dict[key] = self.fusion2(dict1[key], dict2[key])
+    #             elif stage == 3:
+    #                 merged_dict[key] = self.fusion3(dict1[key], dict2[key])
+    #         merged_list.append(merged_dict)
+        
+    #     return tuple(merged_list)
 
 
 
