@@ -56,12 +56,15 @@ def data_loader(args):
         train_samples = {}
         valid_samples = {}
         print(f'#### loading training and validation set ########## \n')
-        
 
         
         ## Input training data
-        train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
-        train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
+        if dataset == 'kits23':
+            train_img = sorted(glob.glob(os.path.join(root_dir,'*/imaging.nii.gz')))
+            train_label = sorted(glob.glob(os.path.join(root_dir,'*/segmentation.nii.gz')))
+        else:
+            train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
+            train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
 
         if not args.no_split:
             if args.dataset == "flare":
@@ -304,7 +307,8 @@ def data_transforms(args):
             [
                 LoadImaged(keys=["image", "label"]),
                 AddChanneld(keys=["image", "label"]),
-                Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
+                # Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
+                Spacingd(keys=["image", "label"], pixdim=(1, 0.78, 0.78), mode=("bilinear", "nearest")),
                 Orientationd(keys=["image", "label"], axcodes="RAS"),
                 Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
@@ -320,7 +324,8 @@ def data_transforms(args):
             [
                 LoadImaged(keys=["image", "label"]),
                 AddChanneld(keys=["image", "label"]),
-                Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
+                # Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
+                Spacingd(keys=["image", "label"], pixdim=(1, 0.78, 0.78), mode=("bilinear", "nearest")),
                 Orientationd(keys=["image", "label"], axcodes="RAS"),
                 Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
