@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=train_flare_wf_idwt_dec_hf_agg
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/train_flare_wf_idwt_dec_hf_agg.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/train_flare_wf_idwt_dec_hf_agg.%J.err
+#SBATCH --job-name=train_flare_idwt_dec_hf_fused
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/train_flare_idwt_dec_hf_fused.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/train_flare_idwt_dec_hf_fused.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
