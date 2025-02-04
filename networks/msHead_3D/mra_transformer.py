@@ -90,9 +90,9 @@ class MRATransformer(nn.Module):
         cur += depths[3]
 
         # Initialize fusion layers for each stage
-        self.fusion1 = HighFreqFusion(embed_dims[0])
-        self.fusion2 = HighFreqFusion(embed_dims[1])
-        self.fusion3 = HighFreqFusion(embed_dims[2])
+        # self.fusion1 = HighFreqFusion(embed_dims[0])
+        # self.fusion2 = HighFreqFusion(embed_dims[1])
+        # self.fusion3 = HighFreqFusion(embed_dims[2])
 
         self.apply(self._init_weights)
 
