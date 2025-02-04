@@ -3,11 +3,12 @@ from typing import Sequence, Tuple, Union
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import ptwt
 
 from monai.networks.blocks.dynunet_block import UnetBasicBlock, UnetResBlock, get_conv_layer
 
-class UnetrIDWTBlock(nn.Module):
+class UpsampleBlock(nn.Module):
     """
     An upsampling module that can be used for UNETR: "Hatamizadeh et al.,
     UNETR: Transformers for 3D Medical Image Segmentation <https://arxiv.org/abs/2103.10504>"
@@ -35,7 +36,7 @@ class UnetrIDWTBlock(nn.Module):
 
         """
         
-        super(UnetrIDWTBlock, self).__init__()
+        super(UpsampleBlock, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.wavelet = wavelet
@@ -84,14 +85,11 @@ class UnetrIDWTBlock(nn.Module):
                 norm_name=norm_name,
             )
 
-
-    def forward(self, inp, skip, hf_coeffs):
+    def forward(self, inp, skip):
         # number of channels for skip should equals to out_channels
         # print(f'input: {inp.shape} skip:{skip.shape} in:{self.in_channels} out:{self.out_channels}')
         inp = self.conv_lf_block(inp)
-        inp_tuple = (inp,) + hf_coeffs
-        
-        out = ptwt.waverec3(inp_tuple, wavelet=self.wavelet)
+        out = F.interpolate(inp, size=(skip.shape[2:]), mode='trilinear')
         out = torch.cat((out, skip), dim=1)
         out = self.conv_block(out)
         return out

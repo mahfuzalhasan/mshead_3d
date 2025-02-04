@@ -158,10 +158,8 @@ class MRATransformer(nn.Module):
         """
         x_rgb: B x C x D x H x W
         """
-        # print(f'input: {x_rgb.shape}')
         outs = []
-        outs_hf = []
-        # print(f'x_rgb:{x_rgb.dtype}')
+
         B, C, D, H, W = x_rgb.shape
         ######## Patch Embedding
         x0 = self.patch_embed(x_rgb)                # B, c, d, h, w         
@@ -171,11 +169,10 @@ class MRATransformer(nn.Module):
         # stage 1
         b,d,h,w,c = x1.shape        
         for j,blk in enumerate(self.block1):
-            x1, x_h = blk(x1)       # B, d, h, w, c
+            x1 = blk(x1)       # B, d, h, w, c
         x1_out = rearrange(x1, "b d h w c -> b c d h w")
         x1_out = self.proj_out(x1_out, normalize)
         outs.append(x1_out)
-        outs_hf.append(x_h)
 
         x2 = self.downsample_1(x1)
         #######################
@@ -183,11 +180,10 @@ class MRATransformer(nn.Module):
         # stage 2
         b,d,h,w,c = x2.shape
         for j,blk in enumerate(self.block2):
-            x2, x_h = blk(x2)
+            x2 = blk(x2)
         x2_out = rearrange(x2, "b d h w c -> b c d h w")
         x2_out = self.proj_out(x2_out, normalize)
         outs.append(x2_out)
-        outs_hf.append(x_h)
 
         x3 = self.downsample_2(x2)
         #######################
@@ -196,11 +192,10 @@ class MRATransformer(nn.Module):
         # stage 3
         b,d,h,w,c = x3.shape
         for j,blk in enumerate(self.block3):
-            x3, x_h = blk(x3)
+            x3 = blk(x3)
         x3_out = rearrange(x3, "b d h w c -> b c d h w")
         x3_out = self.proj_out(x3_out, normalize)
         outs.append(x3_out)
-        outs_hf.append(x_h)
 
         x4 = self.downsample_3(x3)
         ########################
@@ -214,7 +209,7 @@ class MRATransformer(nn.Module):
         outs.append(x4_out)
         ########################
 
-        return outs, outs_hf
+        return outs
 
     def forward(self, x_rgb):
         outs, outs_hf = self.forward_features(x_rgb)

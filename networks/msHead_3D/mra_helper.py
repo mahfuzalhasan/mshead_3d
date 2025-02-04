@@ -249,20 +249,35 @@ class Mlp(nn.Module):
         flops_mlp += self.fc2.in_features * self.fc2.out_features * 2
         return flops_mlp
     
-class WaveletTransform3D(torch.nn.Module):
-    def __init__(self, wavelet='db1', level=5, mode='zero'):
-        super(WaveletTransform3D, self).__init__()
-        self.wavelet = wavelet #pywt.Wavelet(wavelet)
-        self.level = level
-        self.mode = mode
+import torch
+import torch.nn as nn
+
+class PoolingTransform3D(nn.Module):
+    def __init__(self, output_size=(6, 6, 6)):
+        """
+        Replaces WaveletTransform3D with Max & Average Pooling.
+        Args:
+            output_size (tuple): Desired output dimensions (D, H, W).
+            mode (str): "max", "avg", or "both" to determine pooling type.
+        """
+        super(PoolingTransform3D, self).__init__()
+        self.output_size = output_size
 
     def forward(self, x):
-        # print(f'x:{x.shape}  ')
-        coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
-        Yl  = coeffs[0]  # Extracting the approximation coefficients
-        Yh = coeffs[1:]
-        # print(f'Yl:{Yl.shape}')
-        return Yl, Yh
+        """
+        Input: x of shape (B, C, D, H, W)
+        Output: x_pooled of shape (B, C, 6, 6, 6) with max/avg pooled features
+        """
+        B, C, D, H, W = x.shape
+        # Max Pooling
+        max_pooled = F.adaptive_max_pool3d(x, self.output_size)  # (B, C, 6, 6, 6)
+        # Average Pooling
+        avg_pooled = F.adaptive_avg_pool3d(x, self.output_size)  # (B, C, 6, 6, 6)
+
+        x_pooled = max_pooled + avg_pooled
+
+        return x_pooled
+
 
 
 class Block(nn.Module):
@@ -274,10 +289,12 @@ class Block(nn.Module):
         self.mlp_ratio = mlp_ratio
         self.level = level
         mlp_hidden_dim = int(dim * mlp_ratio)
+        self.window_size = self.img_size[0]//pow(2, level)
 
         if self.level > 0:
-            self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=self.level)
-        self.window_size = self.img_size[0]//pow(2, level)
+            output_shape = (self.window_size, self.window_size, self.window_size)
+            self.downsamples = PoolingTransform3D(output_shape)
+        
 
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
@@ -333,7 +350,7 @@ class Block(nn.Module):
         x = x.view(B, D, H, W, C)
         if self.level > 0:
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
-            x, x_h = self.dwt_downsamples(x)
+            x = self.downsamples(x)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
         # print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
         # for coeff in x_h:
@@ -351,9 +368,7 @@ class Block(nn.Module):
         # B*nW, Nr, C [Here nW = 1]
         attn_windows = self.attn(x_windows) 
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
-        # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
         x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
-        # print(f'attn reshape:{x.shape}')
         if self.level > 0:
             # inp_tuple = (x,) + x_h
             # x = ptwt.waverec3(inp_tuple, wavelet='db1')
@@ -362,8 +377,6 @@ class Block(nn.Module):
         x = x.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
         x = shortcut + self.drop_path(x)
         x = x + self.drop_path(self.mlp(self.norm2(x)))              # B, D, H, W, C
-        if self.level > 0:
-            return x, x_h
         return x
     
     def flops(self):
