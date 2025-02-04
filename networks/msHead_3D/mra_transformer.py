@@ -209,12 +209,13 @@ class MRATransformer(nn.Module):
         ########################
         x1 = rearrange(x0, "b c d h w -> b d h w c")
         # stage 1
+        stage = 1
         b,d,h,w,c = x1.shape
         hfs = []        
         for j,blk in enumerate(self.block1):
             x1, x_h = blk(x1)       # B, d, h, w, c
             hfs.append(x_h)
-        x_h = self.merge_hf_components(hfs)
+        x_h = self.merge_hf_components(hfs, stage)
         x1_out = rearrange(x1, "b d h w c -> b c d h w")
         x1_out = self.proj_out(x1_out, normalize)
         outs.append(x1_out)
@@ -224,12 +225,13 @@ class MRATransformer(nn.Module):
         #######################
         
         # stage 2
+        stage += 1
         b,d,h,w,c = x2.shape
         hfs = [] 
         for j,blk in enumerate(self.block2):
             x2, x_h = blk(x2)
             hfs.append(x_h)
-        x_h = self.merge_hf_components(hfs)
+        x_h = self.merge_hf_components(hfs, stage)
         x2_out = rearrange(x2, "b d h w c -> b c d h w")
         x2_out = self.proj_out(x2_out, normalize)
         outs.append(x2_out)
@@ -240,12 +242,13 @@ class MRATransformer(nn.Module):
         
 
         # stage 3
+        stage += 1
         b,d,h,w,c = x3.shape
         hfs = []
         for j,blk in enumerate(self.block3):
             x3, x_h = blk(x3)
             hfs.append(x_h)
-        x_h = self.merge_hf_components(hfs)
+        x_h = self.merge_hf_components(hfs, stage)
         x3_out = rearrange(x3, "b d h w c -> b c d h w")
         x3_out = self.proj_out(x3_out, normalize)
         outs.append(x3_out)
@@ -255,6 +258,7 @@ class MRATransformer(nn.Module):
         ########################
 
         # stage 4
+        stage += 1
         b,d,h,w,c = x4.shape
         for j,blk in enumerate(self.block4):
             x4 = blk(x4)
