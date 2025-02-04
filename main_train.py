@@ -29,7 +29,6 @@ import datetime
 import argparse
 import time
 
-print(f'########### Running Flare Segmentation ################# \n')
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
@@ -56,6 +55,7 @@ parser.add_argument('--fold', type=int, default=0, help='current running fold')
 parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
 
 args = parser.parse_args()
+print(f'########### Running {args.dataset} Segmentation ################# \n')
 print(f'################################')
 print(f'args:{args}')
 print('#################################')
