@@ -31,6 +31,20 @@ from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 
 # logger = get_logger()
 
+class HighFreqFusion(nn.Module):
+    def __init__(self, in_channels):
+        super(HighFreqFusion, self).__init__()
+        self.conv = nn.Conv3d(in_channels * 2, in_channels, kernel_size=1, stride=1, padding=0, bias=True)
+        self.norm = nn.BatchNorm3d(in_channels)
+        self.act = nn.ReLU(inplace=True)
+
+    def forward(self, x1, x2):
+        x = torch.cat([x1, x2], dim=1)  # Concatenate along channel dimension
+        x = self.conv(x)
+        x = self.norm(x)
+        x = self.act(x)
+        return x
+
 class DWConv(nn.Module):
     """
     Depthwise convolution bloc: input: x with size(B N C); output size (B N C)
