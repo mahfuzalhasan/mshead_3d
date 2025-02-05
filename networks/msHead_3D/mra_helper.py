@@ -331,6 +331,7 @@ class Block(nn.Module):
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
+        print(f'x in Block:{x.shape}')
         if self.level > 0:
             x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             x, x_h = self.dwt_downsamples(x)

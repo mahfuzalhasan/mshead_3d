@@ -241,9 +241,11 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     
     print(f'######### new epoch started. Global Step:{global_step} ###############')
     # total training data--> 272. Batch 2. This loop will run for 272/2 = 136 times
+    print(f'length of dataloader: {len(train_loader)}')
     for step, batch in enumerate(train_loader):     
         step += 1
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 2,1,96,96,96. y same
+        print(f'x:{x.shape} y:{y.shape}')
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
         logit_map = model(x)

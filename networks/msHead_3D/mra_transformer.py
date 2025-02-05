@@ -158,7 +158,7 @@ class MRATransformer(nn.Module):
         """
         x_rgb: B x C x D x H x W
         """
-        # print(f'input: {x_rgb.shape}')
+        print(f'input: {x_rgb.shape}')
         outs = []
         outs_hf = []
         # print(f'x_rgb:{x_rgb.dtype}')
@@ -168,6 +168,7 @@ class MRATransformer(nn.Module):
         x0 = self.pos_drop(x0)
         ########################
         x1 = rearrange(x0, "b c d h w -> b d h w c")
+        print(f'x1:{x1.shape}')
         # stage 1
         b,d,h,w,c = x1.shape        
         for j,blk in enumerate(self.block1):
