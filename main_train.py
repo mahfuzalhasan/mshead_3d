@@ -41,7 +41,7 @@ parser.add_argument('--mode', type=str, default='train', help='Training or testi
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
 parser.add_argument('--pretrained_weights', type=str, default=None, help='Path of pretrained weights')
 parser.add_argument('--batch_size', type=int, default='2', help='Batch size for subject input')
-parser.add_argument('--crop_sample', type=int, default='2', help='Number of cropped sub-volumes for each subject')
+parser.add_argument('--crop_sample', type=int, default='6', help='Number of cropped sub-volumes for each subject')
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
@@ -104,6 +104,8 @@ val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.
 train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
 
+roi_size = (128, 128, 128)
+
 
 
 ## Load Networks
@@ -113,7 +115,7 @@ print(f'--- device:{device} ---')
 
 if args.network == 'MSHEAD':
     model = MSHEAD_ATTN(
-        img_size=(128, 128, 128),
+        img_size=roi_size,
         patch_size=2,
         in_chans=1,
         out_chans=out_classes,
@@ -125,7 +127,7 @@ if args.network == 'MSHEAD':
     ).to(device)
 elif args.network == 'SwinUNETR':
     model = SwinUNETR(
-        img_size=(96, 96, 96),
+        img_size=roi_size,
         in_channels=1,
         out_channels=out_classes,
         feature_size=48,
@@ -135,7 +137,7 @@ elif args.network == 'UNETR':
     model = UNETR(
         in_channels=1,
         out_channels=out_classes,
-        img_size=(96, 96, 96),
+        img_size=roi_size,
         feature_size=16,
         hidden_size=768,
         mlp_dim=3072,
@@ -182,7 +184,7 @@ def validation(val_loader):
         for step, batch in enumerate(val_loader):
             val_inputs, val_labels = (batch["image"].to(device), batch["label"].to(device))
             # val_outputs = model(val_inputs)
-            val_outputs = sliding_window_inference(val_inputs, (96, 96, 96), 2, model)
+            val_outputs = sliding_window_inference(val_inputs, roi_size, 2, model)
             # val_outputs = model_seg(val_inputs, val_feat[0], val_feat[1])
             val_labels_list = decollate_batch(val_labels)
             val_labels_convert = [
