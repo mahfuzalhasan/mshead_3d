@@ -12,6 +12,7 @@ import sys
 import math
 import time
 import ptwt
+import torch.utils.checkpoint as checkpoint
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -321,7 +322,7 @@ class Block(nn.Module):
         windows = x.permute(0, 1, 3, 5, 2, 4, 6, 7).contiguous().view(-1, window_size, window_size, window_size, C)
         return windows
 
-    def forward(self, x):
+    def _forward_impl(self, x):
         D,H,W = self.img_size
         B,_,_,_,C = x.shape
         assert D == x.shape[1]
@@ -366,6 +367,15 @@ class Block(nn.Module):
         if self.level > 0:
             return x, x_h
         return x
+    
+    
+    def forward(self, x):
+        if self.training:  # Apply checkpointing only during training
+            x = checkpoint.checkpoint(self._forward_impl, x)
+        else:
+            x = self._forward_impl(x)
+        return x
+    
     
     def flops(self):
         # FLOPs for MultiScaleAttention

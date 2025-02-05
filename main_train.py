@@ -101,8 +101,10 @@ train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=
 val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
 
 # with CacheDataset, we can use ThreadDataLoader with num_workers=0. But if low cache rate (<0.3) is used in CacheDataset, then use num_workers>0
-train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
-val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
+# train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+# val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
+train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
 
 roi_size = (128, 128, 128)
 
@@ -123,7 +125,7 @@ if args.network == 'MSHEAD':
         feat_size=[48,96,192,384],
         num_heads = [3,6,12,24],
         drop_path_rate=0.1,
-        use_checkpoint=False,
+        use_checkpoint=True,
     ).to(device)
 elif args.network == 'SwinUNETR':
     model = SwinUNETR(
