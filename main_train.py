@@ -100,8 +100,9 @@ print('Start caching datasets!')
 train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
 val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
 
-train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)
-val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
+# with CacheDataset, we can use ThreadDataLoader with num_workers=0. But if low cache rate (<0.3) is used in CacheDataset, then use num_workers>0
+train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
 
 
 
@@ -235,6 +236,9 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     # epoch_iterator = tqdm(
     #     train_loader, desc="Training (X / X Steps) (loss=X.X)", dynamic_ncols=True
     # )
+    
+    print(f"Total batches in training dataloader: {len(train_loader)}")
+    
     print(f'######### new epoch started. Global Step:{global_step} ###############')
     # total training data--> 272. Batch 2. This loop will run for 272/2 = 136 times
     for step, batch in enumerate(train_loader):     
@@ -296,6 +300,8 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         # saving loss for every iteration
         writer.add_scalar('Training Loss_Itr', loss.data, global_step)
         global_step += 1
+    
+    torch.cuda.empty_cache()    # Free up GPU memory at end of epoch
     
     train_time = time.time() - s_time
     print(f"train takes {datetime.timedelta(seconds=int(train_time))}")

@@ -268,7 +268,7 @@ def data_transforms(args):
                 spatial_size=(128, 128, 128),
                 pos=2,
                 neg=1,
-                num_samples=3,
+                num_samples=6,
                 image_key="image",
                 image_threshold=0,
             ),
