@@ -36,6 +36,8 @@ from lib.models.tools.module_helper import ModuleHelper
 from networks.msHead_3D.mra_transformer import mra_b0
 from idwt_upsample import UnetrIDWTBlock
 
+import torch.utils.checkpoint as checkpoint
+
 
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -332,23 +334,32 @@ class MSHEAD_ATTN(nn.Module):
         enc0 = self.encoder1(x_in)
         #print(f'enc0 input:{x_in.shape} output:{enc0.size()}')
 
-        enc1 = self.encoder2(outs[0])
+        # enc1 = self.encoder2(outs[0])
+        enc1 = checkpoint.checkpoint(self.encoder2, outs[0]) if self.training else self.encoder2(outs[0])
         #print(f'enc1 input:{outs[0].shape} output:{enc1.size()}')
 
-        enc2 = self.encoder3(outs[1])
+        # enc2 = self.encoder3(outs[1])
+        enc2 = checkpoint.checkpoint(self.encoder3, outs[1]) if self.training else self.encoder3(outs[1])
         #print(f'enc2:input:{outs[1].shape} output:{enc2.size()}')
 
-        enc3 = self.encoder4(outs[2])
+        # enc3 = self.encoder4(outs[2])
+        enc3 = checkpoint.checkpoint(self.encoder4, outs[2]) if self.training else self.encoder4(outs[2])
         #print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
 
-        dec5 = self.encoder10(outs[3])
+        # dec5 = self.encoder10(outs[3])
+        dec5 = checkpoint.checkpoint(self.encoder10, outs[3]) if self.training else self.encoder10(outs[3])
         #print(f'bottleneck:{dec5.shape}')
 
-        dec4 = self.decoder4(dec5, enc3, outs_hf[-1])
+        # dec4 = self.decoder4(dec5, enc3, outs_hf[-1])
+        dec4 = checkpoint.checkpoint(self.decoder4, dec5, enc3, outs_hf[-1]) if self.training else self.decoder4(dec5, enc3, outs_hf[-1])
         #print(f'dec4: {dec4.shape}')
-        dec3 = self.decoder3(dec5, enc2, outs_hf[-2])
+        
+        # dec3 = self.decoder3(dec5, enc2, outs_hf[-2])
+        dec3 = checkpoint.checkpoint(self.decoder3, dec5, enc2, outs_hf[-2]) if self.training else self.decoder3(dec5, enc2, outs_hf[-2])
         #print(f'dec3: {dec3.shape}')
-        dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
+        
+        # dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
+        dec2 = checkpoint.checkpoint(self.decoder2, dec5, enc1, outs_hf[-3]) if self.training else self.decoder2(dec5, enc1, outs_hf[-3])
         #print(f'dec2: {dec2.shape}')
 
         # Learnable upsampling
@@ -361,7 +372,9 @@ class MSHEAD_ATTN(nn.Module):
         # print(f'combined shape:{combined.shape}')
         proj = self.projection(combined)
         # print(f'proj:{proj.shape}')
-        dec1 = self.decoder1(proj, enc0)
+        
+        # dec1 = self.decoder1(proj, enc0)
+        dec1 = checkpoint.checkpoint(self.decoder1, proj, enc0) if self.training else self.decoder1(proj, enc0)
         # print(f'dec1: {dec1.shape}')
         
         return self.out(dec1)
