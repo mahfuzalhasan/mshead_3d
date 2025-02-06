@@ -16,7 +16,7 @@ from monai.networks.nets import UNETR, SwinUNETR
 from monai.metrics import DiceMetric
 from monai.losses import DiceCELoss
 from monai.inferers import sliding_window_inference
-from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
+from monai.data import CacheDataset, DataLoader, Dataset, decollate_batch, ThreadDataLoader
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -97,12 +97,16 @@ train_transforms, val_transforms = data_transforms(args)
 
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
-train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
-val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
+# train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
+# val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
+train_ds = Dataset(data=train_files, transform=train_transforms)
+val_ds = Dataset(data=val_files, transform=val_transforms)
 
 # with CacheDataset, we can use ThreadDataLoader with num_workers=0. But if low cache rate (<0.3) is used in CacheDataset, then use num_workers>0
-train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
-val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
+# train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+# val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
+train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers, pin_memory=True)
 
 roi_size = (128, 128, 128)
 
