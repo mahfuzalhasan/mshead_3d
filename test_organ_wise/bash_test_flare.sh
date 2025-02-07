@@ -13,7 +13,7 @@
 module load conda
 conda activate waveformer
 
-cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d
+cd /blue/r.forghani/mdmahfuzalhasan/scripts/ablation_waveformer/mshead_3d
 
 # Execute the Python script
 srun python multi_organ_score_flare.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD --dataset $DATASET --network $NETWORK
