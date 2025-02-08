@@ -265,7 +265,7 @@ def data_transforms(args):
             RandCropByPosNegLabeld(
                 keys=["image", "label"],
                 label_key="label",
-                spatial_size=roi_size #(96, 96, 96), #(128, 128, 128),
+                spatial_size=roi_size, #(96, 96, 96), #(128, 128, 128),
                 pos=3,
                 neg=1,
                 num_samples=crop_samples,
