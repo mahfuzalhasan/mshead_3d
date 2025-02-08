@@ -257,11 +257,11 @@ class WaveletTransform3D(torch.nn.Module):
         self.mode = mode
 
     def forward(self, x):
-        # print(f'x:{x.shape}  ')
         coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
         Yl  = coeffs[0]  # Extracting the approximation coefficients
         Yh = coeffs[1:]
-        # print(f'Yl:{Yl.shape}')
+        x_pool = F.adaptive_max_pool3d(x, Yl.shape[2:])
+        Yl = Yl + x_pool
         return Yl, Yh
 
 
@@ -282,7 +282,7 @@ class Block(nn.Module):
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
             dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
-            attn_drop=attn_drop, proj_drop=drop, img_size=img_size)
+            attn_drop=attn_drop, proj_drop=drop, window_size=self.window_size, img_size=img_size)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
