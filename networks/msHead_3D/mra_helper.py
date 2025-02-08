@@ -371,6 +371,7 @@ class Block(nn.Module):
     
     def forward(self, x):
         if self.training:  # Apply checkpointing only during training
+            x.requires_grad_(True)
             x = checkpoint.checkpoint(self._forward_impl, x)
         else:
             x = self._forward_impl(x)
