@@ -113,6 +113,12 @@ val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
 # val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers, pin_memory=True)
 
 
+# roi_size = (96, 96, 96)       # always for now
+# cache_rate = 1, 0.5, 0.3  (num_workers = #CPU)
+
+# ThreadDataLoader --> num_workers = 0, num_workers = #CPU (when cache_rate < 1), 
+
+# bash script -- > cpu = 32... memory = 8 * #CPU = 256GB            # Always
 
 
 ## Load Networks
