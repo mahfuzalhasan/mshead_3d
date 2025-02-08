@@ -325,16 +325,18 @@ class Block(nn.Module):
     def _forward_impl(self, x):
         D,H,W = self.img_size
         B,_,_,_,C = x.shape
-        assert D == x.shape[1]
-        assert H == x.shape[2]
-        assert W == x.shape[3]
+        assert D == x.shape[1], f"Shape mismatch: Expected {D}, got {x.shape[1]}"
+        assert H == x.shape[2], f"Shape mismatch: Expected {H}, got {x.shape[2]}"
+        assert W == x.shape[3], f"Shape mismatch: Expected {W}, got {x.shape[3]}"
         # print(f'input to attn:{x.dtype}')
+        
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
         # print(f'x in Block:{x.shape}')
+        
         if self.level > 0:
-            x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
+            x = x.permute(0, 4, 1, 2, 3).contiguous()   #B,C,D,H,W
             x, x_h = self.dwt_downsamples(x)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
         # print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
@@ -346,12 +348,15 @@ class Block(nn.Module):
         nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
 
         x_windows = self.window_partition(x, self.window_size)
-        
         x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
         B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
         
         # B*nW, Nr, C [Here nW = 1]
-        attn_windows = self.attn(x_windows) 
+        if self.training:
+            attn_windows = checkpoint.checkpoint(self.attn, x_windows)
+        else:
+            attn_windows = self.attn(x_windows)
+            
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
         # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
         x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
@@ -363,19 +368,21 @@ class Block(nn.Module):
         
         x = x.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
         x = shortcut + self.drop_path(x)
-        x = x + self.drop_path(self.mlp(self.norm2(x)))              # B, D, H, W, C
+        # x = x + self.drop_path(self.mlp(self.norm2(x)))              # B, D, H, W, C
+        
+        # ✅ **Apply checkpointing only to MLP**
+        if self.training:
+            x = x + self.drop_path(checkpoint.checkpoint(self.mlp, self.norm2(x)))       # B, D, H, W, C
+        else:
+            x = x + self.drop_path(self.mlp(self.norm2(x)))             # B, D, H, W, C
+        
         if self.level > 0:
             return x, x_h
         return x
     
     
     def forward(self, x):
-        if self.training:  # Apply checkpointing only during training
-            x.requires_grad_(True)
-            x = checkpoint.checkpoint(self._forward_impl, x)
-        else:
-            x = self._forward_impl(x)
-        return x
+        return self._forward_impl(x)
     
     
     def flops(self):
