@@ -30,24 +30,29 @@ import argparse
 import time
 
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
-## Input data hyperparameters
+
+## General Dataset and Output Settings
 parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
 parser.add_argument('--dataset', type=str, default='flare', required=False, help='Currently supporting datasets: {flare, amos, kits}, Fyi: You can add your dataset here')
 
-## Input model & training hyperparameters
+## Input, model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
 parser.add_argument('--pretrained_weights', type=str, default=None, help='Path of pretrained weights')
+
+## Training hyperparameters
 parser.add_argument('--batch_size', type=int, default='2', help='Batch size for subject input')
 parser.add_argument('--crop_sample', type=int, default='4', help='Number of cropped sub-volumes for each subject')
+parser.add_argument('--roi_size', type=str, default="96,96,96", help="Region of Interest (ROI) size in format D,H,W (e.g., 96,96,96).")
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
-## Efficiency hyperparameters
+
+## Hardware & Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
 parser.add_argument('--num_workers', type=int, default=16, help='Number of workers')
@@ -94,7 +99,8 @@ print(f' \n ****************** Validation File List :\n {val_files} \n *********
 set_determinism(seed=0)
 
 # roi_size = (128, 128, 128)
-roi_size = (96, 96, 96)
+roi_size = tuple(map(int, args.roi_size.split(',')))
+
 
 
 train_transforms, val_transforms = data_transforms(args)

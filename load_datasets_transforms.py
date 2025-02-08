@@ -158,7 +158,8 @@ def data_transforms(args):
         crop_samples = args.crop_sample
     else:
         crop_samples = None
-
+    roi_size = tuple(map(int, args.roi_size.split(',')))
+    
     if dataset == 'flare':
         train_transforms = Compose(
             [
@@ -264,7 +265,7 @@ def data_transforms(args):
             RandCropByPosNegLabeld(
                 keys=["image", "label"],
                 label_key="label",
-                spatial_size=(128, 128, 128),
+                spatial_size=roi_size #(96, 96, 96), #(128, 128, 128),
                 pos=3,
                 neg=1,
                 num_samples=crop_samples,
