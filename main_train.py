@@ -47,6 +47,7 @@ parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types:
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
+parser.add_argument('--roi_size', type=str, default="96,96,96", help="Region of Interest (ROI) size in format D,H,W (e.g., 96,96,96).")
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
@@ -94,7 +95,7 @@ print(f' \n ****************** Validation File List :\n {val_files} \n *********
 set_determinism(seed=0)
 
 # roi_size = (128, 128, 128)
-roi_size = (96, 96, 96)
+roi_size = tuple(map(int, args.roi_size.split(',')))
 
 
 train_transforms, val_transforms = data_transforms(args)
