@@ -26,11 +26,6 @@ from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 # from configs.config_imagenet import config
 # from utils.logger import get_logger
 
-
-
-
-# logger = get_logger()
-
 class HighFreqFusion(nn.Module):
     def __init__(self, in_channels):
         super(HighFreqFusion, self).__init__()
