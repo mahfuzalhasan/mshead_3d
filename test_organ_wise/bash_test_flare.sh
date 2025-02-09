@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=flare_organ_wise_dwt_max_pool
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Pool/mshead_3d/results/flare_organ_wise_dwt_max_pool.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Pool/mshead_3d/results/flare_organ_wise_dwt_max_pool.%J.err
+#SBATCH --job-name=flare_organ_wise_dwt_avg_pool
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Pool/mshead_3d/results/flare_organ_wise_dwt_avg_pool.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Pool/mshead_3d/results/flare_organ_wise_dwt_avg_pool.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8

@@ -260,7 +260,7 @@ class WaveletTransform3D(torch.nn.Module):
         coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
         Yl  = coeffs[0]  # Extracting the approximation coefficients
         Yh = coeffs[1:]
-        x_pool = F.adaptive_max_pool3d(x, Yl.shape[2:])
+        x_pool = F.adaptive_avg_pool3d(x, Yl.shape[2:])
         Yl = Yl + x_pool
         return Yl, Yh
 
