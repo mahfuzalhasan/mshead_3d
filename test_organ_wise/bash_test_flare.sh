@@ -16,4 +16,4 @@ conda activate waveformer
 cd /blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Pool/mshead_3d
 
 # Execute the Python script
-srun python multu_organ_score_flare.py --fold $FOLD --dataset $DATASET --network $NETWORK
+srun python multi_organ_score_flare.py --fold $FOLD --dataset $DATASET --network $NETWORK
