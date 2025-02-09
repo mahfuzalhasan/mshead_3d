@@ -266,7 +266,7 @@ def data_transforms(args):
             RandCropByPosNegLabeld(
                 keys=["image", "label"],
                 label_key="label",
-                spatial_size=(128, 128, 128),
+                spatial_size=roi_size, #(128, 128, 128),
                 pos=3,
                 neg=1,
                 num_samples=crop_samples,
@@ -299,7 +299,7 @@ def data_transforms(args):
             RandAffined(
                 keys=['image', 'label'],
                 mode=('bilinear', 'nearest'),
-                prob=1.0, spatial_size=(128, 128, 128),
+                prob=1.0, spatial_size=roi_size, #(128, 128, 128),
                 rotate_range=(np.pi/30, np.pi/30, np.pi/30),
                 scale_range=(0.1, 0.1, 0.1)),
             ToTensord(keys=["image", "label"]),
