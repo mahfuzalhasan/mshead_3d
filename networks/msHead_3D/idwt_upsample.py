@@ -110,6 +110,7 @@ class UnetrIDWTBlock(nn.Module):
             print(f'type {type(coeff)}')
             for k,cf in coeff.items():
                 print(f'key: {k} - {cf.shape}- {cf.dtype}')
+        print("##################################")
 
         # **Apply HF Refinement BEFORE IDWT**
         # hf_filtered = {k: self.hf_refinement(hf_coeffs[k]) for k in hf_coeffs.keys()}
