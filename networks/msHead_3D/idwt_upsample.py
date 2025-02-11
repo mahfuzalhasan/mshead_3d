@@ -60,7 +60,7 @@ class UnetrIDWTBlock(nn.Module):
         self.wavelet = wavelet
 
         # HF Refinement Block (NEW!)
-        self.hf_refinement = HFRefinementRes(in_channels//pow(2, stage))
+        # self.hf_refinement = HFRefinementRes(in_channels//pow(2, stage))
 
         # Convolution for Low-Frequency (LF) components
         self.conv_lf_block = get_conv_layer(
@@ -114,12 +114,12 @@ class UnetrIDWTBlock(nn.Module):
         # print("###########################################")
 
         # **Apply HF Refinement BEFORE IDWT**
-        hf_filtered = tuple(
-            {key: self.hf_refinement(hf_dict[key]) for key in hf_dict} for hf_dict in hf_coeffs
-        )
+        # hf_filtered = tuple(
+        #     {key: self.hf_refinement(hf_dict[key]) for key in hf_dict} for hf_dict in hf_coeffs
+        # )
 
         # **Use filtered HF components for IDWT**
-        inp_tuple = (inp,) + hf_filtered
+        inp_tuple = (inp,) + hf_coeffs
         out = ptwt.waverec3(inp_tuple, wavelet=self.wavelet)  # IDWT Reconstruction
 
         # **Fuse reconstructed features with skip connection**
