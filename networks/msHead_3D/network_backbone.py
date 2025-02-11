@@ -301,14 +301,14 @@ class MSHEAD_ATTN(nn.Module):
         
         self.learnable_up4 = nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=4, stride=4)
         self.learnable_up3 = nn.ConvTranspose3d(self.feat_size[1], self.feat_size[1], kernel_size=2, stride=2)
-        self.projection = nn.Sequential(
-                nn.Conv3d(self.feat_size[2]+self.feat_size[1]+self.feat_size[0], self.feat_size[0], kernel_size=1),
-                nn.InstanceNorm3d(self.feat_size[0])
-        )
+        # self.projection = nn.Sequential(
+        #         nn.Conv3d(self.feat_size[2]+self.feat_size[1]+self.feat_size[0], self.feat_size[0], kernel_size=1),
+        #         nn.InstanceNorm3d(self.feat_size[0])
+        # )
         
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.feat_size[0],
+            in_channels=self.feat_size[0]*7,
             out_channels=self.feat_size[0],
             kernel_size=3,
             upsample_kernel_size=2,
@@ -359,9 +359,9 @@ class MSHEAD_ATTN(nn.Module):
         # Fuse all decoder features
         combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
         # print(f'combined shape:{combined.shape}')
-        proj = self.projection(combined)
+        # proj = self.projection(combined)
         # print(f'proj:{proj.shape}')
-        dec1 = self.decoder1(proj, enc0)
+        dec1 = self.decoder1(combined, enc0)
         # print(f'dec1: {dec1.shape}')
         
         return self.out(dec1)
@@ -417,6 +417,6 @@ if __name__=="__main__":
     
 
   
-    macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
-    print('{:<30}  {:<8}'.format('Computational complexity ptflops: ', macs))
-    print('{:<30}  {:<8}'.format('Number of parameters from ptflops: ', params))
+    # macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
+    # print('{:<30}  {:<8}'.format('Computational complexity ptflops: ', macs))
+    # print('{:<30}  {:<8}'.format('Number of parameters from ptflops: ', params))
