@@ -60,7 +60,7 @@ class UnetrIDWTBlock(nn.Module):
         self.wavelet = wavelet
 
         # HF Refinement Block (NEW!)
-        # self.hf_refinement = HFRefinementRes(in_channels//pow(2, stage))
+        self.hf_refinement = HFRefinementRes(in_channels//pow(2, stage))
 
         # Convolution for Low-Frequency (LF) components
         self.conv_lf_block = get_conv_layer(
