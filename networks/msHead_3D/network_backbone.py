@@ -342,14 +342,14 @@ class MSHEAD_ATTN(nn.Module):
         #print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
 
         dec5 = self.encoder10(outs[3])
-        #print(f'bottleneck:{dec5.shape}')
+        print(f'bottleneck:{dec5.shape}')
 
         dec4 = self.decoder4(dec5, enc3, outs_hf[-1])
-        #print(f'dec4: {dec4.shape}')
+        print(f'dec4: {dec4.shape}')
         dec3 = self.decoder3(dec5, enc2, outs_hf[-2])
-        #print(f'dec3: {dec3.shape}')
+        print(f'dec3: {dec3.shape}')
         dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
-        #print(f'dec2: {dec2.shape}')
+        print(f'dec2: {dec2.shape}')
 
         # Learnable upsampling
         dec4_upsampled = self.learnable_up4(dec4)
