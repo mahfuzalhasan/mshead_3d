@@ -38,6 +38,7 @@ class UnetrIDWTBlock(nn.Module):
         spatial_dims: int,
         in_channels: int,
         out_channels: int,
+        stage: int,
         wavelet: str,
         kernel_size: Union[Sequence[int], int],
         norm_name: Union[Tuple, str],
@@ -59,7 +60,7 @@ class UnetrIDWTBlock(nn.Module):
         self.wavelet = wavelet
 
         # HF Refinement Block (NEW!)
-        self.hf_refinement = HFRefinementRes(in_channels)
+        self.hf_refinement = HFRefinementRes(in_channels//pow(2, stage))
 
         # Convolution for Low-Frequency (LF) components
         self.conv_lf_block = get_conv_layer(
