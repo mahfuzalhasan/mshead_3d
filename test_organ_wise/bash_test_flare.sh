@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=test_flare_WF_2211
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d/results/test_flare_WF_2211_job.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d/results/test_flare_WF_2211_job.%J.err
+#SBATCH --job-name=flare_organ_wf_idwt_dec_hf_refinement
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/flare_organ_wf_idwt_dec_hf_refinement.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/flare_organ_wf_idwt_dec_hf_refinement.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
@@ -13,8 +13,7 @@
 module load conda
 conda activate waveformer
 
-cd /blue/r.forghani/mdmahfuzalhasan/ablation_studies/ablation_flare/wavelet-two-branch/mshead_3d
+cd /blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d
 
 # Execute the Python script
-# srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD
-srun python test_seg.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD --dataset $DATASET
+srun python multi_organ_score_flare.py --fold $FOLD --dataset $DATASET --network $NETWORK
