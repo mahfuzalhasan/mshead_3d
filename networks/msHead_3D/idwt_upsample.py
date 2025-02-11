@@ -7,7 +7,7 @@ import ptwt
 from monai.networks.blocks.dynunet_block import UnetBasicBlock, UnetResBlock, get_conv_layer
 
 
-### 🔹 Residual HF Refinement Block (Filters HF Before IDWT)
+### Residual HF Refinement Block (Filters HF Before IDWT)
 class HFRefinementRes(nn.Module):
     def __init__(self, in_channels):
         super().__init__()
@@ -107,11 +107,11 @@ class UnetrIDWTBlock(nn.Module):
         print(f'input to this: {inp.shape}')
         inp = self.conv_lf_block(inp)
 
-        for coeff in hf_coeffs:
-            print(f'type {type(coeff)}')
-            for k,cf in coeff.items():
-                print(f'key: {k} - {cf.shape}- {cf.dtype}')
-        print("###########################################")
+        # for coeff in hf_coeffs:
+        #     print(f'type {type(coeff)}')
+        #     for k,cf in coeff.items():
+        #         print(f'key: {k} - {cf.shape}- {cf.dtype}')
+        # print("###########################################")
 
         # **Apply HF Refinement BEFORE IDWT**
         hf_filtered = tuple(
