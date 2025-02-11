@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=train_flare_dwt_avg_pool
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Pool/mshead_3d/results/train_flare_dwt_avg_pool.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Pool/mshead_3d/results/train_flare_dwt_avg_pool.%J.err
+#SBATCH --job-name=train_flare_dwt_wo_merge_proj
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Pool/mshead_3d/results/train_flare_dwt_wo_merge_proj.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Pool/mshead_3d/results/train_flare_dwt_wo_merge_proj.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
@@ -16,4 +16,4 @@ conda activate waveformer
 cd /blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Pool/mshead_3d
 
 # Execute the Python script
-srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD --dataset $DATASET
+srun python main_train.py --cache_rate 1.0 --num_workers $SLURM_CPUS_PER_TASK --fold $FOLD --dataset $DATASET --network $NETWORK
