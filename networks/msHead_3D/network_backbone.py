@@ -354,13 +354,9 @@ class MSHEAD_ATTN(nn.Module):
         # Learnable upsampling
         dec4_upsampled = self.learnable_up4(dec4)
         dec3_upsampled = self.learnable_up3(dec3)
-        # print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled.shape}')
 
         # Fuse all decoder features
         combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
-        # print(f'combined shape:{combined.shape}')
-        # proj = self.projection(combined)
-        # print(f'proj:{proj.shape}')
         dec1 = self.decoder1(combined, enc0)
         # print(f'dec1: {dec1.shape}')
         
