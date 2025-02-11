@@ -308,7 +308,7 @@ class MSHEAD_ATTN(nn.Module):
         
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.feat_size[0]*7,
+            in_channels=self.feat_size[2]+self.feat_size[1]+self.feat_size[0],
             out_channels=self.feat_size[0],
             kernel_size=3,
             upsample_kernel_size=2,
