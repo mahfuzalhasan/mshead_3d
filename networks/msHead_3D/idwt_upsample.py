@@ -104,7 +104,7 @@ class UnetrIDWTBlock(nn.Module):
         Returns:
             Refined and reconstructed feature map.
         """
-        print(f'input to this: {inp.shape}')
+        # print(f'input to this: {inp.shape}')
         inp = self.conv_lf_block(inp)
 
         # **HF Refinement BEFORE IDWT**
