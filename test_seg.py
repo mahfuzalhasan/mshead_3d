@@ -114,7 +114,8 @@ elif args.network == 'SwinUNETR':
     ).to(device)
 if args.dataset != 'amos':
     if args.fold == 0:
-        args.trained_weights = '/orange/r.forghani/results/02-09-25_0204/model_best.pth'                # flare avg pool
+        args.trained_weights = '/orange/r.forghani/results/02-11-25_1721/model_best.pth'                  #flare_wo_merge_projection
+        # args.trained_weights = '/orange/r.forghani/results/02-09-25_0204/model_best.pth'                # flare avg pool
         # args.trained_weights = '/orange/r.forghani/results/02-08-25_0316/model_best.pth'                # flare dwt pool
         # args.trained_weights = '/orange/r.forghani/results/01-07-25_0204/model_best.pth'              # flare idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-20-24_0342/model_best.pth'              #flare
@@ -125,7 +126,8 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_0/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_0/model_best.pth'
     elif args.fold == 1:
-        args.trained_weights = '/orange/r.forghani/results/02-09-25_0214/model_best.pth'                # flare avg pool
+        args.trained_weights = '/orange/r.forghani/results/02-11-25_1728/model_best.pth'                #flare_wo_merge_projection
+        # args.trained_weights = '/orange/r.forghani/results/02-09-25_0214/model_best.pth'                # flare avg pool
         # args.trained_weights = '/orange/r.forghani/results/02-08-25_0342/model_best.pth'                # flare dwt pool
         # args.trained_weights = '/orange/r.forghani/results/01-07-25_0102/model_best.pth'              #flare_idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-20-24_1658/model_best.pth'              #flare
