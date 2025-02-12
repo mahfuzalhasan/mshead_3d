@@ -91,8 +91,8 @@ def create_mednext_v1(num_input_channels, num_classes, model_id, kernel_size=3,
 
 
 if __name__ == "__main__":
-    network_M = create_mednext_v1(1, 4, 'M', 3, False)
-    network_L = create_mednext_v1(1, 4, 'L', 3, False)
+    network_M = create_mednext_v1(1, 4, 'M', 5, False)
+    network_L = create_mednext_v1(1, 4, 'L', 5, False)
     # network = create_mednextv1_small(1, 3, 3, False)
     network_M.cuda()
     network_L.cuda()
