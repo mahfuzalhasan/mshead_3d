@@ -91,15 +91,18 @@ def create_mednext_v1(num_input_channels, num_classes, model_id, kernel_size=3,
 
 
 if __name__ == "__main__":
-    network = create_mednext_v1(1, 4, 'B', 3, False)
+    network_M = create_mednext_v1(1, 4, 'M', 3, False)
+    network_L = create_mednext_v1(1, 4, 'L', 3, False)
     # network = create_mednextv1_small(1, 3, 3, False)
-    network.cuda()
+    network_M.cuda()
+    network_L.cuda()
     # print(model)
     def count_parameters(model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-    print(count_parameters(network))
+    print(f'midsize: {count_parameters(network_M)} large size:{count_parameters(network_M)}')
     with torch.no_grad():
         # print(network)
         x = torch.zeros((1, 1, 128, 128, 128)).cuda()
-        print(network(x)[0].shape)
+        print(network_M(x)[0].shape)
+        print(network_L(x)[0].shape)
