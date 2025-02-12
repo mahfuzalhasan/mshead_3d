@@ -1,4 +1,17 @@
-from nnunet_mednext.network_architecture.mednextv1.MedNextV1 import MedNeXt
+
+import sys
+import os
+import torch
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(current_dir)
+parent_dir = os.path.abspath(os.path.join(current_dir, os.pardir)) 
+sys.path.append(parent_dir)
+model_dir = os.path.abspath(os.path.join(parent_dir, os.pardir))
+sys.path.append(model_dir)
+
+from MedNextV1 import MedNeXt
 
 def create_mednextv1_small(num_input_channels, num_classes, kernel_size=3, ds=False):
 
@@ -79,5 +92,13 @@ def create_mednext_v1(num_input_channels, num_classes, model_id, kernel_size=3,
 
 if __name__ == "__main__":
 
-    model = create_mednextv1_large(1, 3, 3, False)
-    print(model)
+    network = create_mednextv1_small(1, 3, 3, False)
+    # print(model)
+    def count_parameters(model):
+        return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+    print(count_parameters(network))
+    with torch.no_grad():
+        print(network)
+        x = torch.zeros((1, 1, 128, 128, 128)).cuda()
+        print(network(x)[0].shape)
