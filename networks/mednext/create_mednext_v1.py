@@ -93,6 +93,7 @@ def create_mednext_v1(num_input_channels, num_classes, model_id, kernel_size=3,
 if __name__ == "__main__":
 
     network = create_mednextv1_small(1, 3, 3, False)
+    network.cuda()
     # print(model)
     def count_parameters(model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)
