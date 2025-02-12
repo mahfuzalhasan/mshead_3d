@@ -31,7 +31,9 @@ from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 # ------------------------------ #
 
 parser = argparse.ArgumentParser(description='MSHEAD_ATTN for medical image segmentation')
-parser.add_argument('--preprocessed_dir', type=str, required=True, help='Directory where preprocessed data is stored')
+parser.add_argument('--root', type=str, required=True, help='Directory where preprocessed data is stored')
+# parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
+parser.add_argument('--dataset', type=str, default='flare', required=False, help='Currently supporting datasets: {flare, amos, kits}, Fyi: You can add your dataset here')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', help='Output directory')
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network model: {MSHEAD, UNETR, SwinUNETR}')
 parser.add_argument('--roi_size', type=str, default="96,96,96", help="Region of Interest (ROI) size in format D,H,W (e.g., 96,96,96).")
@@ -47,6 +49,7 @@ parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to c
 parser.add_argument('--num_workers', type=int, default=16, help='Number of workers')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
 parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
+parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 
 # TODO: Merge and refine the arguments. Lot of them might be redundant here eg root. 
 
@@ -99,6 +102,7 @@ writer = SummaryWriter(log_dir=tensorboard_dir)
 # val_files = train_files[:len(train_files) // 5]  # Simple 80/20 split
 
 train_samples, valid_samples, out_classes = data_loader(args)
+print(f'train samples:{len(train_samples)} valid samples:{len(valid_samples)}')
 
 train_files = [
     {"image": image_name, "label": label_name}

@@ -69,21 +69,25 @@ def data_loader(args):
             
             # Find all case directories (e.g. case_00000, case_00001, ...)
             case_dirs = sorted(glob.glob(os.path.join(args.root, "case_*")))
-            # images = []
-            # labels = []
+            # print(f'case_dirs: {case_dirs}')
+            train_img = []
+            train_label = []
 
             for cdir in case_dirs:
                 # In the new folder structure, the processed image is saved as "labels.nii.gz"
                 # and the processed label is saved as "segmentation.nii.gz"
                 # TODO : change preprocessing to name "image" and "labels"
-                train_img = sorted(glob.glob(os.path.join(cdir, "labels.nii.gz")))
-                train_label = sorted(glob.glob(os.path.join(cdir, "segmentation.nii.gz")))
+                img = sorted(glob.glob(os.path.join(cdir, "labels.nii.gz")))
+                label = sorted(glob.glob(os.path.join(cdir, "segmentation.nii.gz")))
                 
-                # if os.path.exists(train_img) and os.path.exists(train_label):
-                #     images.append(train_img)
-                #     labels.append(train_label)
-                # else:
-                #     print(f"Warning: Missing files in {cdir}... skipping")
+                if os.path.exists(img[0]) and os.path.exists(label[0]):
+                    print('path exists')
+                    train_img.append(img[0])
+                    train_label.append(label[0])
+                    print('path appended')
+                else:
+                    print(f"Warning: Missing files in {cdir}... skipping")
+                print(f"train_img: {train_img}, train_label: {train_label}")
         else:
             raise NotImplementedError(f'Preprocessed data for {dataset} is not available')
 
@@ -172,7 +176,7 @@ def data_transforms(args):
         train_transforms = Compose(
         [
             LoadImaged(keys=["image", "label"]),            # D, H, W
-            AddChanneld(keys=["image", "label"]),
+            # AddChanneld(keys=["image", "label"]),
             
             ### -- Commented out transforms are already done in preparing the preprocessed data ---
             # Spacingd(keys=["image", "label"], pixdim=(1, 0.78, 0.78), mode=("bilinear", "nearest")),
