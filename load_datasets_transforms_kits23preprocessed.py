@@ -64,14 +64,32 @@ def data_loader(args):
         if dataset == 'kits23':
             # train_img = sorted(glob.glob(os.path.join(root_dir,'*/imaging.nii.gz')))
             # train_label = sorted(glob.glob(os.path.join(root_dir,'*/segmentation.nii.gz')))
-            train_img = sorted(glob.glob(os.path.join(args.preprocessed_dir, "image_*.nii.gz")))
-            train_label = sorted(glob.glob(os.path.join(args.preprocessed_dir, "label_*.nii.gz")))
+            # train_img = sorted(glob.glob(os.path.join(args.preprocessed_dir, "image_*.nii.gz")))
+            # train_label = sorted(glob.glob(os.path.join(args.preprocessed_dir, "label_*.nii.gz")))
+            
+            # Find all case directories (e.g. case_00000, case_00001, ...)
+            case_dirs = sorted(glob.glob(os.path.join(args.root, "case_*")))
+            # images = []
+            # labels = []
+
+            for cdir in case_dirs:
+                # In the new folder structure, the processed image is saved as "labels.nii.gz"
+                # and the processed label is saved as "segmentation.nii.gz"
+                # TODO : change preprocessing to name "image" and "labels"
+                train_img = sorted(glob.glob(os.path.join(cdir, "labels.nii.gz")))
+                train_label = sorted(glob.glob(os.path.join(cdir, "segmentation.nii.gz")))
+                
+                # if os.path.exists(train_img) and os.path.exists(train_label):
+                #     images.append(train_img)
+                #     labels.append(train_label)
+                # else:
+                #     print(f"Warning: Missing files in {cdir}... skipping")
         else:
             raise NotImplementedError(f'Preprocessed data for {dataset} is not available')
 
 
         if not args.no_split:
-            validation_per_fold = 98    ## TODO : change based on preprocessed data
+            validation_per_fold = 98
             start_index = validation_per_fold * args.fold
             end_index = validation_per_fold * args.fold + validation_per_fold
 
