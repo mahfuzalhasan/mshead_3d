@@ -100,7 +100,7 @@ if __name__ == "__main__":
     def count_parameters(model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-    print(f'midsize: {count_parameters(network_M)} large size:{count_parameters(network_M)}')
+    print(f'midsize: {count_parameters(network_M)} large size:{count_parameters(network_L)}')
     with torch.no_grad():
         # print(network)
         x = torch.zeros((1, 1, 128, 128, 128)).cuda()
