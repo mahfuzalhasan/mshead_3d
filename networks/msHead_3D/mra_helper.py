@@ -365,9 +365,8 @@ class WaveletTransform3D(torch.nn.Module):
     def forward(self, x):
         # print(f'x:{x.shape}  ')
         coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
-        Yl  = coeffs[0]  # Extracting the approximation coefficients
-        Yh = coeffs[1:]
-        # print(f'Yl:{Yl.shape}')
+        Yl  = coeffs[0]     # Extracting the approximation coefficients
+        Yh = coeffs[1:]     # High-Frequency Coefficients
         return Yl, Yh
 
 
@@ -382,7 +381,7 @@ class Block(nn.Module):
         mlp_hidden_dim = int(dim * mlp_ratio)
 
         if self.level > 0:
-            self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=self.level)
+            self.dwt_downsamples = WaveletTransform3D(wavelet='db1', level=self.level)
         self.window_size = self.img_size[0]//pow(2, level)
 
         self.norm1 = norm_layer(dim)
