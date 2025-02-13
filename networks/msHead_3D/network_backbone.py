@@ -35,28 +35,11 @@ from lib.models.tools.module_helper import ModuleHelper
 # from networks.UXNet_3D.uxnet_encoder import uxnet_conv
 from networks.msHead_3D.mra_transformer import mra_b0
 from idwt_upsample import UnetrIDWTBlock
+from networks.mednext.MedNextV1 import MedNeXtUpBlock
 
 
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-class ProjectionHead(nn.Module):
-    def __init__(self, dim_in, proj_dim=256, proj='convmlp', bn_type='torchbn'):
-        super(ProjectionHead, self).__init__()
-
-        # Log.info('proj_dim: {}'.format(proj_dim))
-
-        if proj == 'linear':
-            self.proj = nn.Conv2d(dim_in, proj_dim, kernel_size=1)
-        elif proj == 'convmlp':
-            self.proj = nn.Sequential(
-                nn.Conv3d(dim_in, dim_in, kernel_size=1),
-                ModuleHelper.BNReLU(dim_in, bn_type=bn_type),
-                nn.Conv3d(dim_in, proj_dim, kernel_size=1)
-            )
-
-    def forward(self, x):
-        return F.normalize(self.proj(x), p=2, dim=1)
     
 
 import torch
@@ -70,6 +53,70 @@ import torch.nn.functional as F
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+class ProjectionUpsample(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=2, residual = False):
+        
+        self.do_res = residual
+        self.conv1 = nn.ConvTranspose3d(
+            in_channels = in_channels,
+            out_channels = in_channels,
+            kernel_size = kernel_size,
+            stride = stride,
+            padding = kernel_size//2,
+            groups = in_channels,
+        )
+
+        self.conv2 = nn.Conv3d(
+            in_channels = in_channels,
+            out_channels = 4*in_channels,
+            kernel_size = 1,
+            stride = 1,
+            padding = 0
+        )
+
+        # Third convolution (Compression) layer with Conv3D 1x1x1
+        self.conv3 = nn.Conv3d(
+            in_channels = 4*in_channels,
+            out_channels = out_channels,
+            kernel_size = 1,
+            stride = 1,
+            padding = 0
+        )
+
+        self.norm = nn.GroupNorm(
+            num_groups=in_channels, 
+            num_channels=in_channels
+        )
+
+        self.res_conv = nn.ConvTranspose3d(
+            in_channels = in_channels,
+            out_channels = out_channels,
+            kernel_size = 1,
+            stride = 2
+        )
+
+        # GeLU activations
+        self.act = nn.GELU()
+
+    def forward(self, x):
+        x1 = x
+        x1 = self.conv1(x1)
+        print(f'conv1:{x1.shape}')
+        x1 = self.act(self.conv2(self.norm(x1)))
+        print(f'conv2:{x1.shape}')
+        x1 = self.conv3(x1)
+        print(f'conv3:{x1.shape}')
+        if self.do_res:
+            x1 = x + x1
+        res = self.res_conv(x)
+        print(f'res:{x1.shape}')
+        x1 = x1 + res
+        return x1
+
+
+
+
 
 class ChannelCalibration(nn.Module):
     def __init__(self, in_channels=384, reduction_ratio=4, norm_layer=nn.BatchNorm3d):
@@ -301,17 +348,19 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        
-        self.learnable_up4 = nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=4, stride=4)
-        self.learnable_up3 = nn.ConvTranspose3d(self.feat_size[1], self.feat_size[1], kernel_size=2, stride=2)
-        self.projection = nn.Sequential(
-                nn.Conv3d(self.feat_size[2]+self.feat_size[1]+self.feat_size[0], self.feat_size[0], kernel_size=1),
-                nn.InstanceNorm3d(self.feat_size[0])
-        )
+        self.learnable_up4 = ProjectionUpsample(in_channels=self.feat_size[2], out_channels=self.feat_size[0], kernel_size=3, stride=2)
+        self.learnable_up3 = ProjectionUpsample(in_channels=self.feat_size[1], out_channels=self.feat_size[0], kernel_size=3, stride=4)
+        # self.learnable_up4 = nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=4, stride=4)
+        # self.learnable_up3 = nn.ConvTranspose3d(self.feat_size[1], self.feat_size[1], kernel_size=2, stride=2)
+
+        # self.projection = nn.Sequential(
+        #         nn.Conv3d(self.feat_size[2]+self.feat_size[1]+self.feat_size[0], self.feat_size[0], kernel_size=1),
+        #         nn.InstanceNorm3d(self.feat_size[0])
+        # )
         
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.feat_size[0],
+            in_channels=self.feat_size[0]*3,
             out_channels=self.feat_size[0],
             kernel_size=3,
             upsample_kernel_size=2,
@@ -352,11 +401,13 @@ class MSHEAD_ATTN(nn.Module):
         dec3 = self.decoder3(dec5, enc2, outs_hf[-2])
         # print(f'dec3: {dec3.shape}')
         dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
-        # print(f'dec2: {dec2.shape}')
+        print(f'dec2: {dec2.shape}')
 
         # Learnable upsampling
         dec4_upsampled = self.learnable_up4(dec4)
+        print(f'dec4:{dec4_upsampled.shape}')
         dec3_upsampled = self.learnable_up3(dec3)
+        print(f'dec3:{dec3_upsampled.shape}')
         # print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled.shape}')
 
         # Fuse all decoder features
