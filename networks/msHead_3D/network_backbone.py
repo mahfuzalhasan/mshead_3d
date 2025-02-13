@@ -64,7 +64,6 @@ class ProjectionUpsample(nn.Module):
             out_channels = in_channels,
             kernel_size = kernel_size,
             stride = stride,
-            padding = kernel_size//2,
             groups = in_channels,
         )
 
