@@ -55,35 +55,35 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class ProjectionUpsample(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=2, residual=True, use_double_conv=False):
+    def __init__(self, in_channels, out_channels, stride=2, residual=True, use_double_conv=False):
         super(ProjectionUpsample, self).__init__()
 
         self.do_res = residual
         self.stride = stride
         self.use_double_conv = use_double_conv
 
-        # 🔹 Bilinear Upsampling + 3x3 Conv
+        # Bilinear Upsampling + 3x3x3 Depthwise Conv
         self.conv1 = nn.Sequential(
             nn.Upsample(scale_factor=stride, mode='trilinear', align_corners=True),
-            nn.Conv3d(in_channels, in_channels, kernel_size=3, padding=1)
+            nn.Conv3d(in_channels, in_channels, kernel_size=3, padding=1, groups=in_channels)
         )
 
-        # 🔹 Feature Refinement (Only for large reductions)
-        self.conv2 = nn.Conv3d(in_channels, in_channels * 4, kernel_size=1, stride=1)
+        # Channel-wise Interaction (1x1x1 conv)
+        self.conv2 = nn.Conv3d(in_channels, in_channels * 2, kernel_size=1, stride=1)
 
-        # 🔹 Channel Projection
-        if self.use_double_conv:  # Apply double conv for large reductions (e.g., 192 → 48)
+        # Channel Projection
+        if self.use_double_conv:  # double conv for large reductions (e.g., 192 → 48)
             self.conv3 = nn.Sequential(
-                nn.Conv3d(in_channels * 4, in_channels * 2, kernel_size=1),
+                nn.Conv3d(in_channels * 2, in_channels, kernel_size=1),
                 nn.GELU(),
-                nn.Conv3d(in_channels * 2, out_channels, kernel_size=1)
+                nn.Conv3d(in_channels, out_channels, kernel_size=1)
             )
         else:  # Apply single conv for small reductions (e.g., 96 → 48)
-            self.conv3 = nn.Conv3d(in_channels * 4, out_channels, kernel_size=1)
+            self.conv3 = nn.Conv3d(in_channels * 2, out_channels, kernel_size=1)
 
         self.norm = nn.GroupNorm(num_groups=in_channels, num_channels=in_channels)
 
-        # 🔹 Residual Path
+        # Residual Path
         self.res_conv = nn.Sequential(
             nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=1),
             nn.Upsample(scale_factor=stride, mode='trilinear', align_corners=True)
