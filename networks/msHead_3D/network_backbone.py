@@ -102,6 +102,7 @@ class ProjectionUpsample(nn.Module):
 
     def forward(self, x):
         x1 = x
+        print(f'x.shape')
         x1 = self.conv1(x1)
         print(f'conv1:{x1.shape}')
         x1 = self.act(self.conv2(self.norm(x1)))
