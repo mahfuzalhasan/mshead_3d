@@ -35,7 +35,7 @@ from lib.models.tools.module_helper import ModuleHelper
 # from networks.UXNet_3D.uxnet_encoder import uxnet_conv
 from networks.msHead_3D.mra_transformer import mra_b0
 from idwt_upsample import UnetrIDWTBlock
-from networks.mednext.MedNextV1 import MedNeXtUpBlock
+# from networks.mednext.MedNextV1 import MedNeXtUpBlock
 
 
 
