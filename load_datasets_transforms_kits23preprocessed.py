@@ -87,7 +87,7 @@ def data_loader(args):
                     print('path appended')
                 else:
                     print(f"Warning: Missing files in {cdir}... skipping")
-                print(f"train_img: {train_img}, train_label: {train_label}")
+            print(f"train_img: {train_img}, train_label: {train_label}")
         else:
             raise NotImplementedError(f'Preprocessed data for {dataset} is not available')
 
