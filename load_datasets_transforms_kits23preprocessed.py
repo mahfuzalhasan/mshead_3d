@@ -235,7 +235,7 @@ def data_transforms(args):
         val_transforms = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
-                AddChanneld(keys=["image", "label"]),
+                # AddChanneld(keys=["image", "label"]),
                 
                 ### -- Commented out transforms are already done in preparing the preprocessed data ---
                 # Spacingd(keys=["image", "label"], pixdim=(1, 0.78, 0.78), mode=("bilinear", "nearest")),
