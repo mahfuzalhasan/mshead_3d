@@ -56,7 +56,8 @@ import torch.nn.functional as F
 
 class ProjectionUpsample(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=2, residual = False):
-        
+        super(ProjectionUpsample, self).__init__()
+
         self.do_res = residual
         self.conv1 = nn.ConvTranspose3d(
             in_channels = in_channels,
@@ -348,8 +349,8 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        self.learnable_up4 = ProjectionUpsample(in_channels=self.feat_size[2], out_channels=self.feat_size[0], kernel_size=3, stride=2)
-        self.learnable_up3 = ProjectionUpsample(in_channels=self.feat_size[1], out_channels=self.feat_size[0], kernel_size=3, stride=4)
+        self.learnable_up4 = ProjectionUpsample(in_channels=self.feat_size[2], out_channels=self.feat_size[0], kernel_size=3, stride=2, residual=True)
+        self.learnable_up3 = ProjectionUpsample(in_channels=self.feat_size[1], out_channels=self.feat_size[0], kernel_size=3, stride=4, residual=True)
         # self.learnable_up4 = nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=4, stride=4)
         # self.learnable_up3 = nn.ConvTranspose3d(self.feat_size[1], self.feat_size[1], kernel_size=2, stride=2)
 
