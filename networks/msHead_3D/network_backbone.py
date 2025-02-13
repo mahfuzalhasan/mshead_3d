@@ -84,10 +84,11 @@ class ProjectionUpsample(nn.Module):
         self.norm = nn.GroupNorm(num_groups=in_channels, num_channels=in_channels)
 
         # Residual Path
-        self.res_conv = nn.Sequential(
-            nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=1),
-            nn.Upsample(scale_factor=stride, mode='trilinear', align_corners=True)
-        )
+        if self.do_res:
+            self.res_conv = nn.Sequential(
+                nn.Upsample(scale_factor=stride, mode='trilinear', align_corners=True),
+                nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=1)
+            )
 
         self.act = nn.GELU()
 
@@ -326,8 +327,8 @@ class MSHEAD_ATTN(nn.Module):
             norm_name=norm_name,
             res_block=res_block,
         )
-        self.learnable_up4 = ProjectionUpsample(in_channels=self.feat_size[2], out_channels=self.feat_size[0], kernel_size=4, stride=4, residual=True, use_double_conv=True)
-        self.learnable_up3 = ProjectionUpsample(in_channels=self.feat_size[1], out_channels=self.feat_size[0], kernel_size=2, stride=2, residual=True)
+        self.learnable_up4 = ProjectionUpsample(in_channels=self.feat_size[2], out_channels=self.feat_size[0], stride=4, residual=True, use_double_conv=True)
+        self.learnable_up3 = ProjectionUpsample(in_channels=self.feat_size[1], out_channels=self.feat_size[0], stride=2, residual=True)
         
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
