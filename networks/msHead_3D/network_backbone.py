@@ -59,6 +59,7 @@ class ProjectionUpsample(nn.Module):
         super(ProjectionUpsample, self).__init__()
 
         self.do_res = residual
+        self.stride = stride
         self.conv1 = nn.ConvTranspose3d(
             in_channels = in_channels,
             out_channels = in_channels,
@@ -114,7 +115,8 @@ class ProjectionUpsample(nn.Module):
         if self.do_res:
             res = self.res_conv(x)
             print(f'res:{res.shape}')
-            # res = torch.nn.functional.pad(res, (3,0,3,0,3,0))
+            padding = self.stride - 1
+            res = torch.nn.functional.pad(res, (padding,0,padding,0,padding,0))
             x1 = x1 + res
         return x1
 
