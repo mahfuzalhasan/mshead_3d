@@ -35,6 +35,7 @@ from lib.models.tools.module_helper import ModuleHelper
 # from networks.UXNet_3D.uxnet_encoder import uxnet_conv
 from networks.msHead_3D.mra_transformer import mra_b0
 from idwt_upsample import UnetrIDWTBlock
+from mra_helper import ProjectionUpsample, GatedFusion
 # from networks.mednext.MedNextV1 import MedNeXtUpBlock
 
 
@@ -46,63 +47,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-class ProjectionUpsample(nn.Module):
-    def __init__(self, in_channels, out_channels, stride=2, residual=True, use_double_conv=False):
-        super(ProjectionUpsample, self).__init__()
-
-        self.do_res = residual
-        self.stride = stride
-        self.use_double_conv = use_double_conv
-
-        # Bilinear Upsampling + 3x3x3 Depthwise Conv
-        self.conv1 = nn.Sequential(
-            nn.Upsample(scale_factor=stride, mode='trilinear', align_corners=True),
-            nn.Conv3d(in_channels, in_channels, kernel_size=3, padding=1, groups=in_channels)
-        )
-
-        # Channel-wise Interaction (1x1x1 conv)
-        self.conv2 = nn.Conv3d(in_channels, in_channels * 2, kernel_size=1, stride=1)
-
-        # Channel Projection
-        if self.use_double_conv:  # double conv for large reductions (e.g., 192 → 48)
-            self.conv3 = nn.Sequential(
-                nn.Conv3d(in_channels * 2, in_channels, kernel_size=1),
-                nn.GELU(),
-                nn.Conv3d(in_channels, out_channels, kernel_size=1)
-            )
-        else:  # Apply single conv for small reductions (e.g., 96 → 48)
-            self.conv3 = nn.Conv3d(in_channels * 2, out_channels, kernel_size=1)
-
-        self.norm = nn.GroupNorm(num_groups=in_channels, num_channels=in_channels)
-
-        # Residual Path
-        if self.do_res:
-            self.res_conv = nn.Sequential(
-                nn.Upsample(scale_factor=stride, mode='trilinear', align_corners=True),
-                nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=1)
-            )
-
-        self.act = nn.GELU()
-
-    def forward(self, x):
-        x1 = x
-        x1 = self.conv1(x1)  # Upsampling
-        x1 = self.act(self.conv2(self.norm(x1)))  # Refinement
-        x1 = self.conv3(x1)  # Final Projection
-
-        if self.do_res:
-            res = self.res_conv(x)  # Residual Connection
-            x1 = x1 + res  # Merge Features
-
-        return x1
 
 
 
@@ -329,10 +274,11 @@ class MSHEAD_ATTN(nn.Module):
         )
         self.learnable_up4 = ProjectionUpsample(in_channels=self.feat_size[2], out_channels=self.feat_size[0], stride=4, residual=True, use_double_conv=True)
         self.learnable_up3 = ProjectionUpsample(in_channels=self.feat_size[1], out_channels=self.feat_size[0], stride=2, residual=True)
-        
+        self.fusion = GatedFusion(channels=self.feat_size[0], apply_final_conv=True)
+
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.feat_size[0]*3,
+            in_channels=self.feat_size[0],
             out_channels=self.feat_size[0],
             kernel_size=3,
             upsample_kernel_size=2,
@@ -383,7 +329,7 @@ class MSHEAD_ATTN(nn.Module):
         print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled.shape}')
 
         # Fuse all decoder features
-        combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
+        combined = self.fusion(dec4_upsampled, dec3_upsampled, dec2)
         # print(f'combined shape:{combined.shape}')
         # proj = self.projection(combined)
         # print(f'proj:{proj.shape}')
