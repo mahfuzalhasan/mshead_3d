@@ -78,7 +78,7 @@ class ProjectionUpsample(nn.Module):
         # Third convolution (Compression) layer with Conv3D 1x1x1
         self.conv3 = nn.Conv3d(
             in_channels = 4*in_channels,
-            out_channels = in_channels,
+            out_channels = out_channels,
             kernel_size = 1,
             stride = 1,
             padding = 0
@@ -108,8 +108,8 @@ class ProjectionUpsample(nn.Module):
         print(f'conv2:{x1.shape}')
         x1 = self.conv3(x1)
         print(f'conv3:{x1.shape}')
-        if self.do_res:
-            x1 = x + x1
+        # if self.do_res:
+        #     x1 = x + x1
         res = self.res_conv(x)
         print(f'res:{x1.shape}')
         x1 = x1 + res
