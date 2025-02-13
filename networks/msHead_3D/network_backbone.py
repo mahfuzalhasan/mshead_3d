@@ -92,7 +92,7 @@ class ProjectionUpsample(nn.Module):
         self.res_conv = nn.ConvTranspose3d(
             in_channels = in_channels,
             out_channels = out_channels,
-            kernel_size = kernel_size,
+            kernel_size = 1,
             stride = stride
         )
 
