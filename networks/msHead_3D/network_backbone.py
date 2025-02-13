@@ -92,7 +92,7 @@ class ProjectionUpsample(nn.Module):
         self.res_conv = nn.ConvTranspose3d(
             in_channels = in_channels,
             out_channels = out_channels,
-            kernel_size = 1,
+            kernel_size = kernel_size,
             stride = stride
         )
 
@@ -110,9 +110,12 @@ class ProjectionUpsample(nn.Module):
         print(f'conv3:{x1.shape}')
         # if self.do_res:
         #     x1 = x + x1
-        res = self.res_conv(x)
-        print(f'res:{res.shape}')
-        x1 = x1 + res
+        
+        if self.do_res:
+            res = self.res_conv(x)
+            print(f'res:{res.shape}')
+            # res = torch.nn.functional.pad(res, (3,0,3,0,3,0))
+            x1 = x1 + res
         return x1
 
 
