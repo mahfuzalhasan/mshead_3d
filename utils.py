@@ -1,7 +1,19 @@
 from monai.transforms import AsDiscrete
 import torch
 import numpy as np
+from metric import dice
 
+
+def cal_metric(gt, pred):
+    if pred.sum() > 0 and gt.sum() > 0:
+        d = dice(pred, gt)
+        return np.array([d, 50])
+    
+    elif gt.sum() == 0 and pred.sum() == 0:
+        return np.array([1.0, 50])
+    
+    else:
+        return np.array([0.0, 50])
 
 def dice_score_organ(im1, im2):
     im1 = np.asarray(im1).astype(bool)

@@ -235,18 +235,16 @@ def data_transforms(args):
         val_transforms = Compose(
             [
                 LoadImaged(keys=["image", "label"]),
-                # AddChanneld(keys=["image", "label"]),
-                
-                ### -- Commented out transforms are already done in preparing the preprocessed data ---
-                # Spacingd(keys=["image", "label"], pixdim=(1, 0.78, 0.78), mode=("bilinear", "nearest")),
-                # Orientationd(keys=["image", "label"], axcodes="RAS"),
-                # Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
-                # ScaleIntensityRanged(
-                #     keys=["image"], a_min=-58, a_max=302,
-                #     b_min=0.0, b_max=1.0, clip=True,
-                # ),
-                # CropForegroundd(keys=["image", "label"], source_key="image"),
-                
+                RandCropByPosNegLabeld(
+                    keys=["image", "label"],
+                    label_key="label",
+                    spatial_size=roi_size, #(96, 96, 96), #(128, 128, 128),
+                    pos=3,
+                    neg=1,
+                    num_samples=crop_samples,
+                    image_key="image",
+                    image_threshold=0,
+                ),
                 ToTensord(keys=["image", "label"]),
             ]
         )

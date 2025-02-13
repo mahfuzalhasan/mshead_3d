@@ -10,6 +10,7 @@ from monai.utils import set_determinism
 from monai.transforms import AsDiscrete
 # from networks.UXNet_3D.network_backbone import UXNET
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
+from utils import cal_metric
 from monai.networks.nets import UNETR, SwinUNETR
 # from networks.nnFormer.nnFormer_seg import nnFormer
 # from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
@@ -194,33 +195,60 @@ elif args.optim == 'Adam':
 print('Optimizer for training: {}, learning rate: {}'.format(args.optim, args.lr))
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.9, patience=10)
 
+def convert_labels(self, labels):
+    ## Kidney, Masses and Tumor
+    # result = [(labels == 1) | (labels == 3), (labels == 1) | (labels == 3) | (labels == 2), labels == 3]
+    result = [(labels == 1) | (labels == 2) | (labels == 3), (labels == 2) | (labels == 3), labels == 2]
+    
+    return torch.cat(result, dim=1).float()
+
+
+
 def validation(val_loader):
     # model_feat.eval()
     model.eval()
-    dice_vals = list()
+    outputs_split = None
     s_time = time.time()
     with torch.no_grad():
+        # here total_batch, B = batch * crop_samples
         for step, batch in enumerate(val_loader):
-            val_inputs, val_labels = (batch["image"].to(device), batch["label"].to(device))
-            # val_outputs = model(val_inputs)
-            val_outputs = sliding_window_inference(val_inputs, roi_size, 2, model)
-            # val_outputs = model_seg(val_inputs, val_feat[0], val_feat[1])
-            val_labels_list = decollate_batch(val_labels)
-            val_labels_convert = [
-                post_label(val_label_tensor) for val_label_tensor in val_labels_list
-            ]
-            val_outputs_list = decollate_batch(val_outputs)
-            val_output_convert = [
-                post_pred(val_pred_tensor) for val_pred_tensor in val_outputs_list
-            ]
-            dice_metric(y_pred=val_output_convert, y=val_labels_convert)
-            # dice = dice_metric.aggregate().item()
-            # dice_vals.append(dice)
-            # epoch_iterator_val.set_description(
-            #     "Validate (%d / %d Steps) (dice=%2.5f)" % (global_step, 10.0, dice)
-            # )
-        dice = dice_metric.aggregate().item()
-        dice_metric.reset()
+            val_inputs, val_labels = (batch["image"].to(device), batch["label"].to(device)) #   bring cropped sample
+            output = model(val_inputs)  # B, num_class, 128, 128, 128
+            output = output.argmax(dim=1)       # B, 128, 128, 128
+            output = output[:, None]     # B, 1, 128, 128, 128
+            output = convert_labels(output)
+
+            # label = label[:, None]          
+            label = convert_labels(val_labels)      # label is already in B, 1, 128, 128, 128
+            output = output.cpu().numpy()
+            target = label.cpu().numpy()
+
+            c = 3
+            dices = []
+            # 3 dice score for 3 compound classes
+            for i in range(0, c):   
+                pred_c = output[:, i]
+                target_c = target[:, i]
+
+                cal_dice, _ = cal_metric(target_c, pred_c)
+                dices.append(cal_dice)
+
+            if outputs_split is None:
+                outputs_split = [[] for i in range(len(dices))]
+            for i, v in enumerate(dices):       #entry --> numclasses: list size: num_validation data
+                outputs_split[i].append(v)
+
+    val_outputs_merge = []
+    for i in range(len(outputs_split)):
+        val_outputs = torch.tensor(outputs_split[i])
+        val_outputs_merge.append(val_outputs)
+
+    kidney, masses, tumor = val_outputs_merge[0].mean(), val_outputs_merge[1].mean(), val_outputs_merge[2].mean()
+    print(f"dices is {kidney, masses, tumor}")
+    mean_dice = (kidney + masses + tumor) / 3 
+
+    return mean_dice
+        
 
     
     # mean_dice_val = np.mean(dice_vals)
