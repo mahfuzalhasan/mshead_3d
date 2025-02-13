@@ -93,7 +93,7 @@ class ProjectionUpsample(nn.Module):
             in_channels = in_channels,
             out_channels = out_channels,
             kernel_size = 1,
-            stride = 2
+            stride = stride
         )
 
         # GeLU activations
@@ -111,7 +111,7 @@ class ProjectionUpsample(nn.Module):
         # if self.do_res:
         #     x1 = x + x1
         res = self.res_conv(x)
-        print(f'res:{x1.shape}')
+        print(f'res:{res.shape}')
         x1 = x1 + res
         return x1
 
