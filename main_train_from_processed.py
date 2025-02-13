@@ -285,7 +285,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
 # ------------------------------ #
 #       VALIDATION FUNCTION      #
 # ------------------------------ #
-def convert_labels(self, labels):
+def convert_labels(labels):
     ## Kidney, Masses and Tumor
     # result = [(labels == 1) | (labels == 3), (labels == 1) | (labels == 3) | (labels == 2), labels == 3]
     result = [(labels == 1) | (labels == 2) | (labels == 3), (labels == 2) | (labels == 3), labels == 2]
