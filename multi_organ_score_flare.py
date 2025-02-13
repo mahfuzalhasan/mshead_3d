@@ -31,7 +31,7 @@ if args.dataset == 'flare':
         # model_id_dict = {0: '01-07-25_0204', 1:'01-07-25_0102', 2:'01-07-25_1307', 3:'01-07-25_1708', 4:'01-07-25_1844'}      # idwt_v2
         # model_id_dict = {0:'02-08-25_0316', 1:'02-08-25_0342', 2:'02-08-25_0351', 3:'02-08-25_0404', 4:'02-08-25_0417'}         #flare dwt pool
         # model_id_dict = {0:'02-09-25_0204', 1:'02-09-25_0214', 2:'02-09-25_0223', 3:'02-09-25_0244', 4:'02-09-25_0253'}         #flare dwt avg pool
-        model_id_dict = {0:'02-11-25_1721', 1:'02-11-25_1728',2:'',3:'',4:''}
+        model_id_dict = {0:'02-11-25_1721', 1:'02-11-25_1728',2:'02-12-25_1730',3:'02-12-25_1900',4:'02-12-25_1908'}
     
     gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
 
@@ -81,7 +81,7 @@ else:
     pred_dir =f'/orange/r.forghani/results/{model_id}/output_seg'
 # pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
 
-print(f'pred:{pred_dir} ground truth:{gt_dir}')
+print(f'####### fold: {args.fold} pred:{pred_dir} ground truth:{gt_dir} #########')
 
 spleen = []
 kidney = []

@@ -138,7 +138,8 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_1/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_1/model_best.pth'
     elif args.fold == 2:
-        args.trained_weights = '/orange/r.forghani/results/02-09-25_0223/model_best.pth'                # flare avg pool
+        args.trained_weights = '/orange/r.forghani/results/02-12-25_1730/model_best.pth'                #flare_wo_merge_projection
+        # args.trained_weights = '/orange/r.forghani/results/02-09-25_0223/model_best.pth'                # flare avg pool
         # args.trained_weights = '/orange/r.forghani/results/02-08-25_0351/model_best.pth'                # flare dwt pool
         # args.trained_weights = '/orange/r.forghani/results/01-07-25_1307/model_best.pth'              #flare_idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-20-24_1836/model_best.pth'              #flare
@@ -149,7 +150,8 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_2/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_2/model_best.pth'
     elif args.fold == 3:
-        args.trained_weights = '/orange/r.forghani/results/02-09-25_0244/model_best.pth'                # flare avg pool
+        args.trained_weights = '/orange/r.forghani/results/02-12-25_1900/model_best.pth'                #flare_wo_merge_projection
+        # args.trained_weights = '/orange/r.forghani/results/02-09-25_0244/model_best.pth'                # flare avg pool
         # args.trained_weights = '/orange/r.forghani/results/02-08-25_0404/model_best.pth'                # flare dwt pool
         # args.trained_weights = '/orange/r.forghani/results/01-07-25_1708/model_best.pth'              #flare_idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-20-24_1943/model_best.pth'              #flare
@@ -160,7 +162,8 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_3/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_3/model_best.pth'
     elif args.fold == 4:
-        args.trained_weights = '/orange/r.forghani/results/02-09-25_0253/model_best.pth'                # flare avg pool
+        args.trained_weights = '/orange/r.forghani/results/02-12-25_1908/model_best.pth'                #flare_wo_merge_projection
+        # args.trained_weights = '/orange/r.forghani/results/02-09-25_0253/model_best.pth'                # flare avg pool
         # args.trained_weights = '/orange/r.forghani/results/02-08-25_0417/model_best.pth'                # flare dwt pool
         # args.trained_weights = '/orange/r.forghani/results/01-07-25_1844/model_best.pth'              #flare_idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-21-24_0006/model_best.pth'              #flare
