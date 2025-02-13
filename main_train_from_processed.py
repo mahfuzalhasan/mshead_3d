@@ -126,7 +126,7 @@ train_transforms, val_transforms = data_transforms(args)
 
 
 train_ds = Dataset(data=train_files, transform=train_transforms)
-val_ds = Dataset(data=val_files, transform=val_transforms())
+val_ds = Dataset(data=val_files, transform=val_transforms)
 
 train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
