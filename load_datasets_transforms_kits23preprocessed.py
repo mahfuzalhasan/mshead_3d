@@ -174,24 +174,27 @@ def data_transforms(args):
     
     if dataset == "kits23":
         train_transforms = Compose(
-        [
+        [   #$$$$$$$$ Jawad apply from here for 1st stage preprocessing $$$$$$$
             LoadImaged(keys=["image", "label"]),            # D, H, W
             # AddChanneld(keys=["image", "label"]),
             
             ### -- Commented out transforms are already done in preparing the preprocessed data ---
-            # Spacingd(keys=["image", "label"], pixdim=(1, 0.78, 0.78), mode=("bilinear", "nearest")),
             # Orientationd(keys=["image", "label"], axcodes="RAS"),           # H, W, D
-            # Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),      # D, H, W --> PyTorch expects this    
+            # Spacingd(keys=["image", "label"], pixdim=(1, 1, 1), mode=("bilinear", "nearest")),   
             # ScaleIntensityRanged(
             #     keys=["image"], a_min=-58, a_max=302,
             #     b_min=0, b_max=1, clip=True,
             # ),
             # CropForegroundd(keys=["image", "label"], source_key="image"),
-            
+            # $$$$$$$$$ First Stage Preprocessing Ends here
+
+            # $$$$$ Mahdi apply the way you are doing right now for 2nd Stage Prepro. for train
+            # Use crop_samples = 4
+            ########## Rest applied during training---> image will be in H,W,D
             RandCropByPosNegLabeld(
                 keys=["image", "label"],
                 label_key="label",
-                spatial_size=roi_size, #(96, 96, 96), #(128, 128, 128),
+                spatial_size=roi_size, #for now (96, 96, 96), #(128, 128, 128),
                 pos=3,
                 neg=1,
                 num_samples=crop_samples,
@@ -199,21 +202,21 @@ def data_transforms(args):
                 image_threshold=0,
             ),
             
-            RandFlipd(
-                keys=["image", "label"],
-                spatial_axis=[0],
-                prob=0.5,
-            ),
-            RandFlipd(
+            # RandFlipd(
+            #     keys=["image", "label"],
+            #     spatial_axis=[0],
+            #     prob=0.5,
+            # ),
+            RandFlipd(              # Mirroing horizontally (W)--> left-right swap
                 keys=["image", "label"],
                 spatial_axis=[1],
                 prob=0.5,
             ),
-            RandFlipd(
-                keys=["image", "label"],
-                spatial_axis=[2],
-                prob=0.5,
-            ),
+            # RandFlipd(
+            #     keys=["image", "label"],
+            #     spatial_axis=[2],
+            #     prob=0.5,
+            # ),
     
             RandShiftIntensityd(
                 keys=["image"],
@@ -228,6 +231,7 @@ def data_transforms(args):
                 rotate_range=(np.pi/30, np.pi/30, np.pi/30),
                 scale_range=(0.1, 0.1, 0.1)),
             ToTensord(keys=["image", "label"]),
+            # $$$$$$$ during training prepro. ends here
 
         ]
         )

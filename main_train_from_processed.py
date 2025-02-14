@@ -294,7 +294,7 @@ def convert_labels(labels):
 
 
 
-def validation(val_loader):
+def _validation(val_loader):
     # model_feat.eval()
     model.eval()
     outputs_split = None
@@ -338,8 +338,9 @@ def validation(val_loader):
     mean_dice = (kidney + masses + tumor) / 3 
 
     return mean_dice
-        
-def _validation(val_loader):
+
+# $$$$$$$ Mahdi use this Validation Code
+def validation(val_loader):
     # model_feat.eval()
     model.eval()
     dice_vals = list()
@@ -347,8 +348,8 @@ def _validation(val_loader):
     with torch.no_grad():
         for step, batch in enumerate(val_loader):
             val_inputs, val_labels = (batch["image"].to(device), batch["label"].to(device))
-            # val_outputs = model(val_inputs)
-            val_outputs = sliding_window_inference(val_inputs, roi_size, 2, model)
+            val_outputs = model(val_inputs)
+            # val_outputs = sliding_window_inference(val_inputs, roi_size, 2, model)
             # val_outputs = model_seg(val_inputs, val_feat[0], val_feat[1])
             val_labels_list = decollate_batch(val_labels)
             val_labels_convert = [
