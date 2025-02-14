@@ -29,7 +29,7 @@ if args.dataset == 'flare':
     if args.network == 'MSHEAD':
         # model_id_dict = {0: '12-20-24_0342', 1:'12-20-24_1658', 2:'12-20-24_1836', 3:'12-20-24_1943', 4:'12-21-24_0006'}  #idwt
         # model_id_dict = {0: '01-07-25_0204', 1:'01-07-25_0102', 2:'01-07-25_1307', 3:'01-07-25_1708', 4:'01-07-25_1844'}    # idwt_v2
-        model_id_dict = {0:"02-11-25_1628", 1:"02-11-25_1653", 2:"02-11-25_1705", 3:"", 4:""}
+        model_id_dict = {0:"02-13-25_0229", 1:"02-13-25_0320", 2:"02-13-25_0337", 3:"02-13-25_0429", 4:"02-13-25_1255"} # flare hf refinement better up
     gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
 
 elif args.dataset == 'amos':
