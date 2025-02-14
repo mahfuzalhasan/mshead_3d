@@ -77,14 +77,14 @@ def data_loader(args):
                 # In the new folder structure, the processed image is saved as "labels.nii.gz"
                 # and the processed label is saved as "segmentation.nii.gz"
                 # TODO : change preprocessing to name "image" and "labels"
-                img = sorted(glob.glob(os.path.join(cdir, "labels.nii.gz")))
+                img = sorted(glob.glob(os.path.join(cdir, "imaging.nii.gz")))
                 label = sorted(glob.glob(os.path.join(cdir, "segmentation.nii.gz")))
                 
                 if os.path.exists(img[0]) and os.path.exists(label[0]):
-                    print('path exists')
+                    # print('path exists')
                     train_img.append(img[0])
                     train_label.append(label[0])
-                    print('path appended')
+                    # print('path appended')
                 else:
                     print(f"Warning: Missing files in {cdir}... skipping")
             print(f"train_img: {train_img}, train_label: {train_label}")
