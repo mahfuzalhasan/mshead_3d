@@ -278,7 +278,7 @@ def data_transforms(args):
             #     spatial_axis=[0],
             #     prob=0.5,
             # ),
-            RandFlipd(
+            RandFlipd(          # Horizontal Flip--> left and right side shifted
                 keys=["image", "label"],
                 spatial_axis=[1],
                 prob=0.5,
