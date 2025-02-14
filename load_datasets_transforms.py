@@ -254,7 +254,7 @@ def data_transforms(args):
             LoadImaged(keys=["image", "label"]),            # D, H, W
             AddChanneld(keys=["image", "label"]),
             Orientationd(keys=["image", "label"], axcodes="RAS"),           # H, W, D
-            Spacingd(keys=["image", "label"], pixdim=(1, 1, 1), mode=("bilinear", "nearest")),
+            Spacingd(keys=["image", "label"], pixdim=(1, 1, 1), mode=("bilinear", "nearest")),  # 0.78, 70.78, 1
             # Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),      # D, H, W --> PyTorch expects this    
             ScaleIntensityRanged(
                 keys=["image"], a_min=-58, a_max=302,
@@ -278,7 +278,7 @@ def data_transforms(args):
             #     spatial_axis=[0],
             #     prob=0.5,
             # ),
-            RandFlipd(          # Horizontal Flip--> left and right side shifted
+            RandFlipd(          # Horizontal Flip--> left and right side shifted (H,W,D)
                 keys=["image", "label"],
                 spatial_axis=[1],
                 prob=0.5,
