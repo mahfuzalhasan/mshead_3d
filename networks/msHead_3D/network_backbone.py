@@ -35,43 +35,22 @@ from lib.models.tools.module_helper import ModuleHelper
 # from networks.UXNet_3D.uxnet_encoder import uxnet_conv
 from networks.msHead_3D.mra_transformer import mra_b0
 from idwt_upsample import UnetrIDWTBlock
-
-import torch.utils.checkpoint as checkpoint
+from mra_helper import ProjectionUpsample, GatedFusion
+# from networks.mednext.MedNextV1 import MedNeXtUpBlock
 
 
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-class ProjectionHead(nn.Module):
-    def __init__(self, dim_in, proj_dim=256, proj='convmlp', bn_type='torchbn'):
-        super(ProjectionHead, self).__init__()
-
-        # Log.info('proj_dim: {}'.format(proj_dim))
-
-        if proj == 'linear':
-            self.proj = nn.Conv2d(dim_in, proj_dim, kernel_size=1)
-        elif proj == 'convmlp':
-            self.proj = nn.Sequential(
-                nn.Conv3d(dim_in, dim_in, kernel_size=1),
-                ModuleHelper.BNReLU(dim_in, bn_type=bn_type),
-                nn.Conv3d(dim_in, proj_dim, kernel_size=1)
-            )
-
-    def forward(self, x):
-        return F.normalize(self.proj(x), p=2, dim=1)
     
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+
+
+
 
 class ChannelCalibration(nn.Module):
     def __init__(self, in_channels=384, reduction_ratio=4, norm_layer=nn.BatchNorm3d):
@@ -183,19 +162,9 @@ class MSHEAD_ATTN(nn.Module):
 
         super().__init__()
 
-        # in_channels: int,
-        # out_channels: int,
-        # img_size: Union[Sequence[int], int],
-        # feature_size: int = 16,
-        # if not (0 <= dropout_rate <= 1):
-        #     raise ValueError("dropout_rate should be between 0 and 1.")
-        #
-        # if hidden_size % num_heads != 0:
-        #     raise ValueError("hidden_size should be divisible by num_heads.")
         self.img_size = img_size
         self.hidden_size = hidden_size
         self.patch_size = patch_size
-        # self.feature_size = feature_size
         self.num_heads = num_heads
         self.in_chans = in_chans
         self.out_chans = out_chans
@@ -261,20 +230,11 @@ class MSHEAD_ATTN(nn.Module):
                 norm_layer=nn.InstanceNorm3d
         )
 
-        # self.encoder10 = UnetrBasicBlock(
-        #     spatial_dims=spatial_dims,
-        #     in_channels=self.feat_size[3],
-        #     out_channels=self.feat_size[3],
-        #     kernel_size=1,
-        #     stride=1,
-        #     norm_name=norm_name,
-        #     res_block=res_block,
-        # )
-
         self.decoder4 = UnetrIDWTBlock(
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[3],
             out_channels=self.feat_size[2],
+            stage = 1,
             wavelet='db1',
             kernel_size=3,
             norm_name=norm_name,
@@ -285,6 +245,7 @@ class MSHEAD_ATTN(nn.Module):
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[3],
             out_channels=self.feat_size[1],
+            stage = 2,
             wavelet='db1',
             kernel_size=3,
             norm_name=norm_name,
@@ -295,22 +256,18 @@ class MSHEAD_ATTN(nn.Module):
             spatial_dims=spatial_dims,
             in_channels=self.feat_size[3],
             out_channels=self.feat_size[0],
+            stage = 3,
             wavelet='db1',
             kernel_size=3,
             norm_name=norm_name,
             res_block=res_block,
         )
-        
-        self.learnable_up4 = nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=4, stride=4)
-        self.learnable_up3 = nn.ConvTranspose3d(self.feat_size[1], self.feat_size[1], kernel_size=2, stride=2)
-        self.projection = nn.Sequential(
-                nn.Conv3d(self.feat_size[2]+self.feat_size[1]+self.feat_size[0], self.feat_size[0], kernel_size=1),
-                nn.InstanceNorm3d(self.feat_size[0])
-        )
+        self.learnable_up4 = ProjectionUpsample(in_channels=self.feat_size[2], out_channels=self.feat_size[0], stride=4, residual=True, use_double_conv=True)
+        self.learnable_up3 = ProjectionUpsample(in_channels=self.feat_size[1], out_channels=self.feat_size[0], stride=2, residual=True)
         
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.feat_size[0],
+            in_channels=self.feat_size[0]*3,
             out_channels=self.feat_size[0],
             kernel_size=3,
             upsample_kernel_size=2,
@@ -319,63 +276,29 @@ class MSHEAD_ATTN(nn.Module):
         )
 
         self.out = UnetOutBlock(spatial_dims=spatial_dims, in_channels=self.feat_size[0], out_channels=self.out_chans)
-
-
-    def proj_feat(self, x, hidden_size, feat_size):
-        new_view = (x.size(0), *feat_size, hidden_size)
-        x = x.view(new_view)
-        new_axes = (0, len(x.shape) - 1) + tuple(d + 1 for d in range(len(feat_size)))
-        x = x.permute(new_axes).contiguous()
-        return x
     
     def forward(self, x_in):
+        # Encoder
         outs, outs_hf = self.multiscale_transformer(x_in)
 
         enc0 = self.encoder1(x_in)
-        #print(f'enc0 input:{x_in.shape} output:{enc0.size()}')
-
-        # enc1 = self.encoder2(outs[0])
-        enc1 = checkpoint.checkpoint(self.encoder2, outs[0]) if self.training else self.encoder2(outs[0])
-        #print(f'enc1 input:{outs[0].shape} output:{enc1.size()}')
-
-        # enc2 = self.encoder3(outs[1])
-        enc2 = checkpoint.checkpoint(self.encoder3, outs[1]) if self.training else self.encoder3(outs[1])
-        #print(f'enc2:input:{outs[1].shape} output:{enc2.size()}')
-
-        # enc3 = self.encoder4(outs[2])
-        enc3 = checkpoint.checkpoint(self.encoder4, outs[2]) if self.training else self.encoder4(outs[2])
-        #print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
-
-        # dec5 = self.encoder10(outs[3])
-        dec5 = checkpoint.checkpoint(self.encoder10, outs[3]) if self.training else self.encoder10(outs[3])
-        #print(f'bottleneck:{dec5.shape}')
-
-        # dec4 = self.decoder4(dec5, enc3, outs_hf[-1])
-        dec4 = checkpoint.checkpoint(self.decoder4, dec5, enc3, outs_hf[-1]) if self.training else self.decoder4(dec5, enc3, outs_hf[-1])
-        #print(f'dec4: {dec4.shape}')
-        
-        # dec3 = self.decoder3(dec5, enc2, outs_hf[-2])
-        dec3 = checkpoint.checkpoint(self.decoder3, dec5, enc2, outs_hf[-2]) if self.training else self.decoder3(dec5, enc2, outs_hf[-2])
-        #print(f'dec3: {dec3.shape}')
-        
-        # dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
-        dec2 = checkpoint.checkpoint(self.decoder2, dec5, enc1, outs_hf[-3]) if self.training else self.decoder2(dec5, enc1, outs_hf[-3])
-        #print(f'dec2: {dec2.shape}')
+        enc1 = self.encoder2(outs[0])
+        enc2 = self.encoder3(outs[1])
+        enc3 = self.encoder4(outs[2])
+        # Bottleneck
+        dec5 = self.encoder10(outs[3])
+        # Decoding
+        dec4 = self.decoder4(dec5, enc3, outs_hf[-1])
+        dec3 = self.decoder3(dec5, enc2, outs_hf[-2])
+        dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
 
         # Learnable upsampling
         dec4_upsampled = self.learnable_up4(dec4)
         dec3_upsampled = self.learnable_up3(dec3)
-        # print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled.shape}')
 
         # Fuse all decoder features
         combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
-        # print(f'combined shape:{combined.shape}')
-        proj = self.projection(combined)
-        # print(f'proj:{proj.shape}')
-        
-        # dec1 = self.decoder1(proj, enc0)
-        dec1 = checkpoint.checkpoint(self.decoder1, proj, enc0) if self.training else self.decoder1(proj, enc0)
-        # print(f'dec1: {dec1.shape}')
+        dec1 = self.decoder1(combined, enc0)
         
         return self.out(dec1)
     
@@ -430,6 +353,6 @@ if __name__=="__main__":
     
 
   
-    macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
-    print('{:<30}  {:<8}'.format('Computational complexity ptflops: ', macs))
-    print('{:<30}  {:<8}'.format('Number of parameters from ptflops: ', params))
+    # macs, params = get_model_complexity_info(model, (1, 96, 96, 96), as_strings=True, print_per_layer_stat=True, verbose=True)
+    # print('{:<30}  {:<8}'.format('Computational complexity ptflops: ', macs))
+    # print('{:<30}  {:<8}'.format('Number of parameters from ptflops: ', params))

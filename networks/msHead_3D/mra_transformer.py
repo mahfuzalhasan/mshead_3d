@@ -19,8 +19,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 from timm.models.layers import trunc_normal_
-import torch.utils.checkpoint as checkpoint
-
 
 from monai.networks.blocks import PatchEmbed
 from monai.utils import  optional_import
@@ -170,7 +168,6 @@ class MRATransformer(nn.Module):
         x0 = self.pos_drop(x0)
         ########################
         x1 = rearrange(x0, "b c d h w -> b d h w c")
-        # print(f'x1:{x1.shape}')
         # stage 1
         b,d,h,w,c = x1.shape        
         for j,blk in enumerate(self.block1):
@@ -220,10 +217,7 @@ class MRATransformer(nn.Module):
         return outs, outs_hf
 
     def forward(self, x_rgb):
-        if self.training:
-            outs, outs_hf = checkpoint.checkpoint(self.forward_features, x_rgb)    
-        else:
-            outs, outs_hf = self.forward_features(x_rgb)
+        outs, outs_hf = self.forward_features(x_rgb)
         return outs, outs_hf
 
     def flops(self):

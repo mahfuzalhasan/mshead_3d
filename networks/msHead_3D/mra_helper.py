@@ -12,7 +12,6 @@ import sys
 import math
 import time
 import ptwt
-import torch.utils.checkpoint as checkpoint
 
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -30,7 +29,113 @@ from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 
 
 
-# logger = get_logger()
+class ProjectionUpsample(nn.Module):
+    def __init__(self, in_channels, out_channels, stride=2, residual=True, use_double_conv=False):
+        super(ProjectionUpsample, self).__init__()
+
+        self.do_res = residual
+        self.stride = stride
+        self.use_double_conv = use_double_conv
+
+        # Bilinear Upsampling + 3x3x3 Depthwise Conv
+        self.conv1 = nn.Sequential(
+            nn.Upsample(scale_factor=stride, mode='trilinear', align_corners=True),
+            nn.Conv3d(in_channels, in_channels, kernel_size=3, padding=1, groups=in_channels)
+        )
+
+        # Channel-wise Interaction (1x1x1 conv)
+        self.conv2 = nn.Conv3d(in_channels, in_channels * 2, kernel_size=1, stride=1)
+
+        # Channel Projection
+        if self.use_double_conv:  # double conv for large reductions (e.g., 192 → 48)
+            self.conv3 = nn.Sequential(
+                nn.Conv3d(in_channels * 2, in_channels, kernel_size=1),
+                nn.GELU(),
+                nn.Conv3d(in_channels, out_channels, kernel_size=1)
+            )
+        else:  # Apply single conv for small reductions (e.g., 96 → 48)
+            self.conv3 = nn.Conv3d(in_channels * 2, out_channels, kernel_size=1)
+
+        self.norm = nn.GroupNorm(num_groups=in_channels, num_channels=in_channels)
+
+        # Residual Path
+        if self.do_res:
+            self.res_conv = nn.Sequential(
+                nn.Upsample(scale_factor=stride, mode='trilinear', align_corners=True),
+                nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=1)
+            )
+
+        self.act = nn.GELU()
+
+    def forward(self, x):
+        x1 = x
+        x1 = self.conv1(x1)  # Upsampling
+        x1 = self.act(self.conv2(self.norm(x1)))  # Refinement
+        x1 = self.conv3(x1)  # Final Projection
+
+        if self.do_res:
+            res = self.res_conv(x)  # Residual Connection
+            x1 = x1 + res  # Merge Features
+
+        return x1
+
+class GatedFusion(nn.Module):
+    """
+    Gated fusion of three 3D feature maps of the same shape.
+    Each input is passed through a "gate" (1x1 conv -> sigmoid) to learn an attention map.
+    Then we sum the gated features and optionally apply a final 3x3 convolution to refine.
+
+    Args:
+        channels (int): The number of channels for each input map and the fused output.
+        apply_final_conv (bool): If True, apply a final 3x3 convolution + norm + activation
+                                 after summing the gated maps.
+        norm_layer (nn.Module): The normalization layer to use (e.g., nn.InstanceNorm3d).
+        act_layer (nn.Module): The activation layer to use after the final conv (e.g., nn.GELU or nn.ReLU).
+    """
+    def __init__(
+        self,
+        channels: int,
+        apply_final_conv: bool = True,
+        norm_layer: nn.Module = nn.InstanceNorm3d,
+        act_layer: nn.Module = nn.GELU
+    ):
+        super().__init__()
+        self.apply_final_conv = apply_final_conv
+
+        # Three gating convs: each outputs a 1-channel feature map to modulate the input
+        self.gate4 = nn.Conv3d(channels, 1, kernel_size=1)
+        self.gate3 = nn.Conv3d(channels, 1, kernel_size=1)
+        self.gate2 = nn.Conv3d(channels, 1, kernel_size=1)
+
+        if apply_final_conv:
+            # After gating & summing, optionally refine with a 3×3 conv
+            self.final_conv = nn.Conv3d(channels, channels, kernel_size=3, padding=1)
+            self.norm = norm_layer(channels)
+            self.act = act_layer()
+
+    def forward(self, dec4: torch.Tensor, dec3: torch.Tensor, dec2: torch.Tensor) -> torch.Tensor:
+        # dec4, dec3, dec2 should all be [B, C, D, H, W] with the same shape and channel count
+
+        # 1. Compute gating masks
+        g4 = torch.sigmoid(self.gate4(dec4))  # [B, 1, D, H, W]
+        g3 = torch.sigmoid(self.gate3(dec3))  # [B, 1, D, H, W]
+        g2 = torch.sigmoid(self.gate2(dec2))  # [B, 1, D, H, W]
+
+        # 2. Multiply each feature map by its gate
+        dec4_gated = dec4 * g4  # [B, C, D, H, W]
+        dec3_gated = dec3 * g3
+        dec2_gated = dec2 * g2
+
+        # 3. Sum the gated feature maps
+        fused = dec4_gated + dec3_gated + dec2_gated  # still [B, C, D, H, W]
+
+        # 4. Optional final conv to refine the fused representation
+        if self.apply_final_conv:
+            fused = self.final_conv(fused)  # [B, C, D, H, W]
+            fused = self.norm(fused)
+            fused = self.act(fused)
+
+        return fused
 
 class DWConv(nn.Module):
     """
@@ -76,7 +181,7 @@ class PatchMergingV2(nn.Module):
     https://github.com/microsoft/Swin-Transformer
     """
 
-    def __init__(self, dim: int, norm_layer: type(LayerNorm) = nn.LayerNorm, spatial_dims: int = 3) -> None:
+    def __init__(self, dim: int, norm_layer: type[LayerNorm] = nn.LayerNorm, spatial_dims: int = 3) -> None:
         """
         Args:
             dim: number of feature channels.
@@ -260,9 +365,8 @@ class WaveletTransform3D(torch.nn.Module):
     def forward(self, x):
         # print(f'x:{x.shape}  ')
         coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
-        Yl  = coeffs[0]  # Extracting the approximation coefficients
-        Yh = coeffs[1:]
-        # print(f'Yl:{Yl.shape}')
+        Yl  = coeffs[0]     # Extracting the approximation coefficients
+        Yh = coeffs[1:]     # High-Frequency Coefficients
         return Yl, Yh
 
 
@@ -277,13 +381,13 @@ class Block(nn.Module):
         mlp_hidden_dim = int(dim * mlp_ratio)
 
         if self.level > 0:
-            self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=self.level)
+            self.dwt_downsamples = WaveletTransform3D(wavelet='db1', level=self.level)
         self.window_size = self.img_size[0]//pow(2, level)
 
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
             dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
-            attn_drop=attn_drop, proj_drop=drop, window_size=self.window_size, img_size=img_size)
+            attn_drop=attn_drop, proj_drop=drop, img_size=img_size)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
@@ -322,21 +426,18 @@ class Block(nn.Module):
         windows = x.permute(0, 1, 3, 5, 2, 4, 6, 7).contiguous().view(-1, window_size, window_size, window_size, C)
         return windows
 
-    def _forward_impl(self, x):
+    def forward(self, x):
         D,H,W = self.img_size
         B,_,_,_,C = x.shape
-        assert D == x.shape[1], f"Shape mismatch: Expected {D}, got {x.shape[1]}"
-        assert H == x.shape[2], f"Shape mismatch: Expected {H}, got {x.shape[2]}"
-        assert W == x.shape[3], f"Shape mismatch: Expected {W}, got {x.shape[3]}"
+        assert D == x.shape[1]
+        assert H == x.shape[2]
+        assert W == x.shape[3]
         # print(f'input to attn:{x.dtype}')
-        
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
-        # print(f'x in Block:{x.shape}')
-        
         if self.level > 0:
-            x = x.permute(0, 4, 1, 2, 3).contiguous()   #B,C,D,H,W
+            x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
             x, x_h = self.dwt_downsamples(x)
             x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
         # print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
@@ -348,15 +449,12 @@ class Block(nn.Module):
         nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
 
         x_windows = self.window_partition(x, self.window_size)
+        
         x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
         B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
         
         # B*nW, Nr, C [Here nW = 1]
-        if self.training:
-            attn_windows = checkpoint.checkpoint(self.attn, x_windows)
-        else:
-            attn_windows = self.attn(x_windows)
-            
+        attn_windows = self.attn(x_windows) 
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
         # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
         x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
@@ -368,22 +466,10 @@ class Block(nn.Module):
         
         x = x.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
         x = shortcut + self.drop_path(x)
-        # x = x + self.drop_path(self.mlp(self.norm2(x)))              # B, D, H, W, C
-        
-        # ✅ **Apply checkpointing only to MLP**
-        if self.training:
-            x = x + self.drop_path(checkpoint.checkpoint(self.mlp, self.norm2(x)))       # B, D, H, W, C
-        else:
-            x = x + self.drop_path(self.mlp(self.norm2(x)))             # B, D, H, W, C
-        
+        x = x + self.drop_path(self.mlp(self.norm2(x)))              # B, D, H, W, C
         if self.level > 0:
             return x, x_h
         return x
-    
-    
-    def forward(self, x):
-        return self._forward_impl(x)
-    
     
     def flops(self):
         # FLOPs for MultiScaleAttention
