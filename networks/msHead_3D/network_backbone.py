@@ -264,11 +264,11 @@ class MSHEAD_ATTN(nn.Module):
         )
         self.learnable_up4 = ProjectionUpsample(in_channels=self.feat_size[2], out_channels=self.feat_size[0], stride=4, residual=True, use_double_conv=True)
         self.learnable_up3 = ProjectionUpsample(in_channels=self.feat_size[1], out_channels=self.feat_size[0], stride=2, residual=True)
-        self.fusion = GatedFusion(channels=self.feat_size[0])
+        # self.fusion = GatedFusion(channels=self.feat_size[0])
 
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.feat_size[0],
+            in_channels=self.feat_size[0]*3,
             out_channels=self.feat_size[0],
             kernel_size=3,
             upsample_kernel_size=2,
@@ -298,8 +298,8 @@ class MSHEAD_ATTN(nn.Module):
         dec3_upsampled = self.learnable_up3(dec3)
 
         # Fuse all decoder features
-        # combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
-        combined = self.fusion(dec4_upsampled, dec3_upsampled, dec2)
+        combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
+        # combined = self.fusion(dec4_upsampled, dec3_upsampled, dec2)
         dec1 = self.decoder1(combined, enc0)
         
         return self.out(dec1)
