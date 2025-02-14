@@ -138,6 +138,8 @@ def main():
                         help="Path to the root directory of the dataset (default: /project/kits23/dataset/).")
     parser.add_argument("--out_dir", type=str, default="/project/preprocessed/", 
                         help="Path to save the preprocessed dataset.")
+    parser.add_argument("--num_workers", type=int, default=8, 
+                        help="Number of worker threads for preprocessing (default: 8).")
     args = parser.parse_args()
 
     # Define directories from arguments
@@ -152,7 +154,7 @@ def main():
     transforms = get_preprocessing_transforms()
 
     # 3) Process and save the dataset using multithreading
-    save_preprocessed_dataset_multithreaded(data_list, transforms, out_dir, num_workers=8)
+    save_preprocessed_dataset_multithreaded(data_list, transforms, out_dir, num_workers=args.num_workers)
 
     print(f"\n✅ Done! Preprocessed data saved in '{out_dir}'.")
 
