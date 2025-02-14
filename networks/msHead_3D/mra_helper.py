@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.init as init
 import torch.nn.functional as F
 from torch.nn import LayerNorm
+import torch.utils.checkpoint as checkpoint
 
 import itertools
 from functools import partial
@@ -454,7 +455,10 @@ class Block(nn.Module):
         B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
         
         # B*nW, Nr, C [Here nW = 1]
-        attn_windows = self.attn(x_windows) 
+        if self.training:
+            attn_windows = checkpoint.checkpoint(self.attn, x_windows)
+        else:
+            attn_windows = self.attn(x_windows)
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
         # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
         x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
@@ -466,7 +470,13 @@ class Block(nn.Module):
         
         x = x.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
         x = shortcut + self.drop_path(x)
-        x = x + self.drop_path(self.mlp(self.norm2(x)))              # B, D, H, W, C
+        
+        # ✅ **Apply checkpointing only to MLP**
+        if self.training:
+            x = x + self.drop_path(checkpoint.checkpoint(self.mlp, self.norm2(x)))       # B, D, H, W, C
+        else:
+            x = x + self.drop_path(self.mlp(self.norm2(x)))             # B, D, H, W, C
+            
         if self.level > 0:
             return x, x_h
         return x

@@ -23,6 +23,7 @@ import torch
 import torch.nn as nn
 from torchinfo import summary
 import torch.nn.functional as F
+import torch.utils.checkpoint as checkpoint
 from ptflops import get_model_complexity_info
 
 from monai.networks.nets import UNETR, SwinUNETR
@@ -277,33 +278,62 @@ class MSHEAD_ATTN(nn.Module):
 
         self.out = UnetOutBlock(spatial_dims=spatial_dims, in_channels=self.feat_size[0], out_channels=self.out_chans)
     
+    # def forward(self, x_in):
+    #     # Encoder
+    #     outs, outs_hf = self.multiscale_transformer(x_in)
+
+    #     enc0 = self.encoder1(x_in)
+    #     enc1 = self.encoder2(outs[0])
+    #     enc2 = self.encoder3(outs[1])
+    #     enc3 = self.encoder4(outs[2])
+    #     # Bottleneck
+    #     dec5 = self.encoder10(outs[3])
+    #     # Decoding
+    #     dec4 = self.decoder4(dec5, enc3, outs_hf[-1])
+    #     dec3 = self.decoder3(dec5, enc2, outs_hf[-2])
+    #     dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
+
+    #     # Learnable upsampling
+    #     dec4_upsampled = self.learnable_up4(dec4)
+    #     dec3_upsampled = self.learnable_up3(dec3)
+
+    #     # Fuse all decoder features
+    #     combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
+    #     dec1 = self.decoder1(combined, enc0)
+        
+    #     return self.out(dec1)
+    
+    
     def forward(self, x_in):
+        def maybe_checkpoint(fn, *args):
+            """Helper function to apply checkpointing only during training."""
+            return checkpoint.checkpoint(fn, *args) if self.training else fn(*args)
+
         # Encoder
         outs, outs_hf = self.multiscale_transformer(x_in)
 
         enc0 = self.encoder1(x_in)
-        enc1 = self.encoder2(outs[0])
-        enc2 = self.encoder3(outs[1])
-        enc3 = self.encoder4(outs[2])
+        enc1 = maybe_checkpoint(self.encoder2, outs[0])
+        enc2 = maybe_checkpoint(self.encoder3, outs[1])
+        enc3 = maybe_checkpoint(self.encoder4, outs[2])
+        
         # Bottleneck
-        dec5 = self.encoder10(outs[3])
+        dec5 = maybe_checkpoint(self.encoder10, outs[3])
+        
         # Decoding
-        dec4 = self.decoder4(dec5, enc3, outs_hf[-1])
-        dec3 = self.decoder3(dec5, enc2, outs_hf[-2])
-        dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
-
+        dec4 = maybe_checkpoint(lambda d5, e3, ohf: self.decoder4(d5, e3, ohf), dec5, enc3, outs_hf[-1])
+        dec3 = maybe_checkpoint(lambda d5, e2, ohf: self.decoder3(d5, e2, ohf), dec5, enc2, outs_hf[-2])
+        dec2 = maybe_checkpoint(lambda d5, e1, ohf: self.decoder2(d5, e1, ohf), dec5, enc1, outs_hf[-3])
+        
         # Learnable upsampling
-        dec4_upsampled = self.learnable_up4(dec4)
-        dec3_upsampled = self.learnable_up3(dec3)
+        dec4_upsampled = maybe_checkpoint(self.learnable_up4, dec4)
+        dec3_upsampled = maybe_checkpoint(self.learnable_up3, dec3)
 
         # Fuse all decoder features
         combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
-        dec1 = self.decoder1(combined, enc0)
-        
+        dec1 = maybe_checkpoint(lambda c, e0: self.decoder1(c, e0), combined, enc0)
+
         return self.out(dec1)
-    
-    
-    
     
 
 if __name__=="__main__":
