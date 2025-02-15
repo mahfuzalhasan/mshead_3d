@@ -104,8 +104,13 @@ class UnetrIDWTBlock(nn.Module):
         Returns:
             Refined and reconstructed feature map.
         """
-        # print(f'input to this: {inp.shape}')
+        print(f'low freq shape: {inp.shape}')
         inp = self.conv_lf_block(inp)
+        print('High-frequency shapes')
+        for coeff in hf_coeffs:
+            # print(f'type {type(coeff)}')
+            for k,cf in coeff.items():
+                print(f'key: {k} - {cf.shape}- {cf.dtype}')
 
         # **HF Refinement BEFORE IDWT**
         hf_filtered = tuple(
