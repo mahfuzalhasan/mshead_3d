@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=train_flare_hf_ref_better_up
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/train_flare_hf_ref_better_up.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/train_flare_hf_ref_better_up.%J.err
+#SBATCH --job-name=train_flare_hf_imp_ref_better_up
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/train_flare_hf_imp_ref_better_up.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/train_flare_hf_imp_ref_better_up.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
