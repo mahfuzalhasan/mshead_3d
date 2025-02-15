@@ -9,22 +9,30 @@ from monai.networks.blocks.dynunet_block import UnetBasicBlock, UnetResBlock, ge
 
 ### Residual HF Refinement Block (Filters HF Before IDWT)
 class HFRefinementRes(nn.Module):
-    def __init__(self, in_channels):
+    def __init__(self, in_channels, init_alpha=0.5):
         super().__init__()
-        self.conv1 = nn.Conv3d(in_channels, in_channels, kernel_size=3, padding=1, groups=in_channels)
-        self.bn = nn.BatchNorm3d(in_channels)
-        self.relu = nn.ReLU()
-        self.conv2 = nn.Conv3d(in_channels, in_channels, kernel_size=1)
+        self.conv1 = nn.Conv3d(in_channels, in_channels, kernel_size=3, padding=1, groups=in_channels, bias=True)
+        self.norm = nn.InstanceNorm3d(in_channels, affine=True)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv3d(in_channels, in_channels, kernel_size=1, bias=True)
         self.sigmoid = nn.Sigmoid()
+
+        # constrainting alpha
+        self.logit_alpha = nn.Parameter(
+            torch.log(torch.ones(in_channels) * init_alpha / (1 - init_alpha))
+        )
 
     def forward(self, x):
         refined = self.conv1(x)
-        refined = self.bn(refined)
+        refined = self.norm(refined)
         refined = self.relu(refined)
         refined = self.conv2(refined)
         refined = self.sigmoid(refined)
-        
-        return x * refined  # **Rescales original HF features**
+
+        alpha = torch.sigmoid(self.logit_alpha)
+        alpha_expanded = alpha.view(1, -1, 1, 1, 1)
+        out = x * refined + alpha_expanded * x
+        return out  # **Rescales original HF features**
 
 
 class UnetrIDWTBlock(nn.Module):

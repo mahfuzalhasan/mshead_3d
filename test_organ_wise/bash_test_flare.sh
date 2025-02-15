@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=flare_organ_wf_idwt_dec_hf_refinement
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/flare_organ_wf_idwt_dec_hf_refinement.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/flare_organ_wf_idwt_dec_hf_refinement.%J.err
+#SBATCH --job-name=organ_flare_hf_imp_refinement
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/organ_flare_hf_imp_refinement.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/organ_flare_hf_imp_refinement.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
