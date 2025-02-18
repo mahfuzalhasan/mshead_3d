@@ -2,6 +2,7 @@ from typing import Sequence, Tuple, Union
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import ptwt
 
 from monai.networks.blocks.dynunet_block import UnetBasicBlock, UnetResBlock, get_conv_layer
@@ -9,18 +10,15 @@ from monai.networks.blocks.dynunet_block import UnetBasicBlock, UnetResBlock, ge
 
 ### Residual HF Refinement Block (Filters HF Before IDWT)
 class HFRefinementRes(nn.Module):
-    def __init__(self, in_channels, init_alpha=0.5):
+    def __init__(self, in_channels, init_alpha=0.3):
         super().__init__()
         self.conv1 = nn.Conv3d(in_channels, in_channels, kernel_size=3, padding=1, groups=in_channels, bias=True)
         self.norm = nn.InstanceNorm3d(in_channels, affine=True)
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = nn.Conv3d(in_channels, in_channels, kernel_size=1, bias=True)
         self.sigmoid = nn.Sigmoid()
-
-        # constrainting alpha
-        self.logit_alpha = nn.Parameter(
-            torch.log(torch.ones(in_channels) * init_alpha / (1 - init_alpha))
-        )
+        
+        self.log_alpha = nn.Parameter(torch.log(torch.ones(in_channels) * init_alpha))
 
     def forward(self, x):
         refined = self.conv1(x)
@@ -29,10 +27,10 @@ class HFRefinementRes(nn.Module):
         refined = self.conv2(refined)
         refined = self.sigmoid(refined)
 
-        alpha = torch.sigmoid(self.logit_alpha)
+        alpha = F.softplus(self.log_alpha)  # shape: [C]
         alpha_expanded = alpha.view(1, -1, 1, 1, 1)
-        out = x * refined + alpha_expanded * x
-        return out  # **Rescales original HF features**
+        out =  x * refined + alpha_expanded * x
+        return out
 
 
 class UnetrIDWTBlock(nn.Module):
@@ -67,8 +65,10 @@ class UnetrIDWTBlock(nn.Module):
         self.out_channels = out_channels
         self.wavelet = wavelet
 
-        # HF Refinement Block (NEW!)
-        self.hf_refinement = HFRefinementRes(in_channels//pow(2, stage))
+        self.hf_refinement = []
+        for _ in range(stage):
+            self.hf_refinement.append(HFRefinementRes(in_channels//pow(2, stage)))
+        self.hf_refinement = nn.ModuleList(self.hf_refinement)
 
         # Convolution for Low-Frequency (LF) components
         self.conv_lf_block = get_conv_layer(
@@ -112,12 +112,11 @@ class UnetrIDWTBlock(nn.Module):
         Returns:
             Refined and reconstructed feature map.
         """
-        # print(f'input to this: {inp.shape}')
         inp = self.conv_lf_block(inp)
 
         # **HF Refinement BEFORE IDWT**
         hf_filtered = tuple(
-            {key: self.hf_refinement(hf_dict[key]) for key in hf_dict} for hf_dict in hf_coeffs
+            {key: self.hf_refinement[i](hf_dict[key]) for key in hf_dict} for i, hf_dict in enumerate(hf_coeffs)
         )
 
         # **Use filtered HF components for IDWT**
