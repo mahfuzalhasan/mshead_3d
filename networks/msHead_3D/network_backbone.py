@@ -302,10 +302,7 @@ class MSHEAD_ATTN(nn.Module):
             res_block=res_block,
         )
         
-        self.learnable_up4 = nn.Sequential(
-            nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=2, stride=2),
-            nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=2, stride=2)
-        )
+        self.learnable_up4 = nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=4, stride=4)
         self.learnable_up3 = nn.ConvTranspose3d(self.feat_size[1], self.feat_size[1], kernel_size=2, stride=2)
         
         self.decoder1 = UnetrUpBlock(
