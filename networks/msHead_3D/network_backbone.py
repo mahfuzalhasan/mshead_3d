@@ -327,39 +327,27 @@ class MSHEAD_ATTN(nn.Module):
     
     def forward(self, x_in):
         outs, outs_hf = self.multiscale_transformer(x_in)
-
+        # Residual Layers on features
         enc0 = self.encoder1(x_in)
-        #print(f'enc0 input:{x_in.shape} output:{enc0.size()}')
-
         enc1 = self.encoder2(outs[0])
-        #print(f'enc1 input:{outs[0].shape} output:{enc1.size()}')
-
         enc2 = self.encoder3(outs[1])
-        #print(f'enc2:input:{outs[1].shape} output:{enc2.size()}')
-
         enc3 = self.encoder4(outs[2])
-        #print(f'enc3:input:{outs[2].shape} output:{enc3.size()}')
 
+        # Channel Calibration
         dec5 = self.encoder10(outs[3])
-        # print(f'bottleneck:{dec5.shape}')
 
+        # Decoder
         dec4 = self.decoder4(dec5, enc3, outs_hf[-1])
-        # print(f'dec4: {dec4.shape}')
         dec3 = self.decoder3(dec5, enc2, outs_hf[-2])
-        # print(f'dec3: {dec3.shape}')
         dec2 = self.decoder2(dec5, enc1, outs_hf[-3])
-        # print(f'dec2: {dec2.shape}')
 
         # Learnable upsampling
         dec4_upsampled = self.learnable_up4(dec4)
         dec3_upsampled = self.learnable_up3(dec3)
-        # print(f'upsampled dec4:{dec4_upsampled.shape} dec3:{dec3_upsampled.shape}')
 
         # Fuse all decoder features
         combined = torch.cat([dec4_upsampled, dec3_upsampled, dec2], dim=1)  # Concatenate along channel dimension
-        # print(f'combined shape:{combined.shape}')
         dec1 = self.decoder1(combined, enc0)
-        # print(f'dec1: {dec1.shape}')
         
         return self.out(dec1)
     
