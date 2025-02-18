@@ -30,7 +30,7 @@ class HFRefinementRes(nn.Module):
         alpha = F.softplus(self.log_alpha)  # shape: [C]
         alpha_expanded = alpha.view(1, -1, 1, 1, 1)
         out =  x * refined + alpha_expanded * x
-        return out  # **Rescales original HF features**
+        return out
 
 
 class UnetrIDWTBlock(nn.Module):
@@ -112,8 +112,13 @@ class UnetrIDWTBlock(nn.Module):
         Returns:
             Refined and reconstructed feature map.
         """
-        # print(f'input to this: {inp.shape}')
+        print(f'input to this: {inp.shape}')
         inp = self.conv_lf_block(inp)
+        for coeff in hf_coeffs:
+            print(f'type {type(coeff)}')
+            for k,cf in coeff.items():
+                print(f'key: {k} - {cf.shape}- {cf.dtype}')
+        print(f'#################################')
 
         # **HF Refinement BEFORE IDWT**
         hf_filtered = tuple(
