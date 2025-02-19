@@ -18,7 +18,7 @@ class HFRefinementRes(nn.Module):
         self.conv2 = nn.Conv3d(in_channels, in_channels, kernel_size=1, bias=True)
         self.sigmoid = nn.Sigmoid()
         
-        self.log_alpha = nn.Parameter(torch.log(torch.ones(in_channels) * init_alpha))
+        # self.log_alpha = nn.Parameter(torch.log(torch.ones(in_channels) * init_alpha))
 
     def forward(self, x):
         refined = self.conv1(x)
@@ -27,9 +27,10 @@ class HFRefinementRes(nn.Module):
         refined = self.conv2(refined)
         refined = self.sigmoid(refined)
 
-        alpha = F.softplus(self.log_alpha)  # shape: [C]
-        alpha_expanded = alpha.view(1, -1, 1, 1, 1)
-        out =  x * refined + alpha_expanded * x
+        # alpha = F.softplus(self.log_alpha)  # shape: [C]
+        # alpha_expanded = alpha.view(1, -1, 1, 1, 1)
+        # out =  x * refined + alpha_expanded * x
+        out = x * refined
         return out
 
 

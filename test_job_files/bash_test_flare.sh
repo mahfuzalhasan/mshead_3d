@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=test_flare_hf_ref_softplus_2_trconv
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/test_flare_hf_ref_softplus_2_trconv.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/test_flare_hf_ref_softplus_2_trconv.%J.err
+#SBATCH --job-name=test_flare_simple_ref_sep_hf_2trup
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/test_flare_simple_ref_sep_hf_2trup.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_1111/mshead_3d/results/test_flare_simple_ref_sep_hf_2trup.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
