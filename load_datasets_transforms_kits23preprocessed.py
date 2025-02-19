@@ -139,17 +139,38 @@ def data_loader(args):
 
     elif args.mode == 'test':
         test_samples = {}
-        if args.dataset == 'kits':
+        if args.dataset == 'kits23':
             ## Input training data
-            train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
-            train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
-            
-            validation_per_fold = 42
+            case_dirs = sorted(glob.glob(os.path.join(args.root, "case_*")))
+            # print(f'case_dirs: {case_dirs}')
+            train_img = []
+            train_label = []
+
+            for cdir in case_dirs:
+                # In the new folder structure, the processed image is saved as "labels.nii.gz"
+                # and the processed label is saved as "segmentation.nii.gz"
+                # TODO : change preprocessing to name "image" and "labels"
+                img = sorted(glob.glob(os.path.join(cdir, "imaging.nii.gz")))
+                label = sorted(glob.glob(os.path.join(cdir, "segmentation.nii.gz")))
+                
+                if os.path.exists(img[0]) and os.path.exists(label[0]):
+                    # print('path exists')
+                    train_img.append(img[0])
+                    train_label.append(label[0])
+                    # print('path appended')
+                else:
+                    print(f"Warning: Missing files in {cdir}... skipping")
+
+            validation_per_fold = 98
             start_index = validation_per_fold * args.fold
             end_index = validation_per_fold * args.fold + validation_per_fold
 
+            if end_index > len(train_label):
+                end_index = len(train_label)
+
+            
             test_img = train_img[start_index:end_index]
-            test_label = train_label[start_index:end_index]
+            test_label = train_label[start_index:end_index]  
         else:
             ## Input inference data
             test_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTs', '*.nii.gz')))
@@ -158,7 +179,7 @@ def data_loader(args):
         test_samples['images'] = test_img
         test_samples['labels'] = test_label
         test_samples['paths'] = test_label 
-
+        print(f"test_img: {test_img}, length: {len(test_img)}")
         print('Finished loading all inference samples from dataset: {}!'.format(dataset))
 
         return test_samples, out_classes
@@ -257,17 +278,13 @@ def data_transforms(args):
             [
                 LoadImaged(keys=["image", "label"]),
                 AddChanneld(keys=["image", "label"]),
-                
-                ### -- Commented out transforms are already done in preparing the preprocessed data ---
-                # Spacingd(keys=["image", "label"], pixdim=(1, 0.78, 0.78), mode=("bilinear", "nearest")),
-                # Orientationd(keys=["image", "label"], axcodes="RAS"),
-                # Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
-                # ScaleIntensityRanged(
-                #     keys=["image"], a_min=-58, a_max=302,
-                #     b_min=0.0, b_max=1.0, clip=True,
-                # ),
-                # CropForegroundd(keys=["image", "label"], source_key="image"),
-                
+                Orientationd(keys=["image", "label"], axcodes="RAS"),
+                Spacingd(keys=["image", "label"], pixdim=(1, 1, 1), mode=("bilinear", "nearest")),
+                ScaleIntensityRanged(
+                    keys=["image"], a_min=-58, a_max=302,
+                    b_min=0.0, b_max=1.0, clip=True,
+                ),
+                CropForegroundd(keys=["image", "label"], source_key="image"),
                 ToTensord(keys=["image", "label"]),
             ]
         )
@@ -275,16 +292,15 @@ def data_transforms(args):
         # TODO : review test_transforms_plot before running test
         test_transforms_plot = Compose(
             [
-                LoadImaged(keys=["image", "label"]),
-                AddChanneld(keys=["image", "label"]),
-                Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
-                Orientationd(keys=["image", "label"], axcodes="RAS"),
-                Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
+                LoadImaged(keys=["image"]),
+                AddChanneld(keys=["image"]),
+                Orientationd(keys=["image"], axcodes="RAS"),
+                Spacingd(keys=["image"], pixdim=(1, 1, 1), mode=("bilinear")),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-58, a_max=302,
                     b_min=0.0, b_max=1.0, clip=True,
                 ),
-                CropForegroundd(keys=["image", "label"], source_key="image"),
+                CropForegroundd(keys=["image"], source_key="image"),
                 ToTensord(keys=["image"]),
             ]
         )

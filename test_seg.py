@@ -11,7 +11,7 @@ from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoad
 from monai.metrics import DiceMetric
 
 import torch
-from load_datasets_transforms import data_loader, data_transforms, infer_post_transforms
+from load_datasets_transforms_kits23preprocessed import data_loader, data_transforms, infer_post_transforms
 
 import os
 import argparse
@@ -66,6 +66,9 @@ if not args.root:
     elif args.dataset == 'kits':
         args.root = '/blue/r.forghani/share/kits2019'
         ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
+    elif args.dataset == 'kits23':
+        args.root = '/blue/r.forghani/mdmahfuzalhasan/scripts/kits23/dataset'
+        ORGAN_CLASSES = {1: "Kidney", 2: "Tumor", 3:"Cyst"}
     else:
         raise NotImplementedError(f'No such dataset: {args.dataset}')
 
