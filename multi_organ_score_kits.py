@@ -102,7 +102,7 @@ for label in os.listdir(pred_dir):
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
 
 
-    label_gt = os.path.join(gt_dir, f'train_+{case_id}+_segmentation.nii.gz')
+    label_gt = os.path.join(gt_dir, f'train_{case_id}_segmentation.nii.gz')
 
 
     # label_gt = gt_file
