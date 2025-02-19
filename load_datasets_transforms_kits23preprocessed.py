@@ -64,9 +64,13 @@ def data_loader(args):
         if dataset == 'kits23':
             # train_img = sorted(glob.glob(os.path.join(root_dir,'*/imaging.nii.gz')))
             # train_label = sorted(glob.glob(os.path.join(root_dir,'*/segmentation.nii.gz')))
-            # train_img = sorted(glob.glob(os.path.join(args.preprocessed_dir, "image_*.nii.gz")))
-            # train_label = sorted(glob.glob(os.path.join(args.preprocessed_dir, "label_*.nii.gz")))
+
+            # HiperGator Settings
+            # train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
+            # train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
             
+
+            #### Nautilus Settings--> Try to simplify it. Life will be easier
             # Find all case directories (e.g. case_00000, case_00001, ...)
             case_dirs = sorted(glob.glob(os.path.join(args.root, "case_*")))
             # print(f'case_dirs: {case_dirs}')
@@ -141,25 +145,32 @@ def data_loader(args):
         test_samples = {}
         if args.dataset == 'kits23':
             ## Input training data
-            case_dirs = sorted(glob.glob(os.path.join(args.root, "case_*")))
-            # print(f'case_dirs: {case_dirs}')
-            train_img = []
-            train_label = []
+            ### Set up in Hypergator
+            train_img = sorted(glob.glob(os.path.join(root_dir, 'imagesTr', '*.nii.gz')))
+            train_label = sorted(glob.glob(os.path.join(root_dir, 'labelsTr', '*.nii.gz')))
+            ##########
 
-            for cdir in case_dirs:
-                # In the new folder structure, the processed image is saved as "labels.nii.gz"
-                # and the processed label is saved as "segmentation.nii.gz"
-                # TODO : change preprocessing to name "image" and "labels"
-                img = sorted(glob.glob(os.path.join(cdir, "imaging.nii.gz")))
-                label = sorted(glob.glob(os.path.join(cdir, "segmentation.nii.gz")))
+            ## Set up in Nautilus --> change it if you can. Always make
+            ## primary stuff like data reading simple.
+            # case_dirs = sorted(glob.glob(os.path.join(args.root, "case_*")))
+            # # print(f'case_dirs: {case_dirs}')
+            # train_img = []
+            # train_label = []
+
+            # for cdir in case_dirs:
+            #     # In the new folder structure, the processed image is saved as "labels.nii.gz"
+            #     # and the processed label is saved as "segmentation.nii.gz"
+            #     # TODO : change preprocessing to name "image" and "labels"
+            #     img = sorted(glob.glob(os.path.join(cdir, "imaging.nii.gz")))
+            #     label = sorted(glob.glob(os.path.join(cdir, "segmentation.nii.gz")))
                 
-                if os.path.exists(img[0]) and os.path.exists(label[0]):
-                    # print('path exists')
-                    train_img.append(img[0])
-                    train_label.append(label[0])
-                    # print('path appended')
-                else:
-                    print(f"Warning: Missing files in {cdir}... skipping")
+            #     if os.path.exists(img[0]) and os.path.exists(label[0]):
+            #         # print('path exists')
+            #         train_img.append(img[0])
+            #         train_label.append(label[0])
+            #         # print('path appended')
+            #     else:
+            #         print(f"Warning: Missing files in {cdir}... skipping")
 
             validation_per_fold = 98
             start_index = validation_per_fold * args.fold
