@@ -98,9 +98,13 @@ set_determinism(seed=0)
 
 train_transforms, val_transforms = data_transforms(args)
 
+train_files = train_files[:20]
+print(f' \n ****************** train_files List :\n {train_files} \n ******************* \n')
+
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
 train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
+exit()
 val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
 
 train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)
