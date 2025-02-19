@@ -27,9 +27,10 @@ class HFRefinementRes(nn.Module):
         refined = self.conv2(refined)
         refined = self.sigmoid(refined)
 
-        alpha = F.softplus(self.log_alpha)  # shape: [C]
-        alpha_expanded = alpha.view(1, -1, 1, 1, 1)
-        out =  x * refined + alpha_expanded * x
+        # alpha = F.softplus(self.log_alpha)  # shape: [C]
+        # alpha_expanded = alpha.view(1, -1, 1, 1, 1)
+        # out =  x * refined + alpha_expanded * x
+        out = x * refined
         return out
 
 
