@@ -28,7 +28,9 @@ for i,subj in enumerate(subjects):
     data_path = os.path.join(source_folder, subj)
     for files in os.listdir(data_path):
 
-        source_file_path = os.path.join(data_path, files)    
+        source_file_path = os.path.join(data_path, files)
+        if not os.path.isfile(source_file_path):
+            continue
         new_file_name = identifier+'_'+case_id+'_'+files
         
         if "imaging" in new_file_name:
