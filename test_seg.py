@@ -31,6 +31,7 @@ parser.add_argument('--output', type=str, default='/orange/r.forghani/results', 
 parser.add_argument('--dataset', type=str, default='kits23', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
+parser.add_argument('--roi_size', type=str, default="96,96,96", help="Region of Interest (ROI) size in format D,H,W (e.g., 96,96,96).")
 parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 parser.add_argument('--trained_weights', default='', required=False, help='Path of pretrained/fine-tuned weights')
 parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
