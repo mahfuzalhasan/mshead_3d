@@ -45,7 +45,6 @@ parser.add_argument('--num_workers', type=int, default=4, help='Number of worker
 parser.add_argument('--plot', default=True, help='plotting the prediction as nii.gz file')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
 parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
-parser.add_argument('--plot', default=False, help='Plotting prediction or Not')
 
 args = parser.parse_args()
 
@@ -268,14 +267,12 @@ if args.network == 'TransBTS':
 
 print(f'fold:{args.fold} - best model path:{args.trained_weights} ')
 state_dict = torch.load(args.trained_weights)
-model.load_state_dict(state_dict['model'])
+model.load_state_dict(state_dict['model'], strict=True)
 model.eval()
 
-
-post_label = AsDiscrete(to_onehot=out_classes)
-post_pred = AsDiscrete(argmax=True, to_onehot=out_classes)
-dice_metric = DiceMetric(include_background=True, reduction="mean", get_not_nans=False)
-
+print(f'########## Model ################ \n')
+print(model)
+print('################################## \n')
 dice_vals = list()
 s_time = time.time()
 with torch.no_grad():
