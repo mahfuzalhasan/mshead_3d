@@ -245,21 +245,16 @@ def data_transforms(args):
         train_transforms = Compose(
         [
             LoadImaged(keys=["image", "label"]),            # D, H, W
-            Lambda(lambda x: (print(f"After LoadImaged: Image shape: {x['image'].shape}, Label shape: {x['label'].shape}"), x)[1]),
+            # Lambda(lambda x: (print(f"After LoadImaged: Image shape: {x['image'].shape}, Label shape: {x['label'].shape}"), x)[1]),
             AddChanneld(keys=["image", "label"]),
-            Lambda(lambda x: (print(f"After Add Channel: Image shape: {x['image'].shape}, Label shape: {x['label'].shape}"), x)[1]),
             Orientationd(keys=["image", "label"], axcodes="RAS"),           # H, W, D
-            Lambda(lambda x: (print(f"After Orientation: Image shape: {x['image'].shape}, Label shape: {x['label'].shape}"), x)[1]),
             Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
-            Lambda(lambda x: (print(f"After Spacing: Image shape: {x['image'].shape}, Label shape: {x['label'].shape}"), x)[1]),
             # Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),      # D, H, W --> PyTorch expects this    
             ScaleIntensityRanged(
                 keys=["image"], a_min=-200, a_max=300,
                 b_min=0.0, b_max=1.0, clip=True,
             ),
-            # Lambda(lambda x: (print(f"After LoadImaged: Image shape: {x['image'].shape}, Label shape: {x['label'].shape}"), x)[1]),
             CropForegroundd(keys=["image", "label"], source_key="image"),
-            Lambda(lambda x: (print(f"After CropFG: Image shape: {x['image'].shape}, Label shape: {x['label'].shape}"), x)[1]),
             RandCropByPosNegLabeld(
                 keys=["image", "label"],
                 label_key="label",
@@ -270,7 +265,6 @@ def data_transforms(args):
                 image_key="image",
                 image_threshold=0,
             ),
-            Lambda(lambda x: (print(f"After rand Crop: Image shape: {x['image'].shape}, Label shape: {x['label'].shape}"), x)[1]),
             RandShiftIntensityd(
                 keys=["image"],
                 offsets=0.10,
@@ -291,9 +285,9 @@ def data_transforms(args):
             [
                 LoadImaged(keys=["image", "label"]),
                 AddChanneld(keys=["image", "label"]),
-                Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
                 Orientationd(keys=["image", "label"], axcodes="RAS"),
-                Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
+                Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+                # Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-200, a_max=300,
                     b_min=0.0, b_max=1.0, clip=True,
@@ -307,9 +301,9 @@ def data_transforms(args):
             [
                 LoadImaged(keys=["image", "label"]),
                 AddChanneld(keys=["image", "label"]),
-                Spacingd(keys=["image", "label"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear", "nearest")),
                 Orientationd(keys=["image", "label"], axcodes="RAS"),
-                Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
+                Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
+                # Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-200, a_max=300,
                     b_min=0.0, b_max=1.0, clip=True,
@@ -323,9 +317,9 @@ def data_transforms(args):
             [
                 LoadImaged(keys=["image"]),
                 AddChanneld(keys=["image"]),
-                Spacingd(keys=["image"], pixdim=(1.2, 1.0, 1.0), mode=("bilinear")),
                 Orientationd(keys=["image"], axcodes="RAS"),
-                Transposed(keys=["image"], indices=(0, 3, 1, 2)),
+                Spacingd(keys=["image"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear")),
+                # Transposed(keys=["image"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
                     keys=["image"], a_min=-200, a_max=300,
                     b_min=0.0, b_max=1.0, clip=True,
