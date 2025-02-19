@@ -5,13 +5,13 @@ import glob
 from natsort import natsorted
 
 
-source_folder= "/blue/r.forghani/mdmahfuzalhasan/scripts/kits23/dataset"
+source_folder= "/blue/r.forghani/mdmahfuzalhasan/scripts/kits23/foreground_cropped"
 subjects = natsorted(os.listdir(source_folder))
 print(f'$$$$$$$$$$$$$$ total data:{len(subjects)} $$$$$$$$$$$$$$$$$$$')
 print(f'#############\n subject list: {subjects} \n ######################\n')
 
-train_img_destination = "/blue/r.forghani/share/kits23/imagesTr"
-train_label_destination = "/blue/r.forghani/share/kits23/labelsTr"
+train_img_destination = "/blue/r.forghani/share/kits23_fg_cropped/imagesTr"
+train_label_destination = "/blue/r.forghani/share/kits23_fg_cropped/labelsTr"
 
 if not os.path.exists(train_img_destination):
     os.makedirs(train_img_destination)
