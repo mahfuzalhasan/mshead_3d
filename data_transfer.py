@@ -22,6 +22,8 @@ identifier = "train"
 for i,subj in enumerate(subjects):    
     case_id = subj.split('_')[1]
     print(f'##### case id:{case_id} #####\n')
+    if i%100 == 0:
+        print(f" finished {i}th data ")
     
     data_path = os.path.join(source_folder, subj)
     for files in os.listdir(data_path):
