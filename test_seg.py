@@ -28,7 +28,7 @@ parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for me
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='kits', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='kits23', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
 parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
@@ -72,7 +72,7 @@ if not args.root:
     else:
         raise NotImplementedError(f'No such dataset: {args.dataset}')
 
-
+print(f'dataset:{args.root}')
 test_samples, out_classes = data_loader(args)
 
 test_files = [
