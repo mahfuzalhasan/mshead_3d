@@ -13,18 +13,13 @@ print(f'#############\n subject list: {subjects} \n ######################\n')
 train_img_destination = "/blue/r.forghani/share/kits23/imagesTr"
 train_label_destination = "/blue/r.forghani/share/kits23/labelsTr"
 
-# test_img_destination = "/blue/r.forghani/share/kits2019/imagesTs"
-# test_label_destination = "/blue/r.forghani/share/kits2019/labelsTs"
-# exit()
+if not os.path.exists(train_img_destination):
+    os.makedirs(train_img_destination)
+if not os.path.exists(train_label_destination):
+    os.makedirs(train_label_destination)
 
 identifier = "train"
-for i,subj in enumerate(subjects):
-
-    # if i<190:
-    #     split = "train"
-    # else:
-    #     split = "test"   
-    
+for i,subj in enumerate(subjects):    
     case_id = subj.split('_')[1]
     print(f'##### case id:{case_id} #####\n')
     
@@ -38,7 +33,7 @@ for i,subj in enumerate(subjects):
             destination = os.path.join(train_img_destination, new_file_name)
         elif "segmentation" in new_file_name:
             destination = os.path.join(train_label_destination, new_file_name)
-            
+
         shutil.copy(source_file_path, destination)
         
 
