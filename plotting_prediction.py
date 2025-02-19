@@ -11,7 +11,7 @@ from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoad
 from monai.metrics import DiceMetric
 
 import torch
-from load_datasets_transforms import data_loader, data_transforms, infer_post_transforms
+from load_datasets_transforms_kits23preprocessed import data_loader, data_transforms, infer_post_transforms
 
 import os
 import argparse
@@ -23,14 +23,16 @@ import datetime
 import argparse
 import time
 
-parser = argparse.ArgumentParser(description='3D UX-Net inference hyperparameters for medical image segmentation')
+print(f'########### Running KITS Segmentation ################# \n')
+parser = argparse.ArgumentParser(description='MSHEAD_ATTN hyperparameters for medical image segmentation')
 ## Input data hyperparameters
 parser.add_argument('--root', type=str, default='', required=False, help='Root folder of all your images and labels')
 parser.add_argument('--output', type=str, default='/orange/r.forghani/results', required=False, help='Output folder for both tensorboard and the best model')
-parser.add_argument('--dataset', type=str, default='flare', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
+parser.add_argument('--dataset', type=str, default='kits23', required=False, help='Datasets: {feta, flare, amos}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
-parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, UXNET}')
+parser.add_argument('--roi_size', type=str, default="96,96,96", help="Region of Interest (ROI) size in format D,H,W (e.g., 96,96,96).")
+parser.add_argument('--network', type=str, default='MSHEAD', required=False, help='Network models: {TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
 parser.add_argument('--trained_weights', default='', required=False, help='Path of pretrained/fine-tuned weights')
 parser.add_argument('--mode', type=str, default='test', help='Training or testing mode')
 parser.add_argument('--sw_batch_size', type=int, default=4, help='Sliding window batch size for inference')
@@ -42,25 +44,37 @@ parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to c
 parser.add_argument('--num_workers', type=int, default=4, help='Number of workers')
 parser.add_argument('--plot', default=True, help='plotting the prediction as nii.gz file')
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
-parser.add_argument('--no_split', default=False, help='No splitting into train and validation')
-
+parser.add_argument('--no_split', default=False, help='Not splitting into train and validation')
+parser.add_argument('--plot', default=False, help='Plotting prediction or Not')
 
 args = parser.parse_args()
 
+# os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
+
 if not args.root:
-    if args.dataset == 'flare':
-        args.root = '/blue/r.forghani/share/flare_data'
-    elif args.dataset == 'amos':
+    if args.dataset == 'amos':
         args.root = '/blue/r.forghani/share/amoss22/amos22'
+        ORGAN_CLASSES = {1: "Spleen", 2: "Right Kidney", 3: "Left Kidney", 4: "Gall Bladder", 5: "Esophagus",6: "Liver",
+            7: "Stomach", 8: "Aorta", 9: "Inferior Vena Cava", 10: "Pancreas", 11: "Right Adrenal Gland", 
+            12: "Left Adrenal Gland", 13: "Duodenum", 14: "Bladder", 15: "Prostate"
+        }
+        organ_size_range = [150, 500]
+        spacing = (1.5, 1.5, 2)
+    elif args.dataset == 'flare':
+        args.root = '/blue/r.forghani/share/flare_data'
+        ORGAN_CLASSES = {1: "Liver", 2: "Kidney", 3: "Spleen", 4: "Pancreas"}
+        organ_size_range = [250, 1000]
+        spacing = (1, 1, 1.2)
     elif args.dataset == 'kits':
         args.root = '/blue/r.forghani/share/kits2019'
+        ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
+    elif args.dataset == 'kits23':
+        args.root = '/blue/r.forghani/mdmahfuzalhasan/scripts/kits23/dataset'
+        ORGAN_CLASSES = {1: "Kidney", 2: "Tumor", 3:"Cyst"}
     else:
         raise NotImplementedError(f'No such dataset: {args.dataset}')
 
-# os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
-print(f'######## datapath: {args.root}  dataset:{args.dataset} fold:{args.fold} ######## \n')
-
-
+print(f'dataset:{args.root}')
 test_samples, out_classes = data_loader(args)
 
 test_files = [
@@ -68,11 +82,45 @@ test_files = [
     for image_name, label_name, data_path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
 
-print(f'test files:{test_files}')
+set_determinism(seed=0)
 
+test_transforms = data_transforms(args)
+post_transforms = infer_post_transforms(args, test_transforms, out_classes)
+
+## Inference Pytorch Data Loader and Caching
+test_ds = CacheDataset(
+    data=test_files, transform=test_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
+test_loader = ThreadDataLoader(test_ds, batch_size=1, num_workers=0)
+
+## Load Networks
+device = torch.device("cuda")
+print(f'--- device:{device} ---')
+
+if args.network == 'MSHEAD':
+    model = MSHEAD_ATTN(
+        img_size=(96, 96, 96),
+        patch_size=2,
+        in_chans=1,
+        out_chans=out_classes,
+        depths=[2,2,2,2],
+        feat_size=[48,96,192,384],
+        num_heads = [3,6,12,24],
+        drop_path_rate=0.1,
+        use_checkpoint=False,
+    ).to(device)
+
+elif args.network == 'SwinUNETR':
+    model = SwinUNETR(
+        img_size=(96, 96, 96),
+        in_channels=1,
+        out_channels=out_classes,
+        feature_size=48,
+        use_checkpoint=False,
+    ).to(device)
 if args.dataset != 'amos':
     if args.fold == 0:
-        args.trained_weights = '/orange/r.forghani/results/01-07-25_0204/model_best.pth'    # flare idwt_v2
+        args.trained_weights = '/orange/r.forghani/results/waveformer/fold_0/model_best.pth'    # kits23
+        # args.trained_weights = '/orange/r.forghani/results/01-07-25_0204/model_best.pth'    # flare idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-20-24_0342/model_best.pth'    #flare
         # args.trained_weights = '/orange/r.forghani/results/12-22-24_1727/model_best.pth'  #KiTS
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-04-24_2018/model_best.pth'#SWIN
@@ -81,7 +129,8 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_0/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_0/model_best.pth'
     elif args.fold == 1:
-        args.trained_weights = '/orange/r.forghani/results/01-07-25_0102/model_best.pth' #flare_idwt_v2
+        args.trained_weights = '/orange/r.forghani/results/waveformer/fold_1/model_best.pth'    # kits23
+        # args.trained_weights = '/orange/r.forghani/results/01-07-25_0102/model_best.pth' #flare_idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-20-24_1658/model_best.pth'    #flare
         # args.trained_weights = '/orange/r.forghani/results/12-23-24_0128/model_best.pth'  #KiTS
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-08-24_0059/model_best.pth'#SWIN
@@ -90,7 +139,8 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_1/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_1/model_best.pth'
     elif args.fold == 2:
-        args.trained_weights = '/orange/r.forghani/results/01-07-25_1307/model_best.pth'     #flare_idwt_v2
+        args.trained_weights = '/orange/r.forghani/results/waveformer/fold_2/model_best.pth'    # kits23
+        # args.trained_weights = '/orange/r.forghani/results/01-07-25_1307/model_best.pth'     #flare_idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-20-24_1836/model_best.pth'    #flare
         # args.trained_weights = '/orange/r.forghani/results/12-23-24_0145/model_best.pth'  #KiTS
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_2219/model_best.pth'#SWIN
@@ -99,7 +149,8 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_2/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_2/model_best.pth'
     elif args.fold == 3:
-        args.trained_weights = '/orange/r.forghani/results/01-07-25_1708/model_best.pth' #flare_idwt_v2
+        args.trained_weights = '/orange/r.forghani/results/waveformer/fold_3/model_best.pth'    # kits23
+        # args.trained_weights = '/orange/r.forghani/results/01-07-25_1708/model_best.pth' #flare_idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-20-24_1943/model_best.pth'    #flare
         # args.trained_weights = '/orange/r.forghani/results/12-23-24_0240/model_best.pth'  #KiTS
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-07-24_0301/model_best.pth'#SWIN
@@ -108,7 +159,8 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_3/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_3/model_best.pth'
     elif args.fold == 4:
-        args.trained_weights = '/orange/r.forghani/results/01-07-25_1844/model_best.pth'    #flare_idwt_v2
+        args.trained_weights = '/orange/r.forghani/results/waveformer/fold_4/model_best.pth'    # kits23
+        # args.trained_weights = '/orange/r.forghani/results/01-07-25_1844/model_best.pth'    #flare_idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-21-24_0006/model_best.pth'    #flare
         # args.trained_weights = '/orange/r.forghani/results/12-23-24_0256/model_best.pth'  #KiTS
         # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_0758/model_best.pth'#SWIN
@@ -119,23 +171,23 @@ if args.dataset != 'amos':
 
 set_determinism(seed=0)
 ### extracting run_id of testing model
-splitted_text = args.trained_weights[:args.trained_weights.rindex('/')]
-run_id = splitted_text[splitted_text.rindex('/')+1:]
-print(f'############## run id of pretrained model: {run_id} ################')
+model_folder = args.trained_weights[:args.trained_weights.rindex('/')]
+print(f'############## model folder of pretrained model: {model_folder} ################')
+output_seg_dir = os.path.join(model_folder, 'output_seg')
 
-if args.network!='MSHEAD':
-    args.output = os.path.join(args.output, args.network)   # '/orange/r.forghani/results/SwinUNETR'
+# if args.network!='MSHEAD':
+#     args.output = os.path.join(args.output, args.network)   # '/orange/r.forghani/results/SwinUNETR'
 
-if args.network == 'nnFormer':
-    output_seg_dir = os.path.join(args.output, 'nnformer', f'fold_{args.fold}', 'output_seg')
-elif args.network == 'UXNET':
-    output_seg_dir = os.path.join(args.output, '3duxnet', f'fold_{args.fold}', 'output_seg')
-elif args.network == 'UNETR':
-    output_seg_dir = os.path.join(args.output, f'fold_{args.fold}', 'output_seg')
-elif args.network == 'TransBTS':
-    output_seg_dir = os.path.join(args.output, f'fold_{args.fold}', 'output_seg')
-else:
-    output_seg_dir = os.path.join(args.output, f'{run_id}', 'output_seg')
+# if args.network == 'nnFormer':
+#     output_seg_dir = os.path.join(args.output, 'nnformer', f'fold_{args.fold}', 'output_seg')
+# elif args.network == 'UXNET':
+#     output_seg_dir = os.path.join(args.output, '3duxnet', f'fold_{args.fold}', 'output_seg')
+# elif args.network == 'UNETR':
+#     output_seg_dir = os.path.join(args.output, f'fold_{args.fold}', 'output_seg')
+# elif args.network == 'TransBTS':
+#     output_seg_dir = os.path.join(args.output, f'fold_{args.fold}', 'output_seg')
+# else:
+#     output_seg_dir = os.path.join(args.output, f'{run_id}', 'output_seg')
 
 if not os.path.exists(output_seg_dir):
     os.makedirs(output_seg_dir)
@@ -230,8 +282,9 @@ with torch.no_grad():
     for step, test_data in enumerate(test_loader):
         test_inputs = test_data["image"].to(device)
         # val_outputs = model(val_inputs)
-        roi_size = (96, 96, 96)
+        roi_size = tuple(map(int, args.roi_size.split(',')))
         test_data["pred"] = sliding_window_inference(
             test_inputs, roi_size, args.sw_batch_size, model, overlap=args.overlap
         )
         test_data = [post_transforms(i) for i in decollate_batch(test_data)]
+
