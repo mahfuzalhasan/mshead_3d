@@ -1,14 +1,14 @@
 #!/bin/bash
-#SBATCH --job-name=train_kits_simple_ref_sep_hf_residual_up
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/train_kits_hf_imp_ref_better_up.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/train_kits_hf_imp_ref_better_up.%J.err
+#SBATCH --job-name=train_kits_hf_simple_ref_residual_up
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/train_kits_hf_simple_ref_residual_up.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/train_kits_hf_simple_ref_residual_up.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=128GB
 #SBATCH --partition=hpg-ai
 #SBATCH --gpus=a100:1
-#SBATCH --time=24:00:00
+#SBATCH --time=48:00:00
 
 module load conda
 conda activate waveformer

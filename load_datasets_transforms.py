@@ -283,13 +283,13 @@ def data_transforms(args):
 
         val_transforms = Compose(
             [
-                LoadImaged(keys=["image", "label"]),
+                LoadImaged(keys=["image", "label"]),    #D,H,W
                 AddChanneld(keys=["image", "label"]),
-                Orientationd(keys=["image", "label"], axcodes="RAS"),
+                Orientationd(keys=["image", "label"], axcodes="RAS"),#H,W,D
                 Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
                 # Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
-                    keys=["image"], a_min=-200, a_max=300,
+                    keys=["image"], a_min=-125, a_max=275,
                     b_min=0.0, b_max=1.0, clip=True,
                 ),
                 CropForegroundd(keys=["image", "label"], source_key="image"),
@@ -299,13 +299,13 @@ def data_transforms(args):
 
         test_transforms = Compose(
             [
-                LoadImaged(keys=["image", "label"]),
+                LoadImaged(keys=["image", "label"]),    #D,H,W
                 AddChanneld(keys=["image", "label"]),
-                Orientationd(keys=["image", "label"], axcodes="RAS"),
+                Orientationd(keys=["image", "label"], axcodes="RAS"),   # H,W,D
                 Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
                 # Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
-                    keys=["image"], a_min=-200, a_max=300,
+                    keys=["image"], a_min=-125, a_max=275,
                     b_min=0.0, b_max=1.0, clip=True,
                 ),
                 CropForegroundd(keys=["image", "label"], source_key="image"),
@@ -315,13 +315,13 @@ def data_transforms(args):
 
         test_transforms_plot = Compose(
             [
-                LoadImaged(keys=["image"]),
-                AddChanneld(keys=["image"]),
-                Orientationd(keys=["image"], axcodes="RAS"),
+                LoadImaged(keys=["image"]),     #D,H,W
+                AddChanneld(keys=["image"]),    
+                Orientationd(keys=["image"], axcodes="RAS"),    # H,W,D
                 Spacingd(keys=["image"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear")),
                 # Transposed(keys=["image"], indices=(0, 3, 1, 2)),
                 ScaleIntensityRanged(
-                    keys=["image"], a_min=-200, a_max=300,
+                    keys=["image"], a_min=-125, a_max=275,
                     b_min=0.0, b_max=1.0, clip=True,
                 ),
                 CropForegroundd(keys=["image"], source_key="image"),
