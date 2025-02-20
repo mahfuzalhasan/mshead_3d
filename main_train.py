@@ -106,24 +106,33 @@ print(f' \n ****************** train_files List :\n {train_files} \n ***********
 
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
-train_cache_dir = f'/blue/r.forghani/share/kits23_cache_train/{args.fold}'
-val_cache_dir = f'/blue/r.forghani/share/kits23_cache_val/{args.fold}'
-
-# Clean old cache before training (optional)
-for cache_dir in [train_cache_dir, val_cache_dir]:
-    if os.path.exists(cache_dir):
-        shutil.rmtree(cache_dir)
-    os.makedirs(cache_dir, exist_ok=True)
-
-train_ds = PersistentDataset(data=train_files, transform=train_transforms,cache_dir=train_cache_dir)
-val_ds = PersistentDataset(data=val_files, transform=val_transforms, cache_dir=val_cache_dir)
-
-train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
-val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
-
 if args.dataset == "kits23":
     args.eval_step = 588
     args.max_iter = 39984
+    train_cache_dir = f'/blue/r.forghani/share/kits23_cache_train/{args.fold}'
+    val_cache_dir = f'/blue/r.forghani/share/kits23_cache_val/{args.fold}'
+
+    # Clean old cache before training (optional)
+    for cache_dir in [train_cache_dir, val_cache_dir]:
+        if os.path.exists(cache_dir):
+            shutil.rmtree(cache_dir)
+        os.makedirs(cache_dir, exist_ok=True)
+
+    train_ds = PersistentDataset(data=train_files, transform=train_transforms,cache_dir=train_cache_dir)
+    val_ds = PersistentDataset(data=val_files, transform=val_transforms, cache_dir=val_cache_dir)
+
+    train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+    val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
+
+elif args.dataset == "flare":
+    ## Train Pytorch Data Loader and Caching
+    print('Start caching datasets!')
+    train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
+    val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
+
+    train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)
+    val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
+    
 
 
 
@@ -211,8 +220,10 @@ def validation(val_loader):
         for step, batch in enumerate(val_loader):
             val_inputs, val_labels = (batch["image"].to(device), batch["label"].to(device))
             # val_outputs = model(val_inputs)
-            val_outputs = sliding_window_inference(val_inputs, (96, 96, 96), args.sw_batch_size, model, overlap=args.overlap)
-            # val_outputs = model_seg(val_inputs, val_feat[0], val_feat[1])
+            if args.dataset == "kits23":
+                val_outputs = sliding_window_inference(val_inputs, (96, 96, 96), args.sw_batch_size, model, overlap=args.overlap)
+            else:
+                val_outputs = sliding_window_inference(val_inputs, (96, 96, 96), args.sw_batch_size, model)
             val_labels_list = decollate_batch(val_labels)
             val_labels_convert = [
                 post_label(val_label_tensor) for val_label_tensor in val_labels_list
