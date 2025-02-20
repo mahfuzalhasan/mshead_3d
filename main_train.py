@@ -17,7 +17,7 @@ from networks.mednext.create_mednext_v1 import create_mednext_v1
 from monai.metrics import DiceMetric
 from monai.losses import DiceCELoss
 from monai.inferers import sliding_window_inference
-from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader
+from monai.data import CacheDataset, DataLoader, decollate_batch, ThreadDataLoader, PersistentDataset
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -103,12 +103,12 @@ print(f' \n ****************** train_files List :\n {train_files} \n ***********
 
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
-train_ds = CacheDataset(data=train_files, transform=train_transforms,cache_rate=args.cache_rate, num_workers=args.num_workers)
-# exit()
-val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
+cache_dir = '/blue/r.forghani/share/kits23_cache'
+train_ds = PersistentDataset(data=train_files, transform=train_transforms,cache_dir=cache_dir)
+val_ds = PersistentDataset(data=val_files, transform=val_transforms, cache_dir=cache_dir)
 
-train_loader = ThreadDataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=0)
-val_loader = ThreadDataLoader(val_ds, batch_size=1, num_workers=0)
+train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
 
 
 
