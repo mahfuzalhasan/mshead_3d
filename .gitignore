@@ -27,4 +27,4 @@ backup/*
 playground/*.png
 nautilus/*.yaml
 nautilus/*
-
+_main*
