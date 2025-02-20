@@ -106,11 +106,8 @@ print(f' \n ****************** train_files List :\n {train_files} \n ***********
 
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
-train_cache_dir = '/blue/r.forghani/share/kits23_cache_train'
-val_cache_dir = '/blue/r.forghani/share/kits23_cache_val'
-
-train_cache_dir = os.path.join(train_cache_dir, args.fold)
-val_cache_dir = os.path.join(val_cache_dir, args.fold)
+train_cache_dir = f'/blue/r.forghani/share/kits23_cache_train/{args.fold}'
+val_cache_dir = f'/blue/r.forghani/share/kits23_cache_val/{args.fold}'
 
 # Clean old cache before training (optional)
 for cache_dir in [train_cache_dir, val_cache_dir]:
