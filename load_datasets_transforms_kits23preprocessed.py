@@ -243,11 +243,11 @@ def data_transforms(args):
             #     spatial_axis=[0],
             #     prob=0.5,
             # ),
-            RandFlipd(              # Mirroing horizontally (W)--> left-right swap
-                keys=["image", "label"],
-                spatial_axis=[1],
-                prob=0.5,
-            ),
+            # RandFlipd(              # Mirroing horizontally (W)--> left-right swap
+            #     keys=["image", "label"],
+            #     spatial_axis=[1],
+            #     prob=0.5,
+            # ),
             # RandFlipd(
             #     keys=["image", "label"],
             #     spatial_axis=[2],
