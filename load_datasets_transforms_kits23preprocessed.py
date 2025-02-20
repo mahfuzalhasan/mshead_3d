@@ -29,7 +29,8 @@ from monai.transforms import (
     Invertd,
     KeepLargestConnectedComponentd,
     SaveImaged,
-    Activationsd
+    Activationsd,
+    Lambda
 )
 
 import numpy as np
@@ -207,6 +208,9 @@ def data_transforms(args):
     if dataset == "kits23":
         train_transforms = Compose(
         [   #$$$$$$$$ Jawad apply from here for 1st stage preprocessing $$$$$$$
+            ### wrote load for .pt
+            # Lambda(keys=["image", "label"], func=lambda x: load_pt_file(x)),  # Load .pt file
+            # Lambdad(keys=["image", "label"], func=load_pt),  # Loads .pt files
             LoadImaged(keys=["image", "label"]),            # D, H, W
             # AddChanneld(keys=["image", "label"]),
             
@@ -221,13 +225,13 @@ def data_transforms(args):
             # $$$$$$$$$ First Stage Preprocessing Ends here
 
             # $$$$$ Mahdi apply the way you are doing right now for 2nd Stage Prepro. for train
-            # Use crop_samples = 4
+            # Use crop_samples = 2
             ########## Rest applied during training---> image will be in H,W,D
             RandCropByPosNegLabeld(
                 keys=["image", "label"],
                 label_key="label",
                 spatial_size=roi_size, #for now (96, 96, 96), #(128, 128, 128),
-                pos=3,
+                pos=1,
                 neg=1,
                 num_samples=crop_samples,
                 image_key="image",

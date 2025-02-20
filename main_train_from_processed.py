@@ -39,7 +39,7 @@ parser.add_argument('--output', type=str, default='/orange/r.forghani/results', 
 parser.add_argument('--network', type=str, default='MSHEAD', help='Network model: {MSHEAD, UNETR, SwinUNETR}')
 parser.add_argument('--roi_size', type=str, default="96,96,96", help="Region of Interest (ROI) size in format D,H,W (e.g., 96,96,96).")
 parser.add_argument('--batch_size', type=int, default='2', help='Batch size for subject input')
-parser.add_argument('--crop_sample', type=int, default='4', help='Number of cropped sub-volumes for each subject')
+parser.add_argument('--crop_sample', type=int, default='2', help='Number of cropped sub-volumes for each subject')
 parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for training')
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
