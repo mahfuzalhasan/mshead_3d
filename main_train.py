@@ -5,7 +5,7 @@ Created on Sat Jul  3 11:06:19 2021
 
 @author: leeh43
 """
-
+import shutil
 from monai.utils import set_determinism
 from monai.transforms import AsDiscrete
 # from networks.UXNet_3D.network_backbone import UXNET
@@ -49,6 +49,9 @@ parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types:
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
+### validation
+parser.add_argument('--sw_batch_size', type=int, default=2, help='Sliding window batch size for inference')
+parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overlapped percentage')
 ## Efficiency hyperparameters
 parser.add_argument('--gpu', type=int, default=0, help='your GPU number')
 parser.add_argument('--cache_rate', type=float, default=1, help='Cache rate to cache your dataset into memory')
@@ -103,12 +106,28 @@ print(f' \n ****************** train_files List :\n {train_files} \n ***********
 
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
-cache_dir = '/blue/r.forghani/share/kits23_cache'
-train_ds = PersistentDataset(data=train_files, transform=train_transforms,cache_dir=cache_dir)
-val_ds = PersistentDataset(data=val_files, transform=val_transforms, cache_dir=cache_dir)
+train_cache_dir = '/blue/r.forghani/share/kits23_cache_train'
+val_cache_dir = '/blue/r.forghani/share/kits23_cache_val'
+
+train_cache_dir = os.path.join(train_cache_dir, args.fold)
+val_cache_dir = os.path.join(val_cache_dir, args.fold)
+
+# Clean old cache before training (optional)
+for cache_dir in [train_cache_dir, val_cache_dir]:
+    if os.path.exists(cache_dir):
+        shutil.rmtree(cache_dir)
+    os.makedirs(cache_dir, exist_ok=True)
+
+train_ds = PersistentDataset(data=train_files, transform=train_transforms,cache_dir=train_cache_dir)
+val_ds = PersistentDataset(data=val_files, transform=val_transforms, cache_dir=val_cache_dir)
 
 train_loader = DataLoader(train_ds, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
 val_loader = DataLoader(val_ds, batch_size=1, num_workers=args.num_workers)
+
+if args.dataset == "kits23":
+    args.eval_step = 588
+    args.max_iter = 39984
+
 
 
 
@@ -195,7 +214,7 @@ def validation(val_loader):
         for step, batch in enumerate(val_loader):
             val_inputs, val_labels = (batch["image"].to(device), batch["label"].to(device))
             # val_outputs = model(val_inputs)
-            val_outputs = sliding_window_inference(val_inputs, (96, 96, 96), 2, model)
+            val_outputs = sliding_window_inference(val_inputs, (96, 96, 96), args.sw_batch_size, model, overlap=args.overlap)
             # val_outputs = model_seg(val_inputs, val_feat[0], val_feat[1])
             val_labels_list = decollate_batch(val_labels)
             val_labels_convert = [
@@ -252,7 +271,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     print(f'######### new epoch started. Global Step:{global_step} ###############')
     # total training data--> 272. Batch 2. This loop will run for 272/2 = 136 times
     for step, batch in enumerate(train_loader):     
-        step += 1
+        global_step += 1
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 2,1,96,96,96. y same
         # with torch.no_grad():
         #     g_feat, dense_feat = model_feat(x)
@@ -278,7 +297,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         #     save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
         
         # evaluating after every 500 iteration
-        if (global_step % eval_num) == 0 and global_step!=0 or global_step == max_iterations-1:
+        if (global_step % eval_num) == 0 and global_step!=0 or global_step == max_iterations-1 or global_step==max_iterations:
             # epoch_iterator_val = tqdm(
             #     val_loader, desc="Validate (X / X Steps) (dice=X.X)", dynamic_ncols=True
             # )
@@ -309,7 +328,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         
         # saving loss for every iteration
         writer.add_scalar('Training Loss_Itr', loss.data, global_step)
-        global_step += 1
+        
     
     train_time = time.time() - s_time
     print(f"train takes {datetime.timedelta(seconds=int(train_time))}")
