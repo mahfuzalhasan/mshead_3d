@@ -107,8 +107,8 @@ print(f' \n ****************** train_files List :\n {train_files} \n ***********
 ## Train Pytorch Data Loader and Caching
 print('Start caching datasets!')
 if args.dataset == "kits23":
-    args.eval_step = 588
-    args.max_iter = 39984
+    args.eval_step = 588        # 196 *3 = val after every 3 epoch
+    args.max_iter = 39984       # 196 * 204 = total 204 epochs of training
     train_cache_dir = f'/blue/r.forghani/share/kits23_cache_train/{args.fold}'
     val_cache_dir = f'/blue/r.forghani/share/kits23_cache_val/{args.fold}'
 

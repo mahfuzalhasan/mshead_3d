@@ -251,7 +251,7 @@ def data_transforms(args):
             Spacingd(keys=["image", "label"], pixdim=(1.0, 1.0, 1.2), mode=("bilinear", "nearest")),
             # Transposed(keys=["image", "label"], indices=(0, 3, 1, 2)),      # D, H, W --> PyTorch expects this    
             ScaleIntensityRanged(
-                keys=["image"], a_min=-200, a_max=300,
+                keys=["image"], a_min=-125, a_max=275,
                 b_min=0.0, b_max=1.0, clip=True,
             ),
             CropForegroundd(keys=["image", "label"], source_key="image"),
