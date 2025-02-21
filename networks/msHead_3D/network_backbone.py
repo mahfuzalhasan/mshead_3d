@@ -35,7 +35,7 @@ from lib.models.tools.module_helper import ModuleHelper
 # from networks.UXNet_3D.uxnet_encoder import uxnet_conv
 from networks.msHead_3D.mra_transformer import mra_b0
 from idwt_upsample import UnetrIDWTBlock
-from mra_helper import ProjectionUpsample, GatedFusion
+from mra_helper import ProjectionUpsample
 
 
 
