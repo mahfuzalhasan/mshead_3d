@@ -310,10 +310,13 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         # evaluating after every 500 iteration
         if (global_step < args.save_iteration) and (global_step % (30*len(train_loader)) == 0):
             dice_val = validation(val_loader)
+            model.train()
         elif (global_step >= args.save_iteration) and (global_step % (3*len(train_loader)) == 0):
             dice_val = validation(val_loader)
+            model.train()
         elif global_step == max_iterations:
             dice_val = validation(val_loader)
+            model.train()
                 
         # metric_values.append(dice_val)
         if dice_val > dice_val_best:
@@ -327,15 +330,17 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
             )
             
         elif (global_step % (3*eval_num)) == 0:
-            print(
-                "Not Best Model. Current Best Avg. Dice: {} from step:{}, Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
-            )
+            if dice_val > 0:
+                print(
+                    "Not Best Model. Current Best Avg. Dice: {} from step:{}, Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
+                )
+            else:
+                print('dice calculation has not stared yet')
+                
             save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
             # scheduler.step(dice_val)
 
             # setting model to train mode again
-        
-        model.train()
         # saving loss for every iteration
         writer.add_scalar('Training Loss_Itr', loss.data, global_step)
         

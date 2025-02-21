@@ -109,6 +109,7 @@ print('Start caching datasets!')
 if args.dataset == "kits23":
     args.eval_step = 588        # 196 *3 = val after every 3 epoch
     args.max_iter = 39984       # 196 * 204 = total 204 epochs of training
+    args.save_iteration = 25284 # save after 129 epoch * 196 itr
     train_cache_dir = f'/blue/r.forghani/share/kits23_cache_train/{args.fold}'
     val_cache_dir = f'/blue/r.forghani/share/kits23_cache_val/{args.fold}'
 
@@ -278,6 +279,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
     # )
     print(f'######### new epoch started. Global Step:{global_step} ###############')
     # total training data--> 272. Batch 2. This loop will run for 272/2 = 136 times
+    dice_val = -1.0
     for step, batch in enumerate(train_loader):     
         global_step += 1
         x, y = (batch["image"].to(device), batch["label"].to(device))       # x->B,C,H,W,D = 2,1,96,96,96. y same
@@ -304,35 +306,39 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
         # if (global_step % (eval_num) == 0) and global_step!=0:
         #     save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
         
-        # evaluating after every 500 iteration
-        if (global_step % eval_num) == 0 and global_step!=0 or global_step == max_iterations-1 or global_step==max_iterations:
-            # epoch_iterator_val = tqdm(
-            #     val_loader, desc="Validate (X / X Steps) (dice=X.X)", dynamic_ncols=True
-            # )
+        if (global_step < args.save_iteration) and (global_step % (30*len(train_loader)) == 0):
             dice_val = validation(val_loader)
-            # metric_values.append(dice_val)
-            if dice_val > dice_val_best:
-                dice_val_best = dice_val
-                global_step_best = global_step
-                save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir, best=True)
-                print(
-                    "Model Was Saved ! Current Best Avg. Dice: {} at step {}".format(
-                        dice_val_best, global_step_best
-                    )
-                )
-                # scheduler.step(dice_val)
-                # save model if we acheive best dice score at the evaluation
+            model.train()
+        elif (global_step >= args.save_iteration) and (global_step % (3*len(train_loader)) == 0):
+            dice_val = validation(val_loader)
+            model.train()
+        elif global_step == max_iterations:
+            dice_val = validation(val_loader)
+            model.train()
                 
-            else:
+        # metric_values.append(dice_val)
+        if dice_val > dice_val_best:
+            dice_val_best = dice_val
+            global_step_best = global_step
+            save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir, best=True)
+            print(
+                "Model Was Saved ! Current Best Avg. Dice: {} at step {}".format(
+                    dice_val_best, global_step_best
+                )
+            )
+            
+        elif (global_step % (3*eval_num)) == 0:
+            if dice_val > 0:
                 print(
                     "Not Best Model. Current Best Avg. Dice: {} from step:{}, Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
                 )
-                if global_step % (2*eval_num) == 0:
-                    save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
-                # scheduler.step(dice_val)
+            else:
+                print('dice calculation has not stared yet')
+            save_model(model, optimizer, scheduler, global_step, run_id, dice_val_best, global_step_best, root_dir)
+            # scheduler.step(dice_val)
 
             # setting model to train mode again
-            model.train()
+        
         
         # saving loss for every iteration
         writer.add_scalar('Training Loss_Itr', loss.data, global_step)
@@ -361,16 +367,15 @@ epoch_loss_values = []
 ### run with python main_train.py --resume True
 ### Then set model_path here
 if args.resume:
-    # model_path = '/orange/r.forghani/results/06-26-24_2259/model_36500.pth'
     if args.fold == 0:
-        model_path = '/orange/r.forghani/results/07-11-24_2054/model_36500.pth'
-
-    state_dict = torch.load(model_path)
+        model_path = '/orange/r.forghani/results/02-20-25_0844/model_best.pth'
+    print(f'Resuming Model: {model_path}')
+    state_dict = torch.load(model_path, weights_only=False)
     model.load_state_dict(state_dict['model'])
     optimizer.load_state_dict(state_dict['optimizer'])
     scheduler.load_state_dict(state_dict['lr_scheduler'])
-    global_step = state_dict['global_step'] + 1
-    # global_step_best = state_dict['global_step']
+    global_step = state_dict['global_step']                 # same for best model
+    global_step_best = state_dict['global_step_best']       # same for best model
     run_id = state_dict['run_id']
     dice_val_best = state_dict['dice_score']
     print(f'$$$$$$$$$$$$$ using old run_id:{run_id} $$$$$$$$$$$$$')
