@@ -49,6 +49,7 @@ parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types:
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
+parser.add_argument('--resume_from', type=str, default='/project/results', help='resume training from a checkpoint')
 parser.add_argument('--save_iteration', type=int, default=500, help='resume training from an earlier iteration')
 ### validation
 parser.add_argument('--sw_batch_size', type=int, default=2, help='Sliding window batch size for inference')
@@ -368,8 +369,9 @@ epoch_loss_values = []
 ### run with python main_train.py --resume True
 ### Then set model_path here
 if args.resume:
-    if args.fold == 0:
-        model_path = '/orange/r.forghani/results/07-11-24_2054/model_36500.pth'
+    model_path = args.resume_from
+    # if args.fold == 0:
+    #     model_path = '/orange/r.forghani/results/07-11-24_2054/model_36500.pth'
 
     state_dict = torch.load(model_path, weights_only=False)
     model.load_state_dict(state_dict['model'])
