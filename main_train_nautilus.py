@@ -330,7 +330,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                 )
             )
             
-        elif (global_step % (3*eval_num)) == 0:
+        elif global_step % eval_num == 0:
             if dice_val > 0:
                 print(
                     "Not Best Model. Current Best Avg. Dice: {} from step:{}, Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)

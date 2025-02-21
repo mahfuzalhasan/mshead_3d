@@ -49,6 +49,7 @@ parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types:
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
+parser.add_argument('--save_iteration', type=int, default=500, help='resume training from an earlier iteration')
 ### validation
 parser.add_argument('--sw_batch_size', type=int, default=2, help='Sliding window batch size for inference')
 parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overlapped percentage')
@@ -327,7 +328,7 @@ def train(global_step, train_loader, dice_val_best, global_step_best):
                 )
             )
             
-        elif (global_step % (3*eval_num)) == 0:
+        elif global_step % eval_num == 0:
             if dice_val > 0:
                 print(
                     "Not Best Model. Current Best Avg. Dice: {} from step:{}, Current Avg. Dice: {}".format(dice_val_best, global_step_best, dice_val)
