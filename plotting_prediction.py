@@ -111,7 +111,7 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_2/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_2/model_best.pth'
     elif args.fold == 3:
-        args.trained_weights = '/orange/r.forghani/results/02-18-25_0043/model_best.pth' # flare flare_simple_ref_sep_hf_2trup
+        args.trained_weights = '/orange/r.forghani/results/02-20-25_0940/model_best.pth' # flare flare_simple_ref_sep_hf_2trup
         # args.trained_weights = '/orange/r.forghani/results/02-18-25_0235/model_best.pth' # flare hf_sep_conv_hf_simple_up
         # args.trained_weights = '/orange/r.forghani/results/02-16-25_0317/model_best.pth' # flare hf_imp
         # args.trained_weights = '/orange/r.forghani/results/01-07-25_1708/model_best.pth' #flare_idwt_v2
@@ -123,7 +123,7 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_3/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_3/model_best.pth'
     elif args.fold == 4:
-        args.trained_weights = '/orange/r.forghani/results/02-18-25_0043/model_best.pth' # flare flare_simple_ref_sep_hf_2trup
+        args.trained_weights = '/orange/r.forghani/results/02-20-25_0955/model_best.pth' # flare flare_simple_ref_sep_hf_2trup
         # args.trained_weights = '/orange/r.forghani/results/02-18-25_0332/model_best.pth' # flare hf_sep_conv_hf_simple_up
         # args.trained_weights = '/orange/r.forghani/results/02-16-25_0406/model_best.pth' # flare hf_imp
         # args.trained_weights = '/orange/r.forghani/results/01-07-25_1844/model_best.pth'    #flare_idwt_v2

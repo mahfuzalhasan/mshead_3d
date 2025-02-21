@@ -32,7 +32,7 @@ if args.dataset == 'flare':
         # model_id_dict = {0:"02-11-25_1628", 1:"02-11-25_1653", 2:"02-11-25_1705", 3:"", 4:""}
         # model_id_dict={0:"02-15-25_0555", 1:"02-15-25_0613", 2:"02-16-25_0257", 3:"02-16-25_0317", 4:"02-16-25_0406"}   # flare_hf_imp
         # model_id_dict={0:"02-18-25_0043",1:"02-18-25_0118",2:"02-18-25_0136",3:"02-18-25_0235",4:"02-18-25_0332"}    # flare hf_sep_conv_hf_simple_up
-        model_id_dict={0:"02-19-25_0252",1:"02-19-25_0318",2:"02-19-25_0345",3:"",4:""}    # flare simple_ref_sep_hf_simple_up
+        model_id_dict={0:"02-19-25_0252",1:"02-19-25_0318",2:"02-19-25_0345",3:"02-20-25_0940",4:"02-20-25_0955"}    # flare simple_ref_sep_hf_simple_up
     gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
 
 elif args.dataset == 'amos':
