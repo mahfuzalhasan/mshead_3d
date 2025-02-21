@@ -261,7 +261,7 @@ def data_transforms(args):
                 spatial_size=(96, 96, 96),
                 pos=1,
                 neg=1,
-                num_samples=2,
+                num_samples=crop_samples,
                 image_key="image",
                 image_threshold=0,
             ),

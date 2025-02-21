@@ -38,6 +38,8 @@ identifier = "train"
 
 # Process each subject
 for i, subj in enumerate(subjects):
+    if 'json' in subj:
+        continue
     case_id = subj.split('_')[1]
     print(f'##### Case ID: {case_id} #####\n')
 
