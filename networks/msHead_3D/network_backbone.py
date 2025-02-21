@@ -35,6 +35,7 @@ from lib.models.tools.module_helper import ModuleHelper
 # from networks.UXNet_3D.uxnet_encoder import uxnet_conv
 from networks.msHead_3D.mra_transformer import mra_b0
 from idwt_upsample import UnetrIDWTBlock
+from mra_helper import ProjectionUpsample, GatedFusion
 
 
 
@@ -302,12 +303,12 @@ class MSHEAD_ATTN(nn.Module):
             res_block=res_block,
         )
         
-        self.learnable_up4 = nn.ConvTranspose3d(self.feat_size[2], self.feat_size[2], kernel_size=4, stride=4)
-        self.learnable_up3 = nn.ConvTranspose3d(self.feat_size[1], self.feat_size[1], kernel_size=2, stride=2)
+        self.learnable_up4 = ProjectionUpsample(in_channels=self.feat_size[2], out_channels=self.feat_size[0], stride=4, residual=True, use_double_conv=True)
+        self.learnable_up3 = ProjectionUpsample(in_channels=self.feat_size[1], out_channels=self.feat_size[0], stride=2, residual=True)
         
         self.decoder1 = UnetrUpBlock(
             spatial_dims=spatial_dims,
-            in_channels=self.feat_size[0]+self.feat_size[1]+self.feat_size[2],
+            in_channels=self.feat_size[0]*3,
             out_channels=self.feat_size[0],
             kernel_size=3,
             upsample_kernel_size=2,

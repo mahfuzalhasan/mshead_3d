@@ -28,6 +28,56 @@ from timm.models.layers import DropPath, to_2tuple, trunc_normal_
 
 
 
+class ProjectionUpsample(nn.Module):
+    def __init__(self, in_channels, out_channels, stride=2, residual=True, use_double_conv=False):
+        super(ProjectionUpsample, self).__init__()
+
+        self.do_res = residual
+        self.stride = stride
+        self.use_double_conv = use_double_conv
+
+        # Bilinear Upsampling + 3x3x3 Depthwise Conv
+        self.conv1 = nn.Sequential(
+            nn.Upsample(scale_factor=stride, mode='trilinear', align_corners=True),
+            nn.Conv3d(in_channels, in_channels, kernel_size=3, padding=1, groups=in_channels)
+        )
+
+        # Channel-wise Interaction (1x1x1 conv)
+        self.conv2 = nn.Conv3d(in_channels, in_channels * 2, kernel_size=1, stride=1)
+
+        # Channel Projection
+        if self.use_double_conv:  # double conv for large reductions (e.g., 192 → 48)
+            self.conv3 = nn.Sequential(
+                nn.Conv3d(in_channels * 2, in_channels, kernel_size=1),
+                nn.GELU(),
+                nn.Conv3d(in_channels, out_channels, kernel_size=1)
+            )
+        else:  # Apply single conv for small reductions (e.g., 96 → 48)
+            self.conv3 = nn.Conv3d(in_channels * 2, out_channels, kernel_size=1)
+
+        self.norm = nn.GroupNorm(num_groups=in_channels, num_channels=in_channels)
+
+        # Residual Path
+        if self.do_res:
+            self.res_conv = nn.Sequential(
+                nn.Upsample(scale_factor=stride, mode='trilinear', align_corners=True),
+                nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=1)
+            )
+
+        self.act = nn.GELU()
+
+    def forward(self, x):
+        x1 = x
+        x1 = self.conv1(x1)  # Upsampling
+        x1 = self.act(self.conv2(self.norm(x1)))  # Refinement
+        x1 = self.conv3(x1)  # Final Projection
+
+        if self.do_res:
+            res = self.res_conv(x)  # Residual Connection
+            x1 = x1 + res  # Merge Features
+
+        return x1
+
 
 # logger = get_logger()
 
