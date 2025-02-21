@@ -31,7 +31,7 @@ if args.dataset == 'flare':
         # model_id_dict = {0: '01-07-25_0204', 1:'01-07-25_0102', 2:'01-07-25_1307', 3:'01-07-25_1708', 4:'01-07-25_1844'}    # idwt_v2
         # model_id_dict = {0:"02-13-25_0229", 1:"02-13-25_0320", 2:"02-13-25_0337", 3:"02-13-25_0429", 4:"02-13-25_1255"} # flare hf refinement better up
         # model_id_dict = {0:"02-15-25_0539", 1:"02-15-25_0548", 2:"02-15-25_0725", 3:"02-16-25_0145", 4:"02-16-25_0241"} # flare hf imp residual up
-        model_id_dict = {0:"02-19-25_2216", 1:"02-19-25_2312", 2:"02-20-25_0032", 3:"", 4:""} # flare simple ref_sp_hf layers residual up
+        model_id_dict = {0:"02-19-25_2216", 1:"02-19-25_2312", 2:"02-20-25_0032", 3:"02-21-25_0008", 4:"02-21-25_0026"} # flare simple ref_sp_hf layers residual up
     
     gt_dir = "/blue/r.forghani/share/flare_data/labelsTs"
 
