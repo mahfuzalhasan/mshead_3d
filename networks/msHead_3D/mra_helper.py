@@ -271,12 +271,12 @@ class PoolingTransform3D(nn.Module):
         B, C, D, H, W = x.shape
         # Max Pooling
         max_pooled = F.adaptive_max_pool3d(x, self.output_size)  # (B, C, 6, 6, 6)
-        # Average Pooling
-        avg_pooled = F.adaptive_avg_pool3d(x, self.output_size)  # (B, C, 6, 6, 6)
+        # # Average Pooling
+        # avg_pooled = F.adaptive_avg_pool3d(x, self.output_size)  # (B, C, 6, 6, 6)
 
-        x_pooled = max_pooled + avg_pooled
-
-        return x_pooled
+        # x_pooled = max_pooled + avg_pooled
+        # return x_pooled
+        return max_pooled
 
 
 
