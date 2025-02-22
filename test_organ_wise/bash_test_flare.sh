@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=organ_wise_flare_ablation
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/ablation_waveformer/mshead_3d/results/organ_wise_flare_ablation.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/ablation_waveformer/mshead_3d/results/organ_wise_flare_ablation.%J.err
+#SBATCH --job-name=organ_wise_flare_ablation_max_pooling
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/ablation_waveformer/mshead_3d/results/organ_wise_flare_ablation_max_pooling.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/ablation_waveformer/mshead_3d/results/organ_wise_flare_ablation_max_pooling.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8

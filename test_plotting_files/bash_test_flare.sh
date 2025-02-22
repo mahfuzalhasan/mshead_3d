@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=plot_flare_ablation_pooling
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/ablation_waveformer/mshead_3d/results/plot_flare_ablation_pooling.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/ablation_waveformer/mshead_3d/results/plot_flare_ablation_pooling.%J.err
+#SBATCH --job-name=plot_flare_ablation_max_pooling
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/ablation_waveformer/mshead_3d/results/plot_flare_ablation_max_pooling.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/ablation_waveformer/mshead_3d/results/plot_flare_ablation_max_pooling.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
