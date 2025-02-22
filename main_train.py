@@ -38,7 +38,7 @@ parser.add_argument('--output', type=str, default='/orange/r.forghani/results', 
 parser.add_argument('--dataset', type=str, default='flare', required=False, help='Currently supporting datasets: {flare, amos, kits}, Fyi: You can add your dataset here')
 
 ## Input model & training hyperparameters
-parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, 3DUXNET}')
+parser.add_argument('--network', type=str, default='MSHEAD', help='Network models: {MSHEAD, TransBTS, nnFormer, UNETR, SwinUNETR, UXNET}')
 parser.add_argument('--mode', type=str, default='train', help='Training or testing mode')
 parser.add_argument('--pretrain', default=False, help='Have pretrained weights or not')
 parser.add_argument('--pretrained_weights', type=str, default=None, help='Path of pretrained weights')
@@ -51,6 +51,7 @@ parser.add_argument('--eval_step', type=int, default=500, help='Per steps to per
 parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
 parser.add_argument('--save_iteration', type=int, default=500, help='resume training from an earlier iteration')
 ### validation
+# use overlap = 0.25 --> shovon
 parser.add_argument('--sw_batch_size', type=int, default=2, help='Sliding window batch size for inference')
 parser.add_argument('--overlap', type=float, default=0.5, help='Sub-volume overlapped percentage')
 ## Efficiency hyperparameters
@@ -73,6 +74,7 @@ if not args.root:
     elif args.dataset == 'kits':
         args.root = '/blue/r.forghani/share/kits2019'
     elif args.dataset == 'kits23':
+        # Shovon --> set dataset path here
         args.root = '/blue/r.forghani/share/kits23'
     else:
         raise NotImplementedError(f'No such dataset: {args.dataset}')
@@ -178,7 +180,7 @@ elif args.network == 'UNETR':
         res_block=True,
         dropout_rate=0.0,
     ).to(device)
-elif args.network == 'UXNET':
+elif args.network == 'UXNET':   # shovon run uxnet for fold 3,4
     model = UXNET(
         in_chans=1,
         out_chans=out_classes,
