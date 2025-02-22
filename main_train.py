@@ -48,7 +48,7 @@ parser.add_argument('--lr', type=float, default=0.0001, help='Learning rate for 
 parser.add_argument('--optim', type=str, default='AdamW', help='Optimizer types: Adam / AdamW')
 parser.add_argument('--max_iter', type=int, default=40000, help='Maximum iteration steps for training')
 parser.add_argument('--eval_step', type=int, default=500, help='Per steps to perform validation')
-parser.add_argument('--resume', default=False, help='resume training from an earlier iteration')
+parser.add_argument('--resume', type=int, default=0, help='resume training from an earlier iteration')
 parser.add_argument('--save_iteration', type=int, default=500, help='resume training from an earlier iteration')
 ### validation
 # use overlap = 0.25 --> shovon
@@ -65,6 +65,8 @@ args = parser.parse_args()
 print(f'################################')
 print(f'args:{args}')
 print('#################################')
+args.resume = bool(int(args.resume))
+print("Resuming from Earlier Train ", args.resume)
 # os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 if not args.root:
     if args.dataset == 'flare':
