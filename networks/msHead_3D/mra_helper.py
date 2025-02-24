@@ -413,12 +413,11 @@ class Block(nn.Module):
             if self.level > 0:
                 # inp_tuple = (x,) + x_h
                 # x = ptwt.waverec3(inp_tuple, wavelet='db1')
-                y = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
-                attn_fused += y
+                attn_fused += F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
                 hfs.extend(x_h)
                 x = x.permute(0, 2, 3, 4, 1).contiguous()       #B, D, H, W, C
             else:
-                attn_fused = y
+                attn_fused += x
         for coeff in hfs:
             print(f'type {type(coeff)}')
             for k,cf in coeff.items():
