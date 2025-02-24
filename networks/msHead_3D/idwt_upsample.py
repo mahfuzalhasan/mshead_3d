@@ -124,14 +124,6 @@ class UnetrIDWTBlock(nn.Module):
         #     {key: self.hf_refinement[i](hf_dict[key]) for key in hf_dict} for i, hf_dict in enumerate(hf_coeffs)
         # )
 
-        print('####################################')
-        print(f'lf:{inp.shape}')
-        print(f'type hf_coeffs:{type(hf_coeffs)}')
-        for coeff in hf_coeffs:
-            print(f'type {type(coeff)}')
-            for k,cf in coeff.items():
-                print(f'key: {k} - {cf.shape}- {cf.dtype}')
-
         # Use raw hf_coeffs
         inp_tuple = (inp,) + hf_coeffs
         out = ptwt.waverec3(inp_tuple, wavelet=self.wavelet)  # IDWT Reconstruction

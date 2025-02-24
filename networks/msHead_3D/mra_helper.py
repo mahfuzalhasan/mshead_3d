@@ -374,11 +374,9 @@ class Block(nn.Module):
     def forward(self, x):
         D,H,W = self.img_size
         B,_,_,_,C = x.shape
-        # print(f'input to attention: {x.shape}')
         assert D == x.shape[1]
         assert H == x.shape[2]
         assert W == x.shape[3]
-        # print(f'input to attn:{x.dtype}')
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
@@ -386,8 +384,6 @@ class Block(nn.Module):
         hfs = []
 
         for i in range(self.attn_computation_level):
-            # y = x.view(B, D, H, W, C)
-            # print(f'x:{x.shape}')
             if self.level > 0:
                 x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
                 x, x_h = self.dwt_downsamples(x, 1)
@@ -411,15 +407,13 @@ class Block(nn.Module):
             attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, nW, self.window_size, self.window_size, self.window_size, C)   # B, D, H, W, C [Here nW = 1]
             attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
             attn_windows = attn_windows.permute(0, 4, 1, 2, 3).contiguous()         # B, C, D1, H1, W1
-            # print(f'attn reshape:{x.shape}')
             if self.level > 0:
                 # inp_tuple = (x,) + x_h
                 # x = ptwt.waverec3(inp_tuple, wavelet='db1')
-                attn_fused += F.interpolate(attn_windows, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
+                attn_fused = attn_fused + F.interpolate(attn_windows, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
                 hfs.extend(x_h)
-                # x = x.permute(0, 2, 3, 4, 1).contiguous()       #B, D, H, W, C
             else:
-                attn_fused += attn_windows
+                attn_fused = attn_fused + attn_windows
 
         attn_fused = attn_fused.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
         attn_fused = shortcut + self.drop_path(attn_fused)
