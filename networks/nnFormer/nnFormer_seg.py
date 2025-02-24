@@ -817,7 +817,7 @@ class Encoder(nn.Module):
                 x_out = norm_layer(x_out)
                 out = x_out.view(-1, S, H, W, self.num_features[i]).permute(0, 4, 1, 2, 3).contiguous()
                 down.append(out)
-            exit()
+            # exit()
         return down
 
    
