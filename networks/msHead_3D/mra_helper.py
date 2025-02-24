@@ -393,7 +393,7 @@ class Block(nn.Module):
                 x, x_h = self.dwt_downsamples(x, 1)
                 x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
             # print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
-            print(f"type:{type(x_h)}")
+            # print(f"type:{type(x_h)}")
             # for coeff in x_h:
             #     print(f'type {type(coeff)}')
             #     for k,cf in coeff.items():
@@ -425,7 +425,7 @@ class Block(nn.Module):
         attn_fused = shortcut + self.drop_path(attn_fused)
         attn_fused = attn_fused + self.drop_path(self.mlp(self.norm2(attn_fused)))     # B, D, H, W, C
         if self.level > 0:
-            return attn_fused, hfs
+            return attn_fused, tuple(hfs)
         return attn_fused
     
     def flops(self):
