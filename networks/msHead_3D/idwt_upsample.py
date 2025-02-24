@@ -119,6 +119,7 @@ class UnetrIDWTBlock(nn.Module):
         # hf_filtered = tuple(
         #     {key: self.hf_refinement[i](hf_dict[key]) for key in hf_dict} for i, hf_dict in enumerate(hf_coeffs)
         # )
+        print('####################################')
         print(f'type hf_coeffs:{type(hf_coeffs)}')
         for coeff in hf_coeffs:
             print(f'type {type(coeff)}')
