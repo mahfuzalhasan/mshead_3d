@@ -158,7 +158,7 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_3/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_3/model_best.pth'
     elif args.fold == 4:
-        args.trained_weights = '/orange/r.forghani/results/02-22-25_0617/model_best.pth'    # ablation flare_max_pool
+        args.trained_weights = '/orange/r.forghani/results/02-23-25_1448/model_best.pth'    # ablation flare_max_pool
         # args.trained_weights = '/orange/r.forghani/results/02-05-25_1326/model_best.pth'    # ablation flare_max_avg
         # args.trained_weights = '/orange/r.forghani/results/01-07-25_1844/model_best.pth'    #flare_idwt_v2
         # args.trained_weights = '/orange/r.forghani/results/12-21-24_0006/model_best.pth'    #flare
