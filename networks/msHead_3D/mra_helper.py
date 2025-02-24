@@ -425,7 +425,7 @@ class Block(nn.Module):
         attn_fused = shortcut + self.drop_path(attn_fused)
         attn_fused = attn_fused + self.drop_path(self.mlp(self.norm2(attn_fused)))     # B, D, H, W, C
         if self.level > 0:
-            return attn_fused, tuple(hfs)
+            return attn_fused, tuple(reversed(hfs))
         return attn_fused
     
     def flops(self):
