@@ -316,7 +316,7 @@ class WaveletTransform3D(torch.nn.Module):
 
 class Block(nn.Module):
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, level=0, window_size=8, img_size=(48, 48, 48)):
+                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, level=0, img_size=(48, 48, 48)):
         super().__init__()
         self.dim = dim 
         self.img_size = img_size
@@ -326,12 +326,13 @@ class Block(nn.Module):
 
         if self.level > 0:
             self.dwt_downsamples = WaveletTransform3D(wavelet='db1')
-        self.window_size = window_size
+        self.window_size = self.img_size[0]//pow(2, level)
+        self.attn_computation_level = self.level if self.level > 0 else 1
 
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
             dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
-            attn_drop=attn_drop, proj_drop=drop, img_size=img_size)
+            attn_drop=attn_drop, proj_drop=drop, window_size=self.window_size, img_size=img_size)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
@@ -383,7 +384,7 @@ class Block(nn.Module):
         attn_fused = 0
         hfs = []
 
-        for i in range(self.level):
+        for i in range(self.attn_computation_level):
             # y = x.view(B, D, H, W, C)
             if self.level > 0:
                 x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
