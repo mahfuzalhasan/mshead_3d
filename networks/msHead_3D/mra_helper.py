@@ -408,7 +408,7 @@ class Block(nn.Module):
             attn_windows = self.attn(x_windows) 
             attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, nW, self.window_size, self.window_size, self.window_size, C)   # B, D, H, W, C [Here nW = 1]
             attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
-            x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1
+            x = attn_windows.permute(0, 4, 1, 2, 3).contiguous()         # B, C, D1, H1, W1
             # print(f'attn reshape:{x.shape}')
             if self.level > 0:
                 # inp_tuple = (x,) + x_h
@@ -416,6 +416,7 @@ class Block(nn.Module):
                 y = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
                 attn_fused += y
                 hfs.extend(x_h)
+                x = x.permute(0, 2, 3, 4, 1).contiguous()       #B, D, H, W, C
             else:
                 attn_fused = y
         for coeff in hfs:
