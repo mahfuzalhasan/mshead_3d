@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=organ_flare_idwt_residual_up
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Residual_Up/mshead_3d/results/organ_flare_idwt_residual_up.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Residual_Up/mshead_3d/results/organ_flare_idwt_residual_up.%J.err
+#SBATCH --job-name=organ_flare_idwt_residual_up_multilevel
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Residual_Up/mshead_3d/results/organ_flare_idwt_residual_up_multilevel.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Residual_Up/mshead_3d/results/organ_flare_idwt_residual_up_multilevel.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
