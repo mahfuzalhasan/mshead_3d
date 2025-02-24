@@ -374,6 +374,7 @@ class Block(nn.Module):
     def forward(self, x):
         D,H,W = self.img_size
         B,_,_,_,C = x.shape
+        print(f'input to attention: {x.shape}')
         assert D == x.shape[1]
         assert H == x.shape[2]
         assert W == x.shape[3]
