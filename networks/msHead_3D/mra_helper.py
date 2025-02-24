@@ -386,6 +386,7 @@ class Block(nn.Module):
 
         for i in range(self.attn_computation_level):
             # y = x.view(B, D, H, W, C)
+            print(f'x:{x.shape}')
             if self.level > 0:
                 x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
                 x, x_h = self.dwt_downsamples(x, 1)
