@@ -374,7 +374,7 @@ class Block(nn.Module):
     def forward(self, x):
         D,H,W = self.img_size
         B,_,_,_,C = x.shape
-        print(f'input to attention: {x.shape}')
+        # print(f'input to attention: {x.shape}')
         assert D == x.shape[1]
         assert H == x.shape[2]
         assert W == x.shape[3]
@@ -387,12 +387,12 @@ class Block(nn.Module):
 
         for i in range(self.attn_computation_level):
             # y = x.view(B, D, H, W, C)
-            print(f'x:{x.shape}')
+            # print(f'x:{x.shape}')
             if self.level > 0:
                 x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
                 x, x_h = self.dwt_downsamples(x, 1)
                 x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
-            print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
+            # print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
             # for coeff in x_h:
             #     print(f'type {type(coeff)}')
             #     for k,cf in coeff.items():
@@ -419,11 +419,6 @@ class Block(nn.Module):
                 # x = x.permute(0, 2, 3, 4, 1).contiguous()       #B, D, H, W, C
             else:
                 attn_fused += attn_windows
-
-        for coeff in hfs:
-            print(f'type {type(coeff)}')
-            for k,cf in coeff.items():
-                print(f'key: {k} - {cf.shape}- {cf.dtype}')
 
         attn_fused = attn_fused.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
         attn_fused = shortcut + self.drop_path(attn_fused)
