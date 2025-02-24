@@ -83,7 +83,7 @@ class MRATransformer(nn.Module):
 
         self.block4 = nn.ModuleList([Block(
             dim=embed_dims[3], num_heads=num_heads[3], mlp_ratio=mlp_ratios[3], qkv_bias=qkv_bias, qk_scale=qk_scale,
-            drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = 0,
+            drop=drop_rate, attn_drop=attn_drop_rate, drop_path=dpr[cur + i], norm_layer=norm_layer, level = [],
             img_size=(img_size[0]//16, img_size[1]//16, img_size[2]//16))
             for i in range(depths[3])])             
         # self.norm4 = norm_layer(embed_dims[3])

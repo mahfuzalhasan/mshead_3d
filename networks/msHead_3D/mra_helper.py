@@ -300,15 +300,14 @@ class Mlp(nn.Module):
         return flops_mlp
     
 class WaveletTransform3D(torch.nn.Module):
-    def __init__(self, wavelet='db1', level=5, mode='zero'):
+    def __init__(self, wavelet='db1', mode='zero'):
         super(WaveletTransform3D, self).__init__()
         self.wavelet = wavelet #pywt.Wavelet(wavelet)
-        self.level = level
         self.mode = mode
 
-    def forward(self, x):
+    def forward(self, x, level):
         # print(f'x:{x.shape}  ')
-        coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
+        coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=level, mode=self.mode)
         Yl  = coeffs[0]  # Extracting the approximation coefficients
         Yh = coeffs[1:]
         # print(f'Yl:{Yl.shape}')
@@ -317,7 +316,7 @@ class WaveletTransform3D(torch.nn.Module):
 
 class Block(nn.Module):
     def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, level=0, img_size=(48, 48, 48)):
+                 drop_path=0., act_layer=nn.GELU, norm_layer=nn.LayerNorm, level=0, window_size=8, img_size=(48, 48, 48)):
         super().__init__()
         self.dim = dim 
         self.img_size = img_size
@@ -326,8 +325,8 @@ class Block(nn.Module):
         mlp_hidden_dim = int(dim * mlp_ratio)
 
         if self.level > 0:
-            self.dwt_downsamples = WaveletTransform3D(wavelet='haar', level=self.level)
-        self.window_size = self.img_size[0]//pow(2, level)
+            self.dwt_downsamples = WaveletTransform3D(wavelet='db1')
+        self.window_size = window_size
 
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
@@ -381,39 +380,48 @@ class Block(nn.Module):
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
-        if self.level > 0:
-            x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
-            x, x_h = self.dwt_downsamples(x)
-            x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
-        # print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
-        # for coeff in x_h:
-        #     print(f'type {type(coeff)}')
-        #     for k,cf in coeff.items():
-        #         print(f'key: {k} - {cf.shape}- {cf.dtype}')
-        output_size = (x.shape[1], x.shape[2], x.shape[3])
-        nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
+        attn_fused = 0
+        hfs = []
 
-        x_windows = self.window_partition(x, self.window_size)
+        for i in range(self.level):
+            # y = x.view(B, D, H, W, C)
+            if self.level > 0:
+                x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
+                x, x_h = self.dwt_downsamples(x, 1)
+                x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
+            # print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
+            # for coeff in x_h:
+            #     print(f'type {type(coeff)}')
+            #     for k,cf in coeff.items():
+            #         print(f'key: {k} - {cf.shape}- {cf.dtype}')
+            output_size = (x.shape[1], x.shape[2], x.shape[3])
+            nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
+
+            x_windows = self.window_partition(x, self.window_size)
+            
+            x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
+            B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
+            
+            # B*nW, Nr, C
+            attn_windows = self.attn(x_windows) 
+            attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
+            # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
+            x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1
+            # print(f'attn reshape:{x.shape}')
+            if self.level > 0:
+                # inp_tuple = (x,) + x_h
+                # x = ptwt.waverec3(inp_tuple, wavelet='db1')
+                y = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
+                attn_fused += y
+                hfs.extend(x_h)
+            else:
+                attn_fused = y
         
-        x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
-        B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
-        
-        # B*nW, Nr, C [Here nW = 1]
-        attn_windows = self.attn(x_windows) 
-        attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
-        # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
-        x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
-        # print(f'attn reshape:{x.shape}')
+        attn_fused = attn_fused.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
+        attn_fused = shortcut + self.drop_path(attn_fused)
+        attn_fused = attn_fused + self.drop_path(self.mlp(self.norm2(attn_fused)))     # B, D, H, W, C
         if self.level > 0:
-            # inp_tuple = (x,) + x_h
-            # x = ptwt.waverec3(inp_tuple, wavelet='db1')
-            x = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
-        
-        x = x.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
-        x = shortcut + self.drop_path(x)
-        x = x + self.drop_path(self.mlp(self.norm2(x)))              # B, D, H, W, C
-        if self.level > 0:
-            return x, x_h
+            return attn_fused, hfs
         return x
     
     def flops(self):
