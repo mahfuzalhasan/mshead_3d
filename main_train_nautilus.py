@@ -8,10 +8,12 @@ Created on Sat Jul  3 11:06:19 2021
 import shutil
 from monai.utils import set_determinism
 from monai.transforms import AsDiscrete
+
 # from networks.UXNet_3D.network_backbone import UXNET
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from monai.networks.nets import UNETR, SwinUNETR
-# from networks.nnFormer.nnFormer_seg import nnFormer
+from networks.nnFormer.nnFormer_seg import nnFormer
+
 # from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from networks.mednext.create_mednext_v1 import create_mednext_v1
 from monai.metrics import DiceMetric
@@ -179,13 +181,23 @@ elif args.network == 'UNETR':
         res_block=True,
         dropout_rate=0.0,
     ).to(device)
-
+    
+elif args.network == 'nnFormer':
+    model = nnFormer(
+        crop_size = [96, 96, 96],
+        input_channels=1,
+        embedding_dim = 192,
+        num_classes=out_classes,
+        depths=[2, 2, 2, 2]
+    ).to(device)
+    
 elif args.network == 'MEDNEXT':
     model = create_mednext_v1(num_input_channels=1, 
                         num_classes=out_classes, 
                         model_id='M', 
                         kernel_size=5, 
                         deep_supervision=False).to(device)
+
 
 print('Chosen Network Architecture: {}'.format(args.network))
 total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
