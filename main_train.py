@@ -12,7 +12,7 @@ from networks.UXNet_3D.network_backbone import UXNET
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from monai.networks.nets import UNETR, SwinUNETR
 # from networks.nnFormer.nnFormer_seg import nnFormer
-# from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
+from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from networks.mednext.create_mednext_v1 import create_mednext_v1
 from monai.metrics import DiceMetric
 from monai.losses import DiceCELoss
@@ -192,6 +192,10 @@ elif args.network == 'UXNET':   # shovon run uxnet for fold 3,4
         layer_scale_init_value=1e-6,
         spatial_dims=3,
     ).to(device)
+
+elif args.network == 'TransBTS':
+    _, model = TransBTS(dataset=args.dataset, _conv_repr=True, _pe_type='learned')
+    model = model.to(device)
 
 elif args.network == 'MEDNEXT':
     model = create_mednext_v1(num_input_channels=1, 
