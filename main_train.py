@@ -11,7 +11,7 @@ from monai.transforms import AsDiscrete
 from networks.UXNet_3D.network_backbone import UXNET
 from networks.msHead_3D.network_backbone import MSHEAD_ATTN
 from monai.networks.nets import UNETR, SwinUNETR
-# from networks.nnFormer.nnFormer_seg import nnFormer
+from networks.nnFormer.nnFormer_seg import nnFormer
 from networks.TransBTS.TransBTS_downsample8x_skipconnection import TransBTS
 from networks.mednext.create_mednext_v1 import create_mednext_v1
 from monai.metrics import DiceMetric
@@ -191,6 +191,15 @@ elif args.network == 'UXNET':   # shovon run uxnet for fold 3,4
         drop_path_rate=0,
         layer_scale_init_value=1e-6,
         spatial_dims=3,
+    ).to(device)
+
+elif args.network == 'nnFormer':
+    model = nnFormer(
+        crop_size = [96, 96, 96],
+        input_channels=1,
+        embedding_dim = 192,
+        num_classes=out_classes,
+        depths=[2, 2, 2, 2]
     ).to(device)
 
 elif args.network == 'TransBTS':
