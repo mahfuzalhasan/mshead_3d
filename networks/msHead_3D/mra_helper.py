@@ -381,13 +381,14 @@ class Block(nn.Module):
         mlp_hidden_dim = int(dim * mlp_ratio)
 
         if self.level > 0:
-            self.dwt_downsamples = WaveletTransform3D(wavelet='db1', level=self.level)
+            self.dwt_downsamples = WaveletTransform3D(wavelet='db1')
         self.window_size = self.img_size[0]//pow(2, level)
+        self.attn_computation_level = self.level if self.level > 0 else 1
 
         self.norm1 = norm_layer(dim)
         self.attn = WindowAttention(
             dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale,
-            attn_drop=attn_drop, proj_drop=drop, img_size=img_size)
+            attn_drop=attn_drop, proj_drop=drop, window_size=self.window_size, img_size=img_size)
 
         # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
@@ -432,44 +433,50 @@ class Block(nn.Module):
         assert D == x.shape[1]
         assert H == x.shape[2]
         assert W == x.shape[3]
-        # print(f'input to attn:{x.dtype}')
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, D, H, W, C)
-        if self.level > 0:
-            x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
-            x, x_h = self.dwt_downsamples(x)
-            x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
-        # print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
-        # for coeff in x_h:
-        #     print(f'type {type(coeff)}')
-        #     for k,cf in coeff.items():
-        #         print(f'key: {k} - {cf.shape}- {cf.dtype}')
-        output_size = (x.shape[1], x.shape[2], x.shape[3])
-        nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
+        attn_fused = 0
+        hfs = []
 
-        x_windows = self.window_partition(x, self.window_size)
-        
-        x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
-        B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
-        
-        # B*nW, Nr, C [Here nW = 1]
-        attn_windows = self.attn(x_windows) 
-        attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, output_size[0], output_size[1], output_size[2], C)   # B, D, H, W, C [Here nW = 1]
-        # attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
-        x = attn_windows.permute(0, 4, 1, 2, 3)         # B, C, D1, H1, W1 [Here nW = 1]
-        # print(f'attn reshape:{x.shape}')
+        for i in range(self.attn_computation_level):
+            if self.level > 0:
+                x = x.permute(0, 4, 1, 2, 3).contiguous()#B,C,D,H,W
+                x, x_h = self.dwt_downsamples(x, 1)
+                x = x.permute(0, 2, 3, 4, 1).contiguous() #B,D1,H1,W1,C
+            # print(f'DWT_x:{x.shape} {x.dtype} shortcut:{shortcut.shape}')
+            # print(f"type:{type(x_h)}")
+            # for coeff in x_h:
+            #     print(f'type {type(coeff)}')
+            #     for k,cf in coeff.items():
+            #         print(f'key: {k} - {cf.shape}- {cf.dtype}')
+            output_size = (x.shape[1], x.shape[2], x.shape[3])
+            nW = (output_size[0]//self.window_size) * (output_size[1]//self.window_size) * (output_size[2]//self.window_size)
+
+            x_windows = self.window_partition(x, self.window_size)
+            
+            x_windows = x_windows.view(-1, self.window_size * self.window_size * self.window_size, C)
+            B_, Nr, C = x_windows.shape     # B_ = B * num_local_regions(num_windows), Nr = 6x6x6 = 216 (ws**3)
+            
+            # B*nW, Nr, C
+            attn_windows = self.attn(x_windows) 
+            attn_windows = attn_windows.view(-1, self.window_size, self.window_size, self.window_size, C).reshape(B, nW, self.window_size, self.window_size, self.window_size, C)   # B, D, H, W, C [Here nW = 1]
+            attn_windows = attn_windows.reshape(B, output_size[0], output_size[1], output_size[2], C)
+            attn_windows = attn_windows.permute(0, 4, 1, 2, 3).contiguous()         # B, C, D1, H1, W1
+            if self.level > 0:
+                # inp_tuple = (x,) + x_h
+                # x = ptwt.waverec3(inp_tuple, wavelet='db1')
+                attn_fused = attn_fused + F.interpolate(attn_windows, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
+                hfs.extend(x_h)
+            else:
+                attn_fused = attn_fused + attn_windows
+
+        attn_fused = attn_fused.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
+        attn_fused = shortcut + self.drop_path(attn_fused)
+        attn_fused = attn_fused + self.drop_path(self.mlp(self.norm2(attn_fused)))     # B, D, H, W, C
         if self.level > 0:
-            # inp_tuple = (x,) + x_h
-            # x = ptwt.waverec3(inp_tuple, wavelet='db1')
-            x = F.interpolate(x, size=(D, H, W), mode='trilinear')   # B, C, D, H, W
-        
-        x = x.permute(0, 2, 3, 4, 1).contiguous()                    # B, D, H, W, C
-        x = shortcut + self.drop_path(x)
-        x = x + self.drop_path(self.mlp(self.norm2(x)))              # B, D, H, W, C
-        if self.level > 0:
-            return x, x_h
-        return x
+            return attn_fused, tuple(reversed(hfs))
+        return attn_fused
     
     def flops(self):
         # FLOPs for MultiScaleAttention
