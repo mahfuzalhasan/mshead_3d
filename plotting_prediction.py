@@ -44,7 +44,7 @@ parser.add_argument('--plot', default=True, help='plotting the prediction as nii
 parser.add_argument('--fold', type=int, default=0, help='current running fold')
 parser.add_argument('--no_split', default=False, help='No splitting into train and validation')
 
-
+set_determinism(seed=0)
 args = parser.parse_args()
 
 if not args.root:
@@ -67,104 +67,6 @@ test_files = [
     {"image": image_name, "label": label_name, "path": data_path}
     for image_name, label_name, data_path in zip(test_samples['images'], test_samples['labels'], test_samples['paths'])
 ]
-
-print(f'test files:{test_files}')
-
-if args.dataset != 'amos':
-    if args.fold == 0:
-        args.trained_weights = '/orange/r.forghani/results/02-19-25_2216/model_best.pth'        # flare simple ref_sp_hf layers residual up
-        # args.trained_weights = '/orange/r.forghani/results/02-15-25_0539/model_best.pth'        # flare hf imp residual up
-        # args.trained_weights = '/orange/r.forghani/results/02-13-25_0229/model_best.pth'        # flare hf refinement better up
-        # args.trained_weights = '/orange/r.forghani/results/02-11-25_1628/model_best.pth'        # flare hf refinement
-        # args.trained_weights = '/orange/r.forghani/results/01-07-25_0204/model_best.pth'      # flare idwt_v2
-        # args.trained_weights = '/orange/r.forghani/results/12-20-24_0342/model_best.pth'      #flare
-        # args.trained_weights = '/orange/r.forghani/results/12-22-24_1727/model_best.pth'      #KiTS
-        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-04-24_2018/model_best.pth'#SWIN
-        # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_0/fold_0_model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_0/fold_0_model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_0/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_0/model_best.pth'
-    elif args.fold == 1:
-        args.trained_weights = '/orange/r.forghani/results/02-19-25_2312/model_best.pth'        # flare simple ref_sp_hf layers residual up
-        # args.trained_weights = '/orange/r.forghani/results/02-15-25_0548/model_best.pth'        # flare hf imp residual up
-        # args.trained_weights = '/orange/r.forghani/results/02-13-25_0320/model_best.pth'        # flare hf refinement better up
-        # args.trained_weights = '/orange/r.forghani/results/02-11-25_1653/model_best.pth'        # flare hf refinement
-        # args.trained_weights = '/orange/r.forghani/results/01-07-25_0102/model_best.pth'      #flare_idwt_v2
-        # args.trained_weights = '/orange/r.forghani/results/12-20-24_1658/model_best.pth'      #flare
-        # args.trained_weights = '/orange/r.forghani/results/12-23-24_0128/model_best.pth'      #KiTS
-        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-08-24_0059/model_best.pth'#SWIN
-        # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_1/fold_1_model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_1/fold_1_model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_1/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_1/model_best.pth'
-    elif args.fold == 2:
-        args.trained_weights = '/orange/r.forghani/results/02-20-25_0032/model_best.pth'        # flare simple ref_sp_hf layers residual up
-        # args.trained_weights = '/orange/r.forghani/results/02-15-25_0725/model_best.pth'        # flare hf imp residual up
-        # args.trained_weights = '/orange/r.forghani/results/02-13-25_0337/model_best.pth'       # flare hf refinement better up
-        # args.trained_weights = '/orange/r.forghani/results/02-11-25_1705/model_best.pth'        # flare hf refinement
-        # args.trained_weights = '/orange/r.forghani/results/01-07-25_1307/model_best.pth'      #flare_idwt_v2
-        # args.trained_weights = '/orange/r.forghani/results/12-20-24_1836/model_best.pth'      #flare
-        # args.trained_weights = '/orange/r.forghani/results/12-23-24_0145/model_best.pth'      #KiTS
-        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_2219/model_best.pth'#SWIN
-        # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_2/fold_2_model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_2/fold_2_model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_2/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_2/model_best.pth'
-    elif args.fold == 3:
-        args.trained_weights = '/orange/r.forghani/results/02-15-25_0539/model_best.pth'        # flare simple ref_sp_hf layers residual up
-        # args.trained_weights = '/orange/r.forghani/results/02-16-25_0145/model_best.pth'        # flare hf imp residual up
-        # args.trained_weights = '/orange/r.forghani/results/02-13-25_0429/model_best.pth'        # flare hf refinement better up
-        # args.trained_weights = '/orange/r.forghani/results/01-07-25_1708/model_best.pth' #flare_idwt_v2
-        # args.trained_weights = '/orange/r.forghani/results/12-20-24_1943/model_best.pth'    #flare
-        # args.trained_weights = '/orange/r.forghani/results/12-23-24_0240/model_best.pth'  #KiTS
-        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-07-24_0301/model_best.pth'#SWIN
-        # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_3/fold_3_model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_3/fold_3_model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_3/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_3/model_best.pth'
-    elif args.fold == 4:
-        args.trained_weights = '/orange/r.forghani/results/02-15-25_0539/model_best.pth'        # flare simple ref_sp_hf layers residual up
-        # args.trained_weights = '/orange/r.forghani/results/02-16-25_0241/model_best.pth'        # flare hf imp residual up
-        # args.trained_weights = '/orange/r.forghani/results/02-13-25_1255/model_best.pth'        # flare hf refinement better up
-        # args.trained_weights = '/orange/r.forghani/results/01-07-25_1844/model_best.pth'    #flare_idwt_v2
-        # args.trained_weights = '/orange/r.forghani/results/12-21-24_0006/model_best.pth'    #flare
-        # args.trained_weights = '/orange/r.forghani/results/12-23-24_0256/model_best.pth'  #KiTS
-        # args.trained_weights = '/orange/r.forghani/results/SwinUNETR/11-06-24_0758/model_best.pth'#SWIN
-        # args.trained_weights = '/orange/r.forghani/results/nnFormer/nnformer/fold_4/fold_4_model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/UXNET/3duxnet/fold_4/fold_4_model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_4/model_best.pth'
-        # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_4/model_best.pth'
-
-set_determinism(seed=0)
-### extracting run_id of testing model
-splitted_text = args.trained_weights[:args.trained_weights.rindex('/')]
-run_id = splitted_text[splitted_text.rindex('/')+1:]
-print(f'############## run id of pretrained model: {run_id} ################')
-
-if args.network!='MSHEAD':
-    args.output = os.path.join(args.output, args.network)   # '/orange/r.forghani/results/SwinUNETR'
-
-if args.network == 'nnFormer':
-    output_seg_dir = os.path.join(args.output, 'nnformer', f'fold_{args.fold}', 'output_seg')
-elif args.network == 'UXNET':
-    output_seg_dir = os.path.join(args.output, '3duxnet', f'fold_{args.fold}', 'output_seg')
-elif args.network == 'UNETR':
-    output_seg_dir = os.path.join(args.output, f'fold_{args.fold}', 'output_seg')
-elif args.network == 'TransBTS':
-    output_seg_dir = os.path.join(args.output, f'fold_{args.fold}', 'output_seg')
-else:
-    output_seg_dir = os.path.join(args.output, f'{run_id}', 'output_seg')
-
-if not os.path.exists(output_seg_dir):
-    os.makedirs(output_seg_dir)
-
-test_transforms = data_transforms(args)
-post_transforms = infer_post_transforms(args, test_transforms, out_classes, output_seg_dir)
-
-## Inference Pytorch Data Loader and Caching
-test_ds = CacheDataset(
-    data=test_files, transform=test_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
-test_loader = ThreadDataLoader(test_ds, batch_size=1, num_workers=0)
 
 ## Load Networks
 device = torch.device("cuda")
@@ -232,10 +134,38 @@ if args.network == 'TransBTS':
     _, model = TransBTS(dataset=args.dataset, _conv_repr=True, _pe_type='learned')
     model = model.to(device)
 
+print(f'test files:{test_files}')
+
+if args.network == 'MSHEAD':
+    model_id_dict = {0: '02-20-25_0844', 1:'02-20-25_2250', 2:'02-20-25_2254', 3:'02-20-25_2256', 4:'02-20-25_2257'}
+else:
+    model_id_dict = {0: 'fold_0', 1:'fold_1', 2:'fold_2', 3:'fold_3', 4:'fold_4'}
+
+model_id = model_id_dict[args.fold]
+if args.network=='MSHEAD':
+    args.trained_weights =f'/orange/r.forghani/results/{model_id}/model_best.pth'
+    output_seg_dir = os.path.join(args.output, f'{model_id}', 'output_seg')
+else:
+    args.trained_weights = f'/orange/r.forghani/results/kits23/{args.network}/{model_id}/model_best.pth'
+    output_seg_dir = f'/orange/r.forghani/results/kits23/{args.network}/{model_id}/output_seg'
+
+if not os.path.exists(output_seg_dir):
+    os.makedirs(output_seg_dir)
+
 print(f'fold:{args.fold} - best model path:{args.trained_weights} ')
+print(f'output seg dir:{output_seg_dir} ')
 state_dict = torch.load(args.trained_weights)
 model.load_state_dict(state_dict['model'])
 model.eval()
+
+
+test_transforms = data_transforms(args)
+post_transforms = infer_post_transforms(args, test_transforms, out_classes, output_seg_dir)
+
+## Inference Pytorch Data Loader and Caching
+test_ds = CacheDataset(
+    data=test_files, transform=test_transforms, cache_rate=args.cache_rate, num_workers=args.num_workers)
+test_loader = ThreadDataLoader(test_ds, batch_size=1, num_workers=0)
 
 
 post_label = AsDiscrete(to_onehot=out_classes)
