@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=plot_flare_hf_simple_ref_residual_up_hf_agg
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/plot_flare_hf_simple_ref_residual_up_hf_agg.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/plot_flare_hf_simple_ref_residual_up_hf_agg.%J.err
+#SBATCH --job-name=plot_flare_multilevel_hf_simple_ref_residual_up_hf_agg
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/plot_flare_multilevel_hf_simple_ref_residual_up_hf_agg.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up/mshead_3d/results/plot_flare_multilevel_hf_simple_ref_residual_up_hf_agg.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
