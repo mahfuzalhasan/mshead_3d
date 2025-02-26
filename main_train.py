@@ -80,8 +80,8 @@ print(f'Root folder for data: {args.root}')
 print('Used GPU: {}'.format(args.gpu))
 print(f'############## Training on Fold:{args.fold} ################## \n')
 
-run_id = datetime.datetime.today().strftime('%m-%d-%y_%H%M')
-print(f'$$$$$$$$$$$$$ run_id:{run_id} $$$$$$$$$$$$$')
+timestamp = datetime.datetime.now().strftime('%m-%d-%y_%H%M%S')
+run_id = f"{args.dataset}_{args.network}_{args.fold}_{timestamp}"
 
 train_samples, valid_samples, out_classes = data_loader(args)
 

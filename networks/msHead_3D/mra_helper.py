@@ -356,15 +356,14 @@ class Mlp(nn.Module):
         return flops_mlp
     
 class WaveletTransform3D(torch.nn.Module):
-    def __init__(self, wavelet='db1', level=5, mode='zero'):
+    def __init__(self, wavelet='db1', mode='zero'):
         super(WaveletTransform3D, self).__init__()
         self.wavelet = wavelet #pywt.Wavelet(wavelet)
-        self.level = level
         self.mode = mode
 
-    def forward(self, x):
+    def forward(self, x, level):
         # print(f'x:{x.shape}  ')
-        coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=self.level, mode=self.mode)
+        coeffs = ptwt.wavedec3(x, wavelet=self.wavelet, level=level, mode=self.mode)
         Yl  = coeffs[0]     # Extracting the approximation coefficients
         Yh = coeffs[1:]     # High-Frequency Coefficients
         return Yl, Yh
