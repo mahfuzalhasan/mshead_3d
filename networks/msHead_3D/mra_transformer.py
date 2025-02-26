@@ -153,7 +153,21 @@ class MRATransformer(nn.Module):
         #del state_dict
         t_end = time.time()
         self.logger.info("Load model, Time usage:\n\tIO: {}, initialize parameters: {}".format(t_ioend - t_start, t_end - t_ioend))
+    
+    def merge_hf_components(self, hf_list):
+        list1 = hf_list[0]
+        list2 = hf_list[1]
 
+        merged_list = []
+        # print(f'type comps: {type(list1)} {type(list2)}')
+
+        for dict1, dict2 in zip(list1, list2):
+            merged_dict = {}
+            for key in dict1.keys():
+                merged_dict[key] = dict1[key] + dict2[key]  # Element-wise addition
+            merged_list.append(merged_dict)
+        return tuple(merged_list)
+    
     def forward_features(self, x_rgb, normalize = True):
         """
         x_rgb: B x C x D x H x W
@@ -169,9 +183,12 @@ class MRATransformer(nn.Module):
         ########################
         x1 = rearrange(x0, "b c d h w -> b d h w c")
         # stage 1
-        b,d,h,w,c = x1.shape        
+        b,d,h,w,c = x1.shape
+        hfs = []      
         for j,blk in enumerate(self.block1):
             x1, x_h = blk(x1)       # B, d, h, w, c
+            hfs.append(x_h)
+        x_h = self.merge_hf_components(hfs)
         x1_out = rearrange(x1, "b d h w c -> b c d h w")
         x1_out = self.proj_out(x1_out, normalize)
         outs.append(x1_out)
@@ -182,8 +199,11 @@ class MRATransformer(nn.Module):
         
         # stage 2
         b,d,h,w,c = x2.shape
+        hfs = []  
         for j,blk in enumerate(self.block2):
             x2, x_h = blk(x2)
+            hfs.append(x_h)
+        x_h = self.merge_hf_components(hfs)
         x2_out = rearrange(x2, "b d h w c -> b c d h w")
         x2_out = self.proj_out(x2_out, normalize)
         outs.append(x2_out)
@@ -195,8 +215,11 @@ class MRATransformer(nn.Module):
 
         # stage 3
         b,d,h,w,c = x3.shape
+        hfs = []  
         for j,blk in enumerate(self.block3):
             x3, x_h = blk(x3)
+            hfs.append(x_h)
+        x_h = self.merge_hf_components(hfs)
         x3_out = rearrange(x3, "b d h w c -> b c d h w")
         x3_out = self.proj_out(x3_out, normalize)
         outs.append(x3_out)
