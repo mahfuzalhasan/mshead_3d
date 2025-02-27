@@ -22,7 +22,7 @@ output/*
 Config/*
 *.slurm
 slurm_logs*/
-*.txt
+# *.txt
 backup/*
 playground/*.png
 nautilus/*.yaml
