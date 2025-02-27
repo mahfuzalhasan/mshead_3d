@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=plot_kits23_SwinUNETR
-#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up_kits/mshead_3d/results/plot_kits23_SwinUNETR.%J.out
-#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up_kits/mshead_3d/results/plot_kits23_SwinUNETR.%J.err
+#SBATCH --job-name=plot_kits23_UXNET
+#SBATCH --output=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up_kits/mshead_3d/results/plot_kits23_UXNET.%J.out
+#SBATCH --error=/blue/r.forghani/mdmahfuzalhasan/scripts/WaveFormer_Improved_Up_kits/mshead_3d/results/plot_kits23_UXNET.%J.err
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
