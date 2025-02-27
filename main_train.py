@@ -82,6 +82,7 @@ print(f'############## Training on Fold:{args.fold} ################## \n')
 
 timestamp = datetime.datetime.now().strftime('%m-%d-%y_%H%M%S')
 run_id = f"{args.dataset}_{args.network}_{args.fold}_{timestamp}"
+print(f'######### run_id:{run_id} ##########')
 
 train_samples, valid_samples, out_classes = data_loader(args)
 
