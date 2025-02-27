@@ -82,7 +82,7 @@ else:
     pred_dir =f'/orange/r.forghani/results/{model_id}/output_seg'
 # pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
 
-print(f'pred:{pred_dir} ground truth:{gt_dir}')
+print(f'fold:{args.fold} pred:{pred_dir} ground truth:{gt_dir}')
 
 spleen = []
 kidney = []
