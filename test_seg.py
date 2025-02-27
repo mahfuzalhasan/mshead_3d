@@ -66,6 +66,9 @@ if not args.root:
     elif args.dataset == 'kits':
         args.root = '/blue/r.forghani/share/kits2019'
         ORGAN_CLASSES = {1: "Kidney", 2: "Tumor"}
+    elif args.dataset == 'kits23':
+        ORGAN_CLASSES = {1: "Kidney", 2: "Tumor", 3:"Cyst"}
+        args.root = '/blue/r.forghani/share/kits23'
     else:
         raise NotImplementedError(f'No such dataset: {args.dataset}')
 
