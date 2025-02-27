@@ -43,7 +43,7 @@ elif args.dataset == 'kits23':
         model_id_dict = {0: '02-20-25_0844', 1:'02-20-25_2250', 2:'02-20-25_2254', 3:'02-20-25_2256', 4:'02-20-25_2257'}
     else:
         model_id_dict = {0: 'fold_0', 1:'fold_1', 2:'fold_2', 3:'fold_3', 4:'fold_4'}
-    gt_dir = '/blue/r.forghani/share/kits23'
+    gt_dir = '/blue/r.forghani/share/kits23/labelsTr'
 else:
     raise NotImplementedError(f'No such dataset: {args.dataset}')
 
@@ -91,9 +91,7 @@ count = 0
 for label in os.listdir(pred_dir):
     subj = label
     label_pred = os.path.join(pred_dir, subj, subj + '_seg.nii.gz')
-
-
-    label_gt = os.path.join(gt_dir, label.split('_0000')[0] + '.nii.gz')
+    label_gt = os.path.join(gt_dir, label.replace("_imaging", "_segmentation") + ".nii.gz")
 
 
     # label_gt = gt_file
