@@ -75,7 +75,7 @@ else:
 
 # pred_dir ="/orange/r.forghani/results/UXNET/output_seg"
 
-print(f'pred:{pred_dir} ground truth:{gt_dir}')
+print(f'fold:{args.fold} pred:{pred_dir} ground truth:{gt_dir}')
 
 cyst = []
 tumor = []
