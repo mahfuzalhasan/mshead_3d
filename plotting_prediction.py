@@ -158,7 +158,7 @@ if not os.path.exists(output_seg_dir):
 print(f'fold:{args.fold} - best model path:{args.trained_weights} ')
 print(f'output seg dir:{output_seg_dir} ')
 state_dict = torch.load(args.trained_weights)
-model.load_state_dict(state_dict['model'])
+model.load_state_dict(state_dict['model'], strict=True)
 model.eval()
 
 

@@ -144,7 +144,7 @@ print(f"Total trainable parameters: {total_params}")
 
 print(f'best model from fold:{args.fold} model path:{args.trained_weights}')
 state_dict = torch.load(args.trained_weights)
-model.load_state_dict(state_dict['model'])
+model.load_state_dict(state_dict['model'], strict=True)
 model.eval()
 # with torch.no_grad():
 #     for i, test_data in enumerate(test_loader):
