@@ -1,0 +1,70 @@
+test_brats_ablation_max_pool
+ET_category
+L    0.933000
+M    0.927672
+S    0.786164
+Name: ET_Dice, dtype: float64 0.8846816653878848
+WT_category
+L    0.952420
+M    0.945625
+S    0.910967
+Name: WT_Dice, dtype: float64 0.9364291084757173
+TC_category
+L    0.941975
+M    0.944996
+S    0.860421
+Name: TC_Dice, dtype: float64 0.9167237982080444
+
+
+test_brats_residual_up_idwt_dec
+ET_category
+L    0.931658
+M    0.927240
+S    0.781762
+Name: ET_Dice, dtype: float64 0.8827003262707265
+WT_category
+L    0.952419
+M    0.945777
+S    0.914077
+Name: WT_Dice, dtype: float64 0.937510774825614
+TC_category
+L    0.946953
+M    0.947546
+S    0.858291
+Name: TC_Dice, dtype: float64 0.9187473466995455
+
+
+test_brats_residual_up_simple_ref
+ET_category
+L    0.927076
+M    0.927184
+S    0.784178
+Name: ET_Dice, dtype: float64 0.8819592403917116
+WT_category
+L    0.952603
+M    0.946730
+S    0.914389
+Name: WT_Dice, dtype: float64 0.9379895534061784
+TC_category
+L    0.947720
+M    0.939845
+S    0.848040
+Name: TC_Dice, dtype: float64 0.9136173791648023
+
+
+test_brats_simple_up_idwt_dec
+ET_category
+L    0.919181
+M    0.913733
+S    0.773357
+Name: ET_Dice, dtype: float64 0.871139259883113
+WT_category
+L    0.949159
+M    0.939949
+S    0.906059
+Name: WT_Dice, dtype: float64 0.9318287084526227
+TC_category
+L    0.936968
+M    0.928515
+S    0.838105
+Name: TC_Dice, dtype: float64 0.9029650079887149
