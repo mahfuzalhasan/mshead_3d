@@ -100,7 +100,7 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_1/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_1/model_best.pth'
     elif args.fold == 2:
-        args.trained_weights = '/orange/r.forghani/results/02-19-25_2216/model_best.pth'        # flare res_up_sim_ref_sep_hf_hf_agg
+        args.trained_weights = '/orange/r.forghani/results/flare_MSHEAD_2_02-27-25_001638/model_best.pth'        # flare res_up_sim_ref_sep_hf_hf_agg
         # args.trained_weights = '/orange/r.forghani/results/02-20-25_0032/model_best.pth'        # flare simple ref_sp_hf layers residual up
         # args.trained_weights = '/orange/r.forghani/results/02-15-25_0725/model_best.pth'        # flare hf imp residual up
         # args.trained_weights = '/orange/r.forghani/results/02-13-25_0337/model_best.pth'       # flare hf refinement better up
@@ -114,7 +114,7 @@ if args.dataset != 'amos':
         # args.trained_weights = '/orange/r.forghani/results/UNETR/fold_2/model_best.pth'
         # args.trained_weights = '/orange/r.forghani/results/TransBTS/fold_2/model_best.pth'
     elif args.fold == 3:
-        args.trained_weights = '/orange/r.forghani/results/02-19-25_2216/model_best.pth'        # flare res_up_sim_ref_sep_hf_hf_agg
+        args.trained_weights = '/orange/r.forghani/results/flare_MSHEAD_3_02-27-25_001638/model_best.pth'        # flare res_up_sim_ref_sep_hf_hf_agg
         # args.trained_weights = '/orange/r.forghani/results/02-21-25_0008/model_best.pth'        # flare simple ref_sp_hf layers residual up
         # args.trained_weights = '/orange/r.forghani/results/02-16-25_0145/model_best.pth'        # flare hf imp residual up
         # args.trained_weights = '/orange/r.forghani/results/02-13-25_0429/model_best.pth'        # flare hf refinement better up
