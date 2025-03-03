@@ -1,9 +1,10 @@
 test_brats_ablation_max_pool
+
 ET_category
 L    0.933000
 M    0.927672
-S    0.786164
-Name: ET_Dice, dtype: float64 0.8846816653878848
+S    0.828093
+Name: ET_Dice, dtype: float64 0.8990667331177692
 WT_category
 L    0.952420
 M    0.945625
@@ -12,16 +13,17 @@ Name: WT_Dice, dtype: float64 0.9364291084757173
 TC_category
 L    0.941975
 M    0.944996
-S    0.860421
-Name: TC_Dice, dtype: float64 0.9167237982080444
+S    0.871312
+Name: TC_Dice, dtype: float64 0.9204054198875948
+
 
 
 test_brats_residual_up_idwt_dec
 ET_category
 L    0.931658
 M    0.927240
-S    0.781762
-Name: ET_Dice, dtype: float64 0.8827003262707265
+S    0.812621
+Name: ET_Dice, dtype: float64 0.8934213828651077
 WT_category
 L    0.952419
 M    0.945777
@@ -38,8 +40,8 @@ test_brats_residual_up_simple_ref
 ET_category
 L    0.927076
 M    0.927184
-S    0.784178
-Name: ET_Dice, dtype: float64 0.8819592403917116
+S    0.815133
+Name: ET_Dice, dtype: float64 0.8926712959430279
 WT_category
 L    0.952603
 M    0.946730
@@ -48,16 +50,18 @@ Name: WT_Dice, dtype: float64 0.9379895534061784
 TC_category
 L    0.947720
 M    0.939845
-S    0.848040
-Name: TC_Dice, dtype: float64 0.9136173791648023
+S    0.858774
+Name: TC_Dice, dtype: float64 0.9172865252658658
+
 
 
 test_brats_simple_up_idwt_dec
+
 ET_category
 L    0.919181
 M    0.913733
-S    0.773357
-Name: ET_Dice, dtype: float64 0.871139259883113
+S    0.793444
+Name: ET_Dice, dtype: float64 0.8781645764950736
 WT_category
 L    0.949159
 M    0.939949
@@ -66,5 +70,24 @@ Name: WT_Dice, dtype: float64 0.9318287084526227
 TC_category
 L    0.936968
 M    0.928515
-S    0.838105
-Name: TC_Dice, dtype: float64 0.9029650079887149
+S    0.848714
+Name: TC_Dice, dtype: float64 0.9065913734826455
+
+
+test_brats_residual_up_idwt_dec_multilevel
+
+ET_category
+L    0.930714
+M    0.926354
+S    0.821297
+Name: ET_Dice, dtype: float64 0.8954585580319577
+WT_category
+L    0.953996
+M    0.946748
+S    0.910373
+Name: WT_Dice, dtype: float64 0.9371355184061839
+TC_category
+L    0.949619
+M    0.947404
+S    0.879044
+Name: TC_Dice, dtype: float64 0.9267969639830892
